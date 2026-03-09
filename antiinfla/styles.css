@@ -1,0 +1,198 @@
+:root {
+  --bg: #f3efe7;
+  --panel: rgba(255, 255, 255, 0.78);
+  --panel-strong: #fffaf1;
+  --text: #1d241f;
+  --muted: #58645c;
+  --line: rgba(29, 36, 31, 0.12);
+  --accent: #c96f3b;
+  --accent-deep: #9d4d21;
+  --shadow: 0 24px 80px rgba(63, 42, 21, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family:
+    "Avenir Next",
+    "PingFang SC",
+    "Hiragino Sans GB",
+    "Segoe UI",
+    sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(201, 111, 59, 0.18), transparent 28%),
+    radial-gradient(circle at right, rgba(99, 133, 112, 0.14), transparent 22%),
+    linear-gradient(180deg, #f9f4ea 0%, var(--bg) 100%);
+}
+
+.page-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0 64px;
+}
+
+.hero {
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+
+.eyebrow,
+.card-kicker {
+  margin: 0 0 12px;
+  font-family:
+    "Trebuchet MS",
+    "Avenir Next",
+    "PingFang SC",
+    sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-family:
+    "Trebuchet MS",
+    "Avenir Next",
+    "PingFang SC",
+    sans-serif;
+  line-height: 0.95;
+}
+
+h1 {
+  font-size: clamp(3rem, 10vw, 6.5rem);
+  max-width: 8ch;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+}
+
+.hero-copy,
+.card p,
+.task-list {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.hero-copy {
+  max-width: 42rem;
+  margin: 20px 0 0;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.button-primary:hover {
+  background: var(--accent-deep);
+}
+
+.button-secondary {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.card {
+  grid-column: span 6;
+  padding: 28px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.card.accent {
+  background: var(--panel-strong);
+}
+
+.card.wide {
+  grid-column: 1 / -1;
+}
+
+.task-list {
+  margin: 18px 0 0;
+  padding-left: 18px;
+}
+
+.task-list li + li {
+  margin-top: 8px;
+}
+
+.status-active {
+  border-color: rgba(201, 111, 59, 0.5);
+  box-shadow:
+    var(--shadow),
+    0 0 0 1px rgba(201, 111, 59, 0.22) inset;
+}
+
+@media (max-width: 800px) {
+  .page-shell {
+    width: min(100% - 24px, 1120px);
+    padding-top: 24px;
+  }
+
+  .hero,
+  .card {
+    padding: 24px;
+    border-radius: 22px;
+  }
+
+  .card,
+  .card.wide {
+    grid-column: 1 / -1;
+  }
+}
