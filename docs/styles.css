@@ -1,16 +1,16 @@
 :root {
-  --bg: #f8f2e8;
+  --bg: #f7f1e8;
   --bg-soft: #fffaf3;
-  --surface: rgba(255, 250, 243, 0.82);
-  --surface-strong: #fff7ec;
-  --text: #40352f;
-  --muted: #6d6258;
-  --line: rgba(64, 53, 47, 0.12);
-  --accent: #b56d44;
-  --accent-deep: #925233;
-  --leaf: #7d9477;
-  --berry: #c2897d;
-  --shadow: 0 30px 80px rgba(97, 67, 48, 0.12);
+  --surface: rgba(255, 250, 243, 0.84);
+  --surface-strong: #fff8ef;
+  --text: #3e342e;
+  --muted: #6e6258;
+  --line: rgba(62, 52, 46, 0.12);
+  --accent: #b46c43;
+  --accent-deep: #8d5536;
+  --leaf: #79916d;
+  --berry: #c2877c;
+  --shadow: 0 28px 80px rgba(97, 67, 48, 0.12);
 }
 
 * {
@@ -31,8 +31,8 @@ body {
     sans-serif;
   color: var(--text);
   background:
-    radial-gradient(circle at top left, rgba(181, 109, 68, 0.18), transparent 28%),
-    radial-gradient(circle at right 20%, rgba(125, 148, 119, 0.16), transparent 24%),
+    radial-gradient(circle at top left, rgba(180, 108, 67, 0.16), transparent 30%),
+    radial-gradient(circle at right 20%, rgba(121, 145, 109, 0.14), transparent 24%),
     linear-gradient(180deg, var(--bg-soft) 0%, var(--bg) 100%);
 }
 
@@ -40,9 +40,12 @@ a {
   color: inherit;
 }
 
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
 .ambient {
   position: fixed;
-  inset: auto;
   width: 320px;
   height: 320px;
   border-radius: 50%;
@@ -54,13 +57,13 @@ a {
 .ambient-left {
   top: -80px;
   left: -60px;
-  background: rgba(240, 201, 169, 0.55);
+  background: rgba(240, 201, 169, 0.5);
 }
 
 .ambient-right {
   right: -100px;
   top: 180px;
-  background: rgba(193, 211, 185, 0.42);
+  background: rgba(193, 211, 185, 0.4);
 }
 
 .site-header,
@@ -71,11 +74,11 @@ main,
 }
 
 .site-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 24px 0 10px;
+  gap: 18px;
+  padding: 24px 0 12px;
 }
 
 .brand {
@@ -84,13 +87,14 @@ main,
     "Trebuchet MS",
     "Avenir Next",
     sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   letter-spacing: 0.08em;
 }
 
 .nav {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 18px;
 }
 
@@ -99,9 +103,33 @@ main,
   color: var(--muted);
 }
 
+.language-switcher {
+  display: flex;
+  gap: 8px;
+}
+
+.lang-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.35);
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.lang-chip.active {
+  background: var(--surface-strong);
+  color: var(--text);
+}
+
 .hero {
   display: grid;
-  grid-template-columns: 1.3fr 0.9fr;
+  grid-template-columns: 1.35fr 0.9fr;
   gap: 20px;
   align-items: stretch;
   padding: 28px 0 12px;
@@ -153,13 +181,13 @@ summary {
 h1 {
   font-size: clamp(3rem, 7vw, 5.8rem);
   line-height: 0.92;
-  max-width: 8ch;
+  max-width: 9ch;
 }
 
 h2 {
   font-size: clamp(2rem, 3.4vw, 3rem);
   line-height: 1.02;
-  max-width: 14ch;
+  max-width: 16ch;
 }
 
 h3,
@@ -173,14 +201,15 @@ summary {
 .daily-copy p,
 .timeline-item p,
 .faq-list p,
-.calm-list {
+.calm-list,
+.meta-list {
   color: var(--muted);
   line-height: 1.75;
   font-size: 1rem;
 }
 
 .lead {
-  max-width: 40rem;
+  max-width: 42rem;
   margin: 20px 0 0;
 }
 
@@ -210,7 +239,8 @@ summary {
 }
 
 .button:hover,
-.soft-toggle:hover {
+.soft-toggle:hover,
+.lang-chip:hover {
   transform: translateY(-1px);
 }
 
@@ -230,6 +260,12 @@ summary {
   color: var(--text);
 }
 
+.meta-list,
+.calm-list {
+  margin: 20px 0 0;
+  padding-left: 20px;
+}
+
 .hero-panel {
   padding: 28px;
   border-radius: 28px;
@@ -238,13 +274,9 @@ summary {
   justify-content: space-between;
 }
 
-.calm-list {
-  margin: 0;
-  padding-left: 20px;
-}
-
+.meta-list li + li,
 .calm-list li + li {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .panel-note {
@@ -286,22 +318,22 @@ summary {
 }
 
 .product-card {
-  min-height: 240px;
+  min-height: 250px;
 }
 
 .tone-oat {
   background:
-    linear-gradient(180deg, rgba(255, 247, 236, 0.92), rgba(255, 242, 226, 0.92));
+    linear-gradient(180deg, rgba(255, 247, 236, 0.93), rgba(255, 241, 224, 0.93));
 }
 
 .tone-leaf {
   background:
-    linear-gradient(180deg, rgba(243, 248, 238, 0.94), rgba(236, 243, 230, 0.94));
+    linear-gradient(180deg, rgba(242, 247, 238, 0.94), rgba(234, 242, 228, 0.94));
 }
 
 .tone-berry {
   background:
-    linear-gradient(180deg, rgba(253, 243, 239, 0.94), rgba(247, 233, 228, 0.94));
+    linear-gradient(180deg, rgba(252, 243, 239, 0.94), rgba(247, 232, 228, 0.94));
 }
 
 .daily-layout {
@@ -321,7 +353,7 @@ summary {
   padding: 18px;
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.48);
-  border: 1px solid rgba(64, 53, 47, 0.08);
+  border: 1px solid rgba(62, 52, 46, 0.08);
 }
 
 .timeline-item span {
@@ -375,7 +407,16 @@ body.soft-mode {
   --leaf: #899b74;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 960px) {
+  .site-header {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .nav {
+    justify-content: flex-start;
+  }
+
   .hero,
   .daily-layout,
   .story-grid,
@@ -390,7 +431,6 @@ body.soft-mode {
 }
 
 @media (max-width: 720px) {
-  .site-header,
   .site-footer {
     flex-direction: column;
     align-items: flex-start;
