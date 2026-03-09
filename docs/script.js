@@ -1,5 +1,6 @@
 const softToggle = document.getElementById("soft-toggle");
 const trackedNodes = document.querySelectorAll("[data-track]");
+const conversionNodes = document.querySelectorAll("[data-conversion]");
 
 if (softToggle) {
   softToggle.addEventListener("click", () => {
@@ -28,6 +29,17 @@ trackedNodes.forEach((node) => {
         event_category: "cta",
         event_label: document.documentElement.lang
       });
+    }
+  });
+});
+
+conversionNodes.forEach((node) => {
+  node.addEventListener("click", (event) => {
+    const key = node.getAttribute("data-conversion");
+    const href = node.getAttribute("href");
+    if (typeof window.reportAdsConversion === "function" && key && href) {
+      event.preventDefault();
+      window.reportAdsConversion(key, href);
     }
   });
 });

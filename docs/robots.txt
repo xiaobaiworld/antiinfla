@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://antiinflammatoryguides.com/sitemap.xml
+Sitemap: https://www.antiinflammatorydiets.com/sitemap.xml

@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://antiinflammatoryguides.com/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://antiinflammatoryguides.com/" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://antiinflammatoryguides.com/zh-cn/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://antiinflammatoryguides.com/" />
+    <loc>https://www.antiinflammatorydiets.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.antiinflammatorydiets.com/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.antiinflammatorydiets.com/zh-cn/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.antiinflammatorydiets.com/" />
   </url>
   <url>
-    <loc>https://antiinflammatoryguides.com/zh-cn/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://antiinflammatoryguides.com/" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://antiinflammatoryguides.com/zh-cn/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://antiinflammatoryguides.com/" />
+    <loc>https://www.antiinflammatorydiets.com/zh-cn/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.antiinflammatorydiets.com/" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.antiinflammatorydiets.com/zh-cn/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.antiinflammatorydiets.com/" />
+  </url>
+  <url>
+    <loc>https://www.antiinflammatorydiets.com/guides/best-anti-inflammatory-foods/</loc>
+  </url>
+  <url>
+    <loc>https://www.antiinflammatorydiets.com/guides/anti-inflammatory-breakfast-ideas/</loc>
+  </url>
+  <url>
+    <loc>https://www.antiinflammatorydiets.com/guides/anti-inflammatory-snacks/</loc>
+  </url>
+  <url>
+    <loc>https://www.antiinflammatorydiets.com/guides/anti-inflammatory-drinks/</loc>
   </url>
 </urlset>
