@@ -65,3 +65,7 @@
 - Strengthened evidence notes, summaries, and FAQ wording on Blueberries, Salmon, Turmeric, Oats, Green Tea, and Olive Oil.
 - Upgraded the selected source-manifest subset beyond placeholders with review scope, source-target guidance, and notes.
 - Advanced `next.md` to Step 16: remaining first-30 food coverage.
+- Completed Step 16: remaining first-30 food coverage.
+- Added the final seven food pages needed to complete the original 30-food plan: Tomato, Basil, Rosemary, Chickpeas, Quinoa, Avocado Oil, and Sardines.
+- Updated homepage messaging, category hubs, guide links, sitemap, and internal manifests so the full first-30 set is now publicly connected.
+- Advanced `next.md` to Step 17: source depth and image upgrade pass.

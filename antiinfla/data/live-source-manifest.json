@@ -24,6 +24,13 @@
     {"slug":"ginger","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
     {"slug":"cinnamon","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
     {"slug":"almond","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
-    {"slug":"flax-seeds","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"}
+    {"slug":"flax-seeds","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"tomato","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"basil","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"rosemary","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"chickpeas","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"quinoa","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"avocado-oil","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"sardines","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"}
   ]
 }
