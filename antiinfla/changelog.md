@@ -60,3 +60,8 @@
 - Expanded the homepage and core guide linking so the guide layer now covers multiple practical entry intents.
 - Updated `sitemap.xml` and validated the expanded guide set.
 - Advanced `next.md` to Step 15: evidence review and content strengthening.
+- Completed Step 15: evidence review and content strengthening.
+- Added `docs/evidence-review-workflow.md` to document how live health-adjacent food pages should be tightened without drifting into overclaiming.
+- Strengthened evidence notes, summaries, and FAQ wording on Blueberries, Salmon, Turmeric, Oats, Green Tea, and Olive Oil.
+- Upgraded the selected source-manifest subset beyond placeholders with review scope, source-target guidance, and notes.
+- Advanced `next.md` to Step 16: remaining first-30 food coverage.

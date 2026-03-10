@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 15: Evidence Review And Content Strengthening
+## Step 16: Remaining First-30 Food Coverage
 
 Goal:
 
-Strengthen the existing public pages with better evidence review, sharper section quality, and more trustworthy factual framing.
+Publish the remaining priority foods from the original first-30 plan so the English-first site covers the full initial scope more consistently.
 
-This step should improve content quality inside the current architecture rather than expanding page count first.
+This step should extend the current architecture with the unfinished priority food pages rather than changing the public system design.
 
 ## Tasks
 
-1. fill evidence/source tracking for a selected live subset
-2. upgrade evidence notes and FAQs on the most important public pages
-3. tighten vague wording where pages still read too generically
-4. keep manifests and source tracking aligned with the revised pages
-5. run QA after the content-quality pass
+1. identify which of the original first 30 foods are still not live
+2. add the remaining high-priority food pages with the current public template
+3. update the relevant category hubs, guide links, homepage paths, and sitemap
+4. keep image and source manifests aligned for the new live pages
+5. run QA after the coverage pass
 
 ## Acceptance Criteria
 
-- a selected subset of live pages has stronger factual framing
-- evidence/source manifests move beyond placeholders for that subset
-- public wording becomes more precise on the revised pages
-- QA still passes after the content-strengthening pass
+- the original first-30 food plan is materially closer to full public coverage
+- new food pages fit the existing template, hub, and guide network
+- sitemap and public internal links reflect the expanded food set
+- QA still passes after the coverage pass
 
 ## Notes
 
-This step shifts the focus from expansion to trust and content quality.
+This step returns to controlled coverage expansion after the first evidence-strengthening batch.
 
 Deferred but tracked:
 
