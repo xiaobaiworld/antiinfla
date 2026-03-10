@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Flax seeds in a bowl</title>
+  <desc id="desc">Illustrated bowl of flax seeds on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#efebe9"/><stop offset="100%" stop-color="#d7ccc8"/></linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="220" ry="35" fill="#bcaaa4" opacity=".25"/>
+  <path d="M380 480c0-45 35-80 76-80h288c41 0 76 35 76 80v55c0 85-70 155-155 155H535c-85 0-155-70-155-155z" fill="#fafafa" stroke="#bdbdbd" stroke-width="7"/>
+  <g fill="#795548"><ellipse cx="440" cy="472" rx="8" ry="5" transform="rotate(-20 440 472)"/><ellipse cx="475" cy="464" rx="8" ry="5" transform="rotate(10 475 464)"/><ellipse cx="510" cy="468" rx="8" ry="5" transform="rotate(-15 510 468)"/><ellipse cx="545" cy="460" rx="8" ry="5" transform="rotate(5 545 460)"/><ellipse cx="580" cy="465" rx="8" ry="5" transform="rotate(-10 580 465)"/><ellipse cx="615" cy="458" rx="8" ry="5" transform="rotate(15 615 458)"/><ellipse cx="650" cy="463" rx="8" ry="5" transform="rotate(-5 650 463)"/><ellipse cx="685" cy="468" rx="8" ry="5" transform="rotate(20 685 468)"/><ellipse cx="720" cy="474" rx="8" ry="5" transform="rotate(-8 720 474)"/><ellipse cx="460" cy="498" rx="8" ry="5" transform="rotate(12 460 498)"/><ellipse cx="495" cy="492" rx="8" ry="5" transform="rotate(-18 495 492)"/><ellipse cx="530" cy="488" rx="8" ry="5" transform="rotate(8 530 488)"/><ellipse cx="565" cy="492" rx="8" ry="5" transform="rotate(-12 565 492)"/><ellipse cx="600" cy="486" rx="8" ry="5" transform="rotate(16 600 486)"/><ellipse cx="635" cy="490" rx="8" ry="5" transform="rotate(-6 635 490)"/><ellipse cx="670" cy="495" rx="8" ry="5" transform="rotate(10 670 495)"/><ellipse cx="705" cy="500" rx="8" ry="5" transform="rotate(-14 705 500)"/><ellipse cx="490" cy="522" rx="8" ry="5" transform="rotate(5 490 522)"/><ellipse cx="540" cy="518" rx="8" ry="5" transform="rotate(-10 540 518)"/><ellipse cx="590" cy="514" rx="8" ry="5" transform="rotate(12 590 514)"/><ellipse cx="640" cy="518" rx="8" ry="5" transform="rotate(-8 640 518)"/><ellipse cx="690" cy="524" rx="8" ry="5" transform="rotate(15 690 524)"/></g>
+</svg>

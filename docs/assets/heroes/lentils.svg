@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Dry lentils in a bowl</title>
+  <desc id="desc">Illustrated bowl of dry lentils on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#efebe9"/>
+      <stop offset="100%" stop-color="#d7ccc8"/>
+    </linearGradient>
+    <radialGradient id="lentil1" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#a1887f"/>
+      <stop offset="100%" stop-color="#6d4c41"/>
+    </radialGradient>
+    <radialGradient id="lentil2" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#c8b89a"/>
+      <stop offset="100%" stop-color="#8d6e63"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="240" ry="40" fill="#bcaaa4" opacity=".3"/>
+  <path d="M360 480c0-45 35-80 76-80h328c41 0 76 35 76 80v60c0 88-72 160-160 160H520c-88 0-160-72-160-160z" fill="#f5f5f5" stroke="#bdbdbd" stroke-width="8"/>
+  <g>
+    <ellipse cx="470" cy="470" rx="22" ry="16" fill="url(#lentil1)"/>
+    <ellipse cx="530" cy="460" rx="22" ry="16" fill="url(#lentil2)"/>
+    <ellipse cx="590" cy="455" rx="22" ry="16" fill="url(#lentil1)"/>
+    <ellipse cx="650" cy="460" rx="22" ry="16" fill="url(#lentil2)"/>
+    <ellipse cx="710" cy="470" rx="22" ry="16" fill="url(#lentil1)"/>
+    <ellipse cx="500" cy="500" rx="22" ry="16" fill="url(#lentil2)"/>
+    <ellipse cx="560" cy="495" rx="22" ry="16" fill="url(#lentil1)"/>
+    <ellipse cx="620" cy="490" rx="22" ry="16" fill="url(#lentil2)"/>
+    <ellipse cx="680" cy="495" rx="22" ry="16" fill="url(#lentil1)"/>
+    <ellipse cx="540" cy="530" rx="22" ry="16" fill="url(#lentil1)"/>
+    <ellipse cx="600" cy="525" rx="22" ry="16" fill="url(#lentil2)"/>
+    <ellipse cx="660" cy="530" rx="22" ry="16" fill="url(#lentil1)"/>
+  </g>
+</svg>

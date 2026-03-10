@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Ripe red tomatoes</title>
+  <desc id="desc">Illustrated ripe tomatoes on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff3e0"/><stop offset="100%" stop-color="#ffe0b2"/></linearGradient>
+    <radialGradient id="tom" cx="48%" cy="40%" r="55%"><stop offset="0%" stop-color="#ef5350"/><stop offset="60%" stop-color="#d32f2f"/><stop offset="100%" stop-color="#b71c1c"/></radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="660" rx="220" ry="30" fill="#ffcc80" opacity=".25"/>
+  <circle cx="500" cy="440" r="100" fill="url(#tom)"/>
+  <circle cx="680" cy="460" r="90" fill="url(#tom)"/>
+  <circle cx="590" cy="520" r="80" fill="url(#tom)"/>
+  <path d="M470 340 C480 320, 510 310, 530 330" fill="#4caf50"/><path d="M490 345 C500 325, 520 320, 525 335" fill="#388e3c"/>
+  <path d="M650 370 C660 350, 690 340, 710 360" fill="#4caf50"/>
+  <path d="M560 440 C570 420, 600 410, 620 430" fill="#4caf50"/>
+</svg>

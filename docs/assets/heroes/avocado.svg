@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Halved avocado</title>
+  <desc id="desc">Illustrated halved avocado showing the pit on a light background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f1f8e9"/>
+      <stop offset="100%" stop-color="#dcedc8"/>
+    </linearGradient>
+    <radialGradient id="skin" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#558b2f"/>
+      <stop offset="100%" stop-color="#33691e"/>
+    </radialGradient>
+    <radialGradient id="flesh" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#c5e1a5"/>
+      <stop offset="100%" stop-color="#8bc34a"/>
+    </radialGradient>
+    <radialGradient id="pit" cx="45%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#8d6e63"/>
+      <stop offset="100%" stop-color="#4e342e"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="660" rx="200" ry="35" fill="#a5d6a7" opacity=".3"/>
+  <ellipse cx="600" cy="420" rx="180" ry="230" fill="url(#skin)"/>
+  <ellipse cx="600" cy="420" rx="145" ry="195" fill="url(#flesh)"/>
+  <ellipse cx="600" cy="420" rx="65" ry="80" fill="url(#pit)"/>
+</svg>
