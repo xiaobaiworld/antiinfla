@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 10: Image And Source Workflow Foundations
+## Step 11: Second Guide Layer And Better Entry Paths
 
 Goal:
 
-Build the internal workflow for sourcing images and tracking evidence so future page production stays consistent.
+Add another practical guide layer so users and crawlers have more than one way to enter the live food set.
 
-This step should remain mostly internal and support later content batches without cluttering the public site.
+This step should build on the current live foods and hubs without redesigning the site structure.
 
 ## Tasks
 
-1. define an internal image manifest format
-2. define an internal evidence/source tracking format
-3. create starter manifests for the live public pages
-4. document naming and storage rules for images and source notes
-5. keep all workflow outputs outside the public site surface
+1. create at least one additional public guide page with real value
+2. connect the new guide page into homepage, hubs, and food pages where relevant
+3. strengthen internal entry paths for breakfast, drinks, or category-style intent
+4. update `sitemap.xml` with the new real guide pages
+5. keep guide pages distinct from each other and from category hubs
 
 ## Acceptance Criteria
 
-- image planning has a concrete internal manifest
-- evidence tracking has a concrete internal manifest
-- current live pages are represented in those manifests
-- the workflow is documented clearly enough for future batches
+- at least one new guide page exists with meaningful structure
+- guide pages now provide more than one public entry path into the food cluster
+- internal linking reflects the new guide layer
+- `sitemap.xml` includes the new real guide pages only
 
 ## Notes
 
-This step prepares the site for cleaner production at larger scale.
+This step expands the public guide surface before the next QA and operations round.
 
 Deferred but tracked:
 

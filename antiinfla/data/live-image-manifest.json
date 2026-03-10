@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "scope": "current-live-food-pages",
+  "pages": [
+    {"slug":"blueberries","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Fresh blueberries in a bowl.","alt_text_draft":"Fresh blueberries in a bowl.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"broccoli","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Fresh broccoli florets.","alt_text_draft":"Fresh broccoli florets.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"salmon","page_type":"food-detail","hero_subject":"Fresh salmon fillet.","alt_text_draft":"Fresh salmon fillet.","hero_image_needed":true,"source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"olive-oil","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Olive oil in a small dish.","alt_text_draft":"Olive oil in a small dish.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"turmeric","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Turmeric root and turmeric powder.","alt_text_draft":"Turmeric root and turmeric powder.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"green-tea","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Cup of green tea.","alt_text_draft":"Cup of green tea.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"chia-seeds","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Chia seeds in a bowl.","alt_text_draft":"Chia seeds in a bowl.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"oats","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Rolled oats in a bowl.","alt_text_draft":"Rolled oats in a bowl.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"strawberry","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Fresh strawberries.","alt_text_draft":"Fresh strawberries.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"pomegranate","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Opened pomegranate.","alt_text_draft":"Opened pomegranate.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"spinach","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Fresh spinach leaves.","alt_text_draft":"Fresh spinach leaves.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"garlic","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Garlic bulbs and cloves.","alt_text_draft":"Garlic bulbs and cloves.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"walnut","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Walnuts and walnut halves.","alt_text_draft":"Walnuts and walnut halves.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"lentils","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Dry lentils in a bowl.","alt_text_draft":"Dry lentils in a bowl.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"},
+    {"slug":"matcha","page_type":"food-detail","hero_image_needed":true,"hero_subject":"Prepared matcha.","alt_text_draft":"Prepared matcha.","source_status":"needed","processed_status":"needed","public_asset_status":"placeholder-visual"}
+  ]
+}

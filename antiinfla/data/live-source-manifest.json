@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "scope": "current-live-food-pages",
+  "pages": [
+    {"slug":"blueberries","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"broccoli","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"salmon","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"olive-oil","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"turmeric","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"green-tea","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"chia-seeds","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"oats","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"strawberry","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"pomegranate","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"spinach","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"garlic","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"walnut","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"lentils","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"matcha","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"}
+  ]
+}

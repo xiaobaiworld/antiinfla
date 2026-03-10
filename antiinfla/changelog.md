@@ -38,4 +38,7 @@
 - Completed Step 9: second food batch expansion.
 - Added the second public food batch: Strawberry, Pomegranate, Spinach, Garlic, Walnut, Lentils, and Matcha.
 - Updated homepage, relevant category hubs, the main guide, and `sitemap.xml` to reflect the expanded live set.
-- Advanced `next.md` to Step 10: image and source workflow foundations.
+- Completed Step 10: image and source workflow foundations.
+- Added `docs/image-and-source-workflow.md` to define internal image and evidence/source workflows.
+- Added `data/live-image-manifest.json` and `data/live-source-manifest.json` for the current live food pages.
+- Advanced `next.md` to Step 11: second guide layer and better entry paths.
