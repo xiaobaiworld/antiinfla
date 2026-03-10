@@ -16,6 +16,14 @@
     {"slug":"garlic","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
     {"slug":"walnut","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
     {"slug":"lentils","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
-    {"slug":"matcha","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"}
+    {"slug":"matcha","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"avocado","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"cherry","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"kale","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"sweet-potato","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"ginger","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"cinnamon","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"almond","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"},
+    {"slug":"flax-seeds","page_type":"food-detail","nutrition_source_status":"placeholder","compound_source_status":"placeholder","usage_source_status":"placeholder","copy_review_status":"placeholder","evidence_note_status":"placeholder"}
   ]
 }

@@ -50,3 +50,8 @@
 - Added `docs/qa-workflow.md` and `scripts/validate_public_site.py` for repeatable public-site release checks.
 - Validated the current public site against canonical tags, sitemap coverage, and robots presence.
 - Advanced `next.md` to Step 13: third food batch and real asset transition.
+- Completed Step 13: third food batch and real asset transition.
+- Added the third public food batch: Avocado, Cherry, Kale, Sweet Potato, Ginger, Cinnamon, Almond, and Flax Seeds.
+- Began the tracked public asset transition with local hero assets for Blueberries, Green Tea, and Oats.
+- Updated image and source manifests, category hubs, homepage notes, and `sitemap.xml` for the expanded live set.
+- Advanced `next.md` to Step 14: more guides and asset replacement.
