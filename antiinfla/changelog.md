@@ -69,3 +69,11 @@
 - Added the final seven food pages needed to complete the original 30-food plan: Tomato, Basil, Rosemary, Chickpeas, Quinoa, Avocado Oil, and Sardines.
 - Updated homepage messaging, category hubs, guide links, sitemap, and internal manifests so the full first-30 set is now publicly connected.
 - Advanced `next.md` to Step 17: source depth and image upgrade pass.
+- Completed Step 17: source depth and image upgrade pass.
+- Created 10 new SVG hero images for salmon, ginger, olive oil, walnut, broccoli, avocado, lentils, turmeric, spinach, and strawberry.
+- Updated those 10 food pages from CSS placeholder visuals to real tracked SVG assets (total published: 13 of 30).
+- Strengthened evidence notes on 9 pages (broccoli, strawberry, spinach, garlic, walnut, lentils, avocado, ginger, chia-seeds) to match the reviewed-page standard.
+- Upgraded source tracking in live-source-manifest for 12 pages beyond placeholder status (total reviewed: 18 of 30).
+- Updated live-image-manifest to reflect the new published asset state.
+- QA validation passes after the upgrade pass.
+- Advanced `next.md` to Step 18.

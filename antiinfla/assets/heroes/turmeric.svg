@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Turmeric root and powder</title>
+  <desc id="desc">Illustrated turmeric root and turmeric powder on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fffde7"/>
+      <stop offset="100%" stop-color="#fff9c4"/>
+    </linearGradient>
+    <linearGradient id="root" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffb300"/>
+      <stop offset="100%" stop-color="#e65100"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="640" rx="240" ry="36" fill="#ffe082" opacity=".35"/>
+  <path d="M400 460 C420 380, 500 350, 580 370 C660 390, 700 360, 740 380 C780 400, 800 440, 780 480 C760 520, 680 540, 600 530 C520 520, 380 520, 400 460Z" fill="url(#root)" stroke="#bf360c" stroke-width="3"/>
+  <path d="M580 370 C600 310, 640 290, 660 320" fill="none" stroke="url(#root)" stroke-width="28" stroke-linecap="round"/>
+  <path d="M700 370 C730 320, 770 310, 780 340" fill="none" stroke="url(#root)" stroke-width="22" stroke-linecap="round"/>
+  <ellipse cx="500" cy="560" rx="80" ry="20" fill="#ffca28" opacity=".5"/>
+  <circle cx="500" cy="540" r="50" fill="#ffc107" opacity=".7"/>
+</svg>

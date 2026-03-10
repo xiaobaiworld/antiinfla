@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Fresh spinach leaves</title>
+  <desc id="desc">Illustrated fresh spinach leaves on a light green background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e8f5e9"/>
+      <stop offset="100%" stop-color="#c8e6c9"/>
+    </linearGradient>
+    <linearGradient id="leaf1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#66bb6a"/>
+      <stop offset="100%" stop-color="#2e7d32"/>
+    </linearGradient>
+    <linearGradient id="leaf2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#81c784"/>
+      <stop offset="100%" stop-color="#388e3c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="660" rx="200" ry="30" fill="#a5d6a7" opacity=".3"/>
+  <path d="M500 500 C460 400, 480 300, 560 280 C640 260, 680 320, 660 400 C640 480, 540 520, 500 500Z" fill="url(#leaf1)"/>
+  <line x1="560" y1="290" x2="520" y2="480" stroke="#2e7d32" stroke-width="3" opacity=".5"/>
+  <path d="M620 520 C580 440, 600 340, 680 310 C760 280, 800 340, 780 420 C760 500, 660 540, 620 520Z" fill="url(#leaf2)"/>
+  <line x1="680" y1="320" x2="640" y2="500" stroke="#388e3c" stroke-width="3" opacity=".5"/>
+  <path d="M440 540 C420 480, 440 400, 500 380 C560 360, 580 400, 560 460 C540 520, 460 560, 440 540Z" fill="url(#leaf1)" opacity=".8"/>
+  <path d="M720 540 C700 480, 720 400, 780 380 C840 360, 860 400, 840 460 C820 520, 740 560, 720 540Z" fill="url(#leaf2)" opacity=".8"/>
+</svg>

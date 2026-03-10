@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Fresh strawberries</title>
+  <desc id="desc">Illustrated fresh strawberries on a light pink background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fce4ec"/>
+      <stop offset="100%" stop-color="#f8bbd0"/>
+    </linearGradient>
+    <radialGradient id="berry" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ef5350"/>
+      <stop offset="70%" stop-color="#c62828"/>
+      <stop offset="100%" stop-color="#b71c1c"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="660" rx="200" ry="30" fill="#f48fb1" opacity=".3"/>
+  <path d="M540 300 C500 340, 460 440, 480 520 C500 600, 560 640, 600 640 C640 640, 700 600, 720 520 C740 440, 700 340, 660 300Z" fill="url(#berry)"/>
+  <path d="M540 300 C560 280, 580 260, 600 270 C620 260, 640 280, 660 300" fill="#4caf50"/>
+  <circle cx="540" cy="400" r="6" fill="#ffcdd2" opacity=".6"/>
+  <circle cx="600" cy="440" r="6" fill="#ffcdd2" opacity=".6"/>
+  <circle cx="660" cy="400" r="6" fill="#ffcdd2" opacity=".6"/>
+  <circle cx="560" cy="500" r="6" fill="#ffcdd2" opacity=".6"/>
+  <circle cx="640" cy="500" r="6" fill="#ffcdd2" opacity=".6"/>
+  <circle cx="600" cy="560" r="6" fill="#ffcdd2" opacity=".6"/>
+  <circle cx="520" cy="460" r="5" fill="#ffcdd2" opacity=".5"/>
+  <circle cx="680" cy="460" r="5" fill="#ffcdd2" opacity=".5"/>
+</svg>

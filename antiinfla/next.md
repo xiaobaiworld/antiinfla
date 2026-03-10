@@ -1,31 +1,30 @@
 # Next Step
 
-## Step 17: Source Depth And Image Upgrade Pass
+## Step 18: Remaining Image And Source Coverage
 
 Goal:
 
-Strengthen the now-complete first-30 public food set with deeper source tracking and more real public image assets.
-
-This step should improve quality and trust within the existing public architecture rather than expand scope again immediately.
+Complete the image and source tracking coverage for the remaining 17 placeholder-image pages and 12 placeholder-source pages.
 
 ## Tasks
 
-1. choose a larger reviewed subset from the 30 live food pages
-2. upgrade source tracking beyond placeholders for that subset
-3. replace more placeholder hero visuals with real tracked assets
-4. tighten evidence notes and metadata where needed
-5. run QA after the trust-and-asset pass
+1. create SVG hero images for the remaining 17 food pages still using CSS placeholders
+2. update those 17 food page HTML files to use real SVG assets
+3. upgrade source tracking for the remaining 12 placeholder-source pages
+4. strengthen evidence notes on those 12 pages
+5. update both manifests to reflect full coverage
+6. run QA after the full coverage pass
 
 ## Acceptance Criteria
 
-- a larger subset of the live 30-page food set has stronger source tracking
-- more live pages use real tracked public assets instead of placeholder visuals
-- evidence notes and wording stay aligned with cautious health framing
-- QA still passes after the quality pass
+- all 30 food pages use real tracked SVG hero images
+- all 30 food pages have reviewed source tracking status
+- all 30 food pages have strengthened evidence notes
+- QA still passes after the full coverage pass
 
 ## Notes
 
-This step follows the completed first-30 coverage milestone with a trust and asset quality pass.
+This step completes the quality foundation started in Step 17.
 
 Deferred but tracked:
 

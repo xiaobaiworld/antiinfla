@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Fresh salmon fillet</title>
+  <desc id="desc">Illustrated salmon fillet on a light background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff3e0"/>
+      <stop offset="100%" stop-color="#ffe0b2"/>
+    </linearGradient>
+    <linearGradient id="flesh" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ff8a65"/>
+      <stop offset="50%" stop-color="#e64a19"/>
+      <stop offset="100%" stop-color="#d84315"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="280" ry="40" fill="#ffcc80" opacity=".3"/>
+  <path d="M280 440 C320 340, 500 300, 700 320 C900 340, 960 380, 920 460 C880 540, 700 560, 500 540 C300 520, 240 500, 280 440Z" fill="url(#flesh)" stroke="#bf360c" stroke-width="4"/>
+  <line x1="350" y1="420" x2="500" y2="400" stroke="#ffab91" stroke-width="3" opacity=".6"/>
+  <line x1="400" y1="460" x2="580" y2="440" stroke="#ffab91" stroke-width="3" opacity=".6"/>
+  <line x1="450" y1="500" x2="650" y2="480" stroke="#ffab91" stroke-width="3" opacity=".6"/>
+  <line x1="520" y1="380" x2="700" y2="360" stroke="#ffab91" stroke-width="3" opacity=".5"/>
+  <line x1="580" y1="420" x2="780" y2="400" stroke="#ffab91" stroke-width="3" opacity=".5"/>
+  <line x1="640" y1="460" x2="840" y2="440" stroke="#ffab91" stroke-width="3" opacity=".5"/>
+</svg>
