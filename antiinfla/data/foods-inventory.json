@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "generated_for_step": 2,
+  "foods": [
+    {
+      "name": "Blueberries",
+      "slug": "blueberries",
+      "primary_category": "fruits",
+      "secondary_traits": ["antioxidant-rich", "polyphenol-rich", "breakfast-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["strawberry", "pomegranate", "cherry"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-breakfast-ideas"]
+    },
+    {
+      "name": "Strawberry",
+      "slug": "strawberry",
+      "primary_category": "fruits",
+      "secondary_traits": ["antioxidant-rich", "fiber-rich", "snack-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["blueberries", "pomegranate", "cherry"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-snacks"]
+    },
+    {
+      "name": "Pomegranate",
+      "slug": "pomegranate",
+      "primary_category": "fruits",
+      "secondary_traits": ["polyphenol-rich", "antioxidant-rich", "drink-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["blueberries", "strawberry", "green-tea"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-drinks"]
+    },
+    {
+      "name": "Avocado",
+      "slug": "avocado",
+      "primary_category": "fruits",
+      "secondary_traits": ["healthy-fat", "fiber-rich", "meal-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["olive-oil", "avocado-oil", "almond"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-foods-by-category"]
+    },
+    {
+      "name": "Cherry",
+      "slug": "cherry",
+      "primary_category": "fruits",
+      "secondary_traits": ["antioxidant-rich", "polyphenol-rich", "snack-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["blueberries", "strawberry", "pomegranate"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-snacks"]
+    },
+    {
+      "name": "Broccoli",
+      "slug": "broccoli",
+      "primary_category": "vegetables",
+      "secondary_traits": ["fiber-rich", "meal-friendly", "sulforaphane-associated"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["spinach", "kale", "sweet-potato"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-foods-by-category"]
+    },
+    {
+      "name": "Spinach",
+      "slug": "spinach",
+      "primary_category": "vegetables",
+      "secondary_traits": ["leafy-green", "meal-friendly", "smoothie-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["kale", "broccoli", "sweet-potato"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-breakfast-ideas"]
+    },
+    {
+      "name": "Kale",
+      "slug": "kale",
+      "primary_category": "vegetables",
+      "secondary_traits": ["leafy-green", "fiber-rich", "meal-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["spinach", "broccoli", "tomato"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-foods-by-category"]
+    },
+    {
+      "name": "Tomato",
+      "slug": "tomato",
+      "primary_category": "vegetables",
+      "secondary_traits": ["lycopene-associated", "meal-friendly", "cooking-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["broccoli", "spinach", "olive-oil"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-snacks"]
+    },
+    {
+      "name": "Sweet Potato",
+      "slug": "sweet-potato",
+      "primary_category": "vegetables",
+      "secondary_traits": ["fiber-rich", "meal-friendly", "carotenoid-associated"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["broccoli", "spinach", "oats"],
+      "guide_targets": ["anti-inflammatory-foods-by-category", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Turmeric",
+      "slug": "turmeric",
+      "primary_category": "spices-herbs",
+      "secondary_traits": ["curcumin-associated", "cooking-friendly", "drink-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["ginger", "cinnamon", "green-tea"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-drinks"]
+    },
+    {
+      "name": "Ginger",
+      "slug": "ginger",
+      "primary_category": "spices-herbs",
+      "secondary_traits": ["warming-spice", "drink-friendly", "cooking-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["turmeric", "cinnamon", "matcha"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-drinks"]
+    },
+    {
+      "name": "Garlic",
+      "slug": "garlic",
+      "primary_category": "spices-herbs",
+      "secondary_traits": ["savory-cooking", "meal-friendly", "allium"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["basil", "rosemary", "olive-oil"],
+      "guide_targets": ["anti-inflammatory-foods-by-category", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Cinnamon",
+      "slug": "cinnamon",
+      "primary_category": "spices-herbs",
+      "secondary_traits": ["warming-spice", "breakfast-friendly", "drink-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["turmeric", "ginger", "oats"],
+      "guide_targets": ["anti-inflammatory-breakfast-ideas", "anti-inflammatory-drinks"]
+    },
+    {
+      "name": "Basil",
+      "slug": "basil",
+      "primary_category": "spices-herbs",
+      "secondary_traits": ["herb", "savory-cooking", "meal-friendly"],
+      "status": "planned",
+      "priority": 3,
+      "related_foods": ["garlic", "rosemary", "tomato"],
+      "guide_targets": ["anti-inflammatory-foods-by-category", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Rosemary",
+      "slug": "rosemary",
+      "primary_category": "spices-herbs",
+      "secondary_traits": ["herb", "savory-cooking", "meal-friendly"],
+      "status": "planned",
+      "priority": 3,
+      "related_foods": ["garlic", "basil", "olive-oil"],
+      "guide_targets": ["anti-inflammatory-foods-by-category", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Walnut",
+      "slug": "walnut",
+      "primary_category": "nuts-seeds",
+      "secondary_traits": ["healthy-fat", "omega-3-rich", "snack-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["almond", "chia-seeds", "flax-seeds"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-snacks"]
+    },
+    {
+      "name": "Almond",
+      "slug": "almond",
+      "primary_category": "nuts-seeds",
+      "secondary_traits": ["healthy-fat", "snack-friendly", "meal-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["walnut", "chia-seeds", "avocado"],
+      "guide_targets": ["anti-inflammatory-snacks", "anti-inflammatory-foods-by-category"]
+    },
+    {
+      "name": "Chia Seeds",
+      "slug": "chia-seeds",
+      "primary_category": "nuts-seeds",
+      "secondary_traits": ["omega-3-rich", "fiber-rich", "breakfast-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["flax-seeds", "walnut", "oats"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-breakfast-ideas"]
+    },
+    {
+      "name": "Flax Seeds",
+      "slug": "flax-seeds",
+      "primary_category": "nuts-seeds",
+      "secondary_traits": ["omega-3-rich", "fiber-rich", "breakfast-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["chia-seeds", "walnut", "oats"],
+      "guide_targets": ["anti-inflammatory-breakfast-ideas", "anti-inflammatory-foods-by-category"]
+    },
+    {
+      "name": "Lentils",
+      "slug": "lentils",
+      "primary_category": "legumes-whole-grains",
+      "secondary_traits": ["fiber-rich", "plant-protein", "meal-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["chickpeas", "quinoa", "oats"],
+      "guide_targets": ["best-anti-inflammatory-foods", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Chickpeas",
+      "slug": "chickpeas",
+      "primary_category": "legumes-whole-grains",
+      "secondary_traits": ["fiber-rich", "plant-protein", "meal-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["lentils", "quinoa", "olive-oil"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-snacks"]
+    },
+    {
+      "name": "Oats",
+      "slug": "oats",
+      "primary_category": "legumes-whole-grains",
+      "secondary_traits": ["fiber-rich", "breakfast-friendly", "whole-grain"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["chia-seeds", "flax-seeds", "cinnamon"],
+      "guide_targets": ["anti-inflammatory-breakfast-ideas", "best-anti-inflammatory-foods"]
+    },
+    {
+      "name": "Quinoa",
+      "slug": "quinoa",
+      "primary_category": "legumes-whole-grains",
+      "secondary_traits": ["whole-grain", "plant-protein", "meal-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["lentils", "chickpeas", "sweet-potato"],
+      "guide_targets": ["anti-inflammatory-foods-by-category", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Olive Oil",
+      "slug": "olive-oil",
+      "primary_category": "healthy-fats",
+      "secondary_traits": ["healthy-fat", "cooking-friendly", "meal-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["avocado-oil", "avocado", "tomato"],
+      "guide_targets": ["best-anti-inflammatory-foods", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Avocado Oil",
+      "slug": "avocado-oil",
+      "primary_category": "healthy-fats",
+      "secondary_traits": ["healthy-fat", "cooking-friendly", "meal-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["olive-oil", "avocado", "salmon"],
+      "guide_targets": ["anti-inflammatory-foods-by-category", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Salmon",
+      "slug": "salmon",
+      "primary_category": "fish-seafood",
+      "secondary_traits": ["omega-3-rich", "protein-rich", "meal-friendly"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["sardines", "olive-oil", "avocado-oil"],
+      "guide_targets": ["best-anti-inflammatory-foods", "anti-inflammatory-foods-by-category"]
+    },
+    {
+      "name": "Sardines",
+      "slug": "sardines",
+      "primary_category": "fish-seafood",
+      "secondary_traits": ["omega-3-rich", "protein-rich", "meal-friendly"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["salmon", "olive-oil", "tomato"],
+      "guide_targets": ["best-anti-inflammatory-foods", "how-to-start-an-anti-inflammatory-diet"]
+    },
+    {
+      "name": "Green Tea",
+      "slug": "green-tea",
+      "primary_category": "drinks",
+      "secondary_traits": ["polyphenol-rich", "drink-friendly", "daily-use"],
+      "status": "planned",
+      "priority": 1,
+      "related_foods": ["matcha", "turmeric", "ginger"],
+      "guide_targets": ["anti-inflammatory-drinks", "best-anti-inflammatory-foods"]
+    },
+    {
+      "name": "Matcha",
+      "slug": "matcha",
+      "primary_category": "drinks",
+      "secondary_traits": ["polyphenol-rich", "drink-friendly", "daily-use"],
+      "status": "planned",
+      "priority": 2,
+      "related_foods": ["green-tea", "ginger", "turmeric"],
+      "guide_targets": ["anti-inflammatory-drinks", "anti-inflammatory-breakfast-ideas"]
+    }
+  ]
+}

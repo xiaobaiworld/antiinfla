@@ -1,29 +1,28 @@
 # Next Step
 
-## Step 2: Information Architecture
+## Step 3: Structured Content Inventory
 
 Goal:
 
-Define the public site structure before generating pages.
+Create the first reusable data foundation for content production.
 
-This step may create planning files and structured data files, but should still avoid premature bulk page creation.
+This step should turn the initial food list into a richer internal dataset that later tools and page templates can consume.
 
 ## Tasks
 
-1. define the public page families
-2. define URL patterns for food pages, hub pages, and guide pages
-3. define slug rules and naming rules
-4. define internal linking rules between homepage, hubs, and food pages
-5. create the first structured inventory file for the recommended 30 foods
+1. expand the food inventory fields beyond name and slug
+2. add content planning fields for each food page
+3. define evidence and source-tracking placeholders
+4. define image-planning placeholders
+5. identify the first small batch of pages to produce
 
 ## Acceptance Criteria
 
-- the site architecture is documented in project files
-- the URL scheme is stable and reusable
-- the first 30 foods are tracked in a structured inventory file
-- category mapping exists for the first 30 foods
-- the planned internal linking model is explicit
+- the inventory structure supports future content generation
+- each food has clear planning metadata
+- evidence and image workflow placeholders exist
+- a first production batch is identified from the 30 foods
 
 ## Notes
 
-This step is the foundation for later generation scripts and public page production.
+This step will feed both page-generation helpers and later public page writing.
