@@ -1,28 +1,28 @@
 # Next Step
 
-## Step 3: Structured Content Inventory
+## Step 4: Local Content Generation Helpers
 
 Goal:
 
-Create the first reusable data foundation for content production.
+Build internal tools that turn the structured inventory into repeatable page scaffolds.
 
-This step should turn the initial food list into a richer internal dataset that later tools and page templates can consume.
+This step should still stay internal and should not expose tooling on the public website.
 
 ## Tasks
 
-1. expand the food inventory fields beyond name and slug
-2. add content planning fields for each food page
-3. define evidence and source-tracking placeholders
-4. define image-planning placeholders
-5. identify the first small batch of pages to produce
+1. create a local script that reads the food inventory
+2. generate page scaffold data or draft files for the first production batch
+3. generate reusable metadata fields from inventory data
+4. keep outputs in internal project folders only
+5. define how generated output will feed later public page implementation
 
 ## Acceptance Criteria
 
-- the inventory structure supports future content generation
-- each food has clear planning metadata
-- evidence and image workflow placeholders exist
-- a first production batch is identified from the 30 foods
+- a local helper can read the structured inventory successfully
+- the first production batch can be scaffolded from data instead of manual copy-paste
+- generated output stays outside the public site surface
+- the generation path is documented enough for the next implementation step
 
 ## Notes
 
-This step will feed both page-generation helpers and later public page writing.
+This is the bridge between planning files and actual page creation.
