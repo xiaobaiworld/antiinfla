@@ -11,4 +11,7 @@
 - Completed Step 3: structured content inventory.
 - Expanded `data/foods-inventory.json` into a production-ready planning dataset with search intents, summary angles, nutrient focus, evidence placeholders, image plans, and production batches.
 - Added `docs/content-inventory-model.md` to define the inventory field model and the first recommended production batch.
-- Advanced `next.md` to Step 4: local content generation helpers.
+- Completed Step 4: local content generation helpers.
+- Added `scripts/generate_food_drafts.py` to generate internal draft scaffolds for the first production batch from structured inventory data.
+- Added `docs/generation-workflow.md` to document how internal data becomes non-public draft output.
+- Advanced `next.md` to Step 5: reusable public food page template.

@@ -1,28 +1,28 @@
 # Next Step
 
-## Step 4: Local Content Generation Helpers
+## Step 5: Reusable Public Food Page Template
 
 Goal:
 
-Build internal tools that turn the structured inventory into repeatable page scaffolds.
+Design the first reusable public page template for food detail pages.
 
-This step should still stay internal and should not expose tooling on the public website.
+This step should convert the internal scaffold model into a real public-facing HTML structure without generating all pages yet.
 
 ## Tasks
 
-1. create a local script that reads the food inventory
-2. generate page scaffold data or draft files for the first production batch
-3. generate reusable metadata fields from inventory data
-4. keep outputs in internal project folders only
-5. define how generated output will feed later public page implementation
+1. define the shared HTML structure for a food detail page
+2. define the shared CSS patterns needed for that template
+3. prepare one representative public page implementation
+4. ensure the template reflects SEO, AEO, and GEO needs
+5. keep the public template aligned with the internal scaffold fields
 
 ## Acceptance Criteria
 
-- a local helper can read the structured inventory successfully
-- the first production batch can be scaffolded from data instead of manual copy-paste
-- generated output stays outside the public site surface
-- the generation path is documented enough for the next implementation step
+- one reusable food-page structure is implemented in public site code
+- the template includes the agreed section order
+- the template is realistic enough to reuse for the first production batch
+- the template stays compatible with the structured inventory model
 
 ## Notes
 
-This is the bridge between planning files and actual page creation.
+This is the bridge between internal draft generation and actual content publishing.

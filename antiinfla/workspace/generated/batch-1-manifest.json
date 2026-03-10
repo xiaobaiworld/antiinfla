@@ -1,0 +1,23 @@
+{
+  "count": 8,
+  "slugs": [
+    "blueberries",
+    "broccoli",
+    "chia-seeds",
+    "green-tea",
+    "oats",
+    "olive-oil",
+    "salmon",
+    "turmeric"
+  ],
+  "categories": [
+    "drinks",
+    "fish-seafood",
+    "fruits",
+    "healthy-fats",
+    "legumes-whole-grains",
+    "nuts-seeds",
+    "spices-herbs",
+    "vegetables"
+  ]
+}
