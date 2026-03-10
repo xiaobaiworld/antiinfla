@@ -20,4 +20,8 @@
 - Reworked `index.html` into a real anti-inflammatory content homepage entry point.
 - Added `foods/blueberries/index.html` as the first representative public food page using the shared structure.
 - Expanded `styles.css` with reusable homepage and food-page template styles.
-- Advanced `next.md` to Step 6: first public batch and crawlable site files.
+- Completed Step 6: first public batch and crawlable site files.
+- Added the remaining first-batch public food pages for Broccoli, Salmon, Olive Oil, Turmeric, Green Tea, Chia Seeds, and Oats.
+- Expanded homepage navigation so all live batch pages are linked from the public entry point.
+- Added `sitemap.xml` and `robots.txt` for the current public page set.
+- Advanced `next.md` to Step 7: category hubs and first guide layer.

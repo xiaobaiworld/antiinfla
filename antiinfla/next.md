@@ -1,30 +1,28 @@
 # Next Step
 
-## Step 6: First Public Batch And Crawlable Site Files
+## Step 7: Category Hubs And First Guide Layer
 
 Goal:
 
-Publish the first small batch of real public food pages and add the basic crawlable site files that should ship with them.
+Add the next layer above food pages so the site has stronger topic clustering and better internal discovery paths.
 
-This step should reuse the shared template, expand public coverage beyond one representative page, and make the site ready for cleaner discovery.
+This step should connect the live food pages into category hubs and begin the first public guide pages.
 
 ## Tasks
 
-1. create the remaining public pages for the first production batch
-2. keep all batch pages aligned with the shared template
-3. improve homepage links into the first live batch
-4. add `sitemap.xml`
-5. add `robots.txt`
-6. verify that only real public pages are listed in crawlable files
+1. create category hub pages for the live batch coverage
+2. create the first guide page or guide stub with real value
+3. connect hubs, guides, homepage, and food pages through internal links
+4. update `sitemap.xml` to include the new real public pages
+5. keep all new public pages within the existing architecture rules
 
 ## Acceptance Criteria
 
-- the first production batch exists as public pages
-- the pages reuse one stable structure
-- homepage entry points reflect the live batch
-- `sitemap.xml` includes only public pages
-- `robots.txt` is present and consistent with the public site scope
+- category-level entry pages exist for the live batch
+- at least one guide page exists with meaningful structure
+- the internal-link graph is stronger than food-page-only navigation
+- `sitemap.xml` includes the new real public pages only
 
 ## Notes
 
-This step turns the prototype template into a small but real public content cluster.
+This step begins the sitewide topic-cluster layer.

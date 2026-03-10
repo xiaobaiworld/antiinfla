@@ -173,6 +173,44 @@ h2 {
   gap: 18px;
 }
 
+.food-link-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.food-link-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 128px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.food-link-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(64, 98, 187, 0.28);
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.food-link-card strong {
+  font-size: 1.05rem;
+}
+
+.food-link-card span {
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 .pill-row {
   display: flex;
   flex-wrap: wrap;
@@ -272,6 +310,59 @@ h2 {
   border: 1px solid rgba(64, 98, 187, 0.2);
 }
 
+.food-hero-visual-broccoli {
+  background:
+    radial-gradient(circle at 34% 28%, rgba(235, 255, 236, 0.82), transparent 16%),
+    radial-gradient(circle at 38% 38%, rgba(74, 146, 72, 0.94), transparent 15%),
+    radial-gradient(circle at 60% 34%, rgba(53, 126, 58, 0.94), transparent 15%),
+    radial-gradient(circle at 48% 56%, rgba(41, 108, 50, 0.98), transparent 18%),
+    linear-gradient(180deg, #edf8e9 0%, #cfe1c7 100%);
+}
+
+.food-hero-visual-salmon {
+  background:
+    radial-gradient(circle at 36% 34%, rgba(255, 240, 236, 0.8), transparent 18%),
+    linear-gradient(135deg, rgba(255, 157, 122, 0.82), rgba(233, 116, 78, 0.9)),
+    repeating-linear-gradient(165deg, rgba(255, 216, 204, 0.32) 0 12px, rgba(255, 255, 255, 0.08) 12px 22px);
+}
+
+.food-hero-visual-olive-oil {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 247, 208, 0.74), transparent 18%),
+    linear-gradient(180deg, rgba(182, 160, 59, 0.9), rgba(112, 110, 28, 0.95)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 45%);
+}
+
+.food-hero-visual-turmeric {
+  background:
+    radial-gradient(circle at 32% 66%, rgba(255, 217, 128, 0.82), transparent 18%),
+    radial-gradient(circle at 60% 44%, rgba(240, 170, 31, 0.92), transparent 16%),
+    linear-gradient(180deg, #fff0be 0%, #d8a11a 100%);
+}
+
+.food-hero-visual-green-tea {
+  background:
+    radial-gradient(circle at 50% 36%, rgba(239, 255, 233, 0.78), transparent 17%),
+    radial-gradient(circle at 52% 52%, rgba(140, 180, 88, 0.9), transparent 20%),
+    linear-gradient(180deg, #eef7df 0%, #b7cb84 100%);
+}
+
+.food-hero-visual-chia {
+  background:
+    radial-gradient(circle at 44% 42%, rgba(244, 238, 233, 0.84), transparent 18%),
+    radial-gradient(circle at 38% 46%, rgba(68, 67, 72, 0.88), transparent 4%),
+    radial-gradient(circle at 48% 56%, rgba(84, 82, 87, 0.88), transparent 4%),
+    radial-gradient(circle at 58% 48%, rgba(57, 55, 60, 0.9), transparent 4%),
+    linear-gradient(180deg, #eee6df 0%, #cdc0b4 100%);
+}
+
+.food-hero-visual-oats {
+  background:
+    radial-gradient(circle at 48% 42%, rgba(250, 244, 224, 0.82), transparent 19%),
+    linear-gradient(180deg, rgba(223, 198, 132, 0.94), rgba(182, 144, 72, 0.96)),
+    repeating-linear-gradient(12deg, rgba(255, 241, 203, 0.22) 0 10px, rgba(153, 120, 52, 0.1) 10px 18px);
+}
+
 .food-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.75fr);
@@ -347,6 +438,10 @@ h2 {
 
   .food-hero,
   .food-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .food-link-grid {
     grid-template-columns: 1fr;
   }
 
