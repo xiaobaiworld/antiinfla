@@ -42,3 +42,7 @@
 - Added `docs/image-and-source-workflow.md` to define internal image and evidence/source workflows.
 - Added `data/live-image-manifest.json` and `data/live-source-manifest.json` for the current live food pages.
 - Advanced `next.md` to Step 11: second guide layer and better entry paths.
+- Completed Step 11: second guide layer and better entry paths.
+- Added `guides/anti-inflammatory-breakfast-ideas/` and `guides/anti-inflammatory-drinks/`.
+- Strengthened homepage, food-page, hub, and sitemap connections for the new guide layer.
+- Advanced `next.md` to Step 12: QA workflow and release checks.

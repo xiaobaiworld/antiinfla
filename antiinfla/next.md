@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 11: Second Guide Layer And Better Entry Paths
+## Step 12: QA Workflow And Release Checks
 
 Goal:
 
-Add another practical guide layer so users and crawlers have more than one way to enter the live food set.
+Add a repeatable QA workflow so future changes can be checked consistently before release.
 
-This step should build on the current live foods and hubs without redesigning the site structure.
+This step should stay mostly internal and improve release discipline for the current public site.
 
 ## Tasks
 
-1. create at least one additional public guide page with real value
-2. connect the new guide page into homepage, hubs, and food pages where relevant
-3. strengthen internal entry paths for breakfast, drinks, or category-style intent
-4. update `sitemap.xml` with the new real guide pages
-5. keep guide pages distinct from each other and from category hubs
+1. document a public-site QA checklist
+2. add a local validation script for sitemap, canonical tags, and basic page coverage
+3. run the check and confirm the current live site passes
+4. record where the QA workflow belongs in the SOP/tooling chain
+5. keep the workflow internal and reusable
 
 ## Acceptance Criteria
 
-- at least one new guide page exists with meaningful structure
-- guide pages now provide more than one public entry path into the food cluster
-- internal linking reflects the new guide layer
-- `sitemap.xml` includes the new real guide pages only
+- a reusable QA checklist exists
+- a local validation script exists and runs successfully
+- current public pages pass the implemented checks
+- the QA workflow is documented clearly enough for future batches
 
 ## Notes
 
-This step expands the public guide surface before the next QA and operations round.
+This step closes the current multi-step run with a repeatable release check.
 
 Deferred but tracked:
 
