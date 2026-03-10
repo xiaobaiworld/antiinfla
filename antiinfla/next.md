@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 12: QA Workflow And Release Checks
+## Step 13: Third Food Batch And Real Asset Transition
 
 Goal:
 
-Add a repeatable QA workflow so future changes can be checked consistently before release.
+Continue expanding the public food set while starting the move from placeholder visuals toward real tracked assets.
 
-This step should stay mostly internal and improve release discipline for the current public site.
+This step should build on the current cluster, manifests, and QA workflow without changing the core architecture.
 
 ## Tasks
 
-1. document a public-site QA checklist
-2. add a local validation script for sitemap, canonical tags, and basic page coverage
-3. run the check and confirm the current live site passes
-4. record where the QA workflow belongs in the SOP/tooling chain
-5. keep the workflow internal and reusable
+1. create the next planned food pages from the remaining priority list
+2. begin replacing placeholder hero visuals with tracked real image assets where feasible
+3. keep manifests updated for any real asset transitions
+4. expand guides and hubs only where the new pages create real value
+5. keep the QA workflow in the release loop for all new pages
 
 ## Acceptance Criteria
 
-- a reusable QA checklist exists
-- a local validation script exists and runs successfully
-- current public pages pass the implemented checks
-- the QA workflow is documented clearly enough for future batches
+- the next priority food pages are added cleanly
+- at least part of the live set begins the transition to tracked real assets
+- manifests, metadata, sitemap, and QA remain aligned
+- the release loop stays stable as the site grows
 
 ## Notes
 
-This step closes the current multi-step run with a repeatable release check.
+This step resumes public expansion with better production discipline already in place.
 
 Deferred but tracked:
 

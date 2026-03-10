@@ -46,3 +46,7 @@
 - Added `guides/anti-inflammatory-breakfast-ideas/` and `guides/anti-inflammatory-drinks/`.
 - Strengthened homepage, food-page, hub, and sitemap connections for the new guide layer.
 - Advanced `next.md` to Step 12: QA workflow and release checks.
+- Completed Step 12: QA workflow and release checks.
+- Added `docs/qa-workflow.md` and `scripts/validate_public_site.py` for repeatable public-site release checks.
+- Validated the current public site against canonical tags, sitemap coverage, and robots presence.
+- Advanced `next.md` to Step 13: third food batch and real asset transition.
