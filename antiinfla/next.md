@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 9: Second Food Batch Expansion
+## Step 10: Image And Source Workflow Foundations
 
 Goal:
 
-Expand the public food cluster with the next planned batch so the site grows beyond the initial eight pages.
+Build the internal workflow for sourcing images and tracking evidence so future page production stays consistent.
 
-This step should reuse the existing public template and keep the site structure stable while adding more topical coverage.
+This step should remain mostly internal and support later content batches without cluttering the public site.
 
 ## Tasks
 
-1. create the next planned public food pages
-2. connect the new pages into the right category hubs and guide pages
-3. update homepage and relevant guides to reflect the expanded live set
-4. update `sitemap.xml` with the new real pages
-5. keep the new pages aligned with the current content and metadata rules
+1. define an internal image manifest format
+2. define an internal evidence/source tracking format
+3. create starter manifests for the live public pages
+4. document naming and storage rules for images and source notes
+5. keep all workflow outputs outside the public site surface
 
 ## Acceptance Criteria
 
-- the second planned food batch exists as public pages
-- the new pages follow the established template
-- the link graph expands with the new pages
-- `sitemap.xml` includes the new real public pages only
+- image planning has a concrete internal manifest
+- evidence tracking has a concrete internal manifest
+- current live pages are represented in those manifests
+- the workflow is documented clearly enough for future batches
 
 ## Notes
 
-This step expands the live cluster before another round of guide and SEO hardening.
+This step prepares the site for cleaner production at larger scale.
 
 Deferred but tracked:
 

@@ -35,4 +35,7 @@
 - Added canonical handling across the current public page set.
 - Added low-risk JSON-LD by page type for homepage, food pages, category hubs, and the first guide page.
 - Strengthened page-level metadata consistency for the current live cluster.
-- Advanced `next.md` to Step 9: second food batch expansion.
+- Completed Step 9: second food batch expansion.
+- Added the second public food batch: Strawberry, Pomegranate, Spinach, Garlic, Walnut, Lentils, and Matcha.
+- Updated homepage, relevant category hubs, the main guide, and `sitemap.xml` to reflect the expanded live set.
+- Advanced `next.md` to Step 10: image and source workflow foundations.
