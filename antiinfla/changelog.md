@@ -26,3 +26,9 @@
 - Added `sitemap.xml` and `robots.txt` for the current public page set.
 - Advanced `next.md` to Step 7: category hubs and first guide layer.
 - Marked multilingual support as a deferred V2+ requirement in the roadmap, architecture notes, SOP, and current next-step notes.
+- Completed Step 7: category hubs and first guide layer.
+- Added category hub pages for fruits, vegetables, spices and herbs, nuts and seeds, whole grains and legumes, healthy fats, fish and seafood, and drinks.
+- Added the first public guide page: `guides/best-anti-inflammatory-foods/`.
+- Connected homepage, food pages, category hubs, and the guide layer through internal links.
+- Updated `sitemap.xml` to include the new real public hub and guide pages.
+- Advanced `next.md` to Step 8: metadata and structured SEO hardening.

@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 7: Category Hubs And First Guide Layer
+## Step 8: Metadata And Structured SEO Hardening
 
 Goal:
 
-Add the next layer above food pages so the site has stronger topic clustering and better internal discovery paths.
+Strengthen the public pages with page-level metadata, canonical handling, and structured data where it clearly fits.
 
-This step should connect the live food pages into category hubs and begin the first public guide pages.
+This step should improve machine readability without changing the site architecture again.
 
 ## Tasks
 
-1. create category hub pages for the live batch coverage
-2. create the first guide page or guide stub with real value
-3. connect hubs, guides, homepage, and food pages through internal links
-4. update `sitemap.xml` to include the new real public pages
-5. keep all new public pages within the existing architecture rules
+1. add canonical tags to current public pages
+2. review and improve page descriptions where needed
+3. add structured data to the pages where it is appropriate and low-risk
+4. keep metadata aligned with the page type and actual content
+5. verify that the public metadata matches the current sitemap and public scope
 
 ## Acceptance Criteria
 
-- category-level entry pages exist for the live batch
-- at least one guide page exists with meaningful structure
-- the internal-link graph is stronger than food-page-only navigation
-- `sitemap.xml` includes the new real public pages only
+- canonical handling exists for the current public pages
+- metadata is stronger and more consistent across page types
+- structured data is present where justified
+- no metadata points to non-public or non-existent pages
 
 ## Notes
 
-This step begins the sitewide topic-cluster layer.
+This step improves crawl clarity and machine-readable context for the current live cluster.
 
 Deferred but tracked:
 

@@ -179,6 +179,10 @@ h2 {
   gap: 14px;
 }
 
+.food-link-grid-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .food-link-card {
   display: flex;
   flex-direction: column;
@@ -228,6 +232,15 @@ h2 {
   color: var(--text);
 }
 
+.pill-link {
+  text-decoration: none;
+}
+
+.pill-link:hover {
+  border-color: rgba(64, 98, 187, 0.28);
+  background: rgba(255, 255, 255, 0.86);
+}
+
 .text-link,
 .back-link,
 .link-list a {
@@ -247,6 +260,22 @@ h2 {
 }
 
 .food-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.content-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.content-hero h1 {
+  max-width: 12ch;
+}
+
+.content-stack {
   display: flex;
   flex-direction: column;
   gap: 20px;
