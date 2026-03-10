@@ -39,6 +39,17 @@ It is a focused reference site that does three things well:
 - image assets used by public pages
 - sitemap, robots, metadata, structured data
 
+Current release focus:
+
+- English-first public launch
+
+Deferred for V2 or later:
+
+- multilingual public page system
+- localized sitemap strategy
+- `hreflang` implementation
+- language-specific homepage and hub strategy
+
 ### Internal-only project tooling
 
 - content inventory builder
@@ -225,6 +236,28 @@ Every implementation cycle should follow the same order.
 Operational detail for ongoing maintenance should follow:
 
 - `docs/site-operations-sop.md`
+
+## Deferred Version 2+ Track
+
+The current implementation track is English-first.
+
+Multilingual support is a planned future requirement and should remain visible in planning.
+
+### Multilingual items to complete later
+
+- define localized URL structure such as `/zh-cn/...`
+- define English-to-Chinese page mapping rules
+- define which pages require bilingual publishing first
+- add `hreflang` and language-aware canonical rules
+- decide whether sitemap stays unified or splits by locale
+- create a Chinese homepage and category strategy
+- define localized internal-linking rules
+
+### Important constraint
+
+Do not partially add multilingual pages without the routing and metadata rules above.
+
+That would create inconsistent indexing and maintenance overhead.
 
 ## Planned Steps
 

@@ -26,3 +26,7 @@ This step should connect the live food pages into category hubs and begin the fi
 ## Notes
 
 This step begins the sitewide topic-cluster layer.
+
+Deferred but tracked:
+
+- multilingual public architecture is a V2+ item and must be handled through roadmap and SOP rules before implementation

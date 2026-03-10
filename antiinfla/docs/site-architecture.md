@@ -85,6 +85,20 @@ Avoid adding:
 - duplicate “benefits” microsites for each food
 - public tool pages unless they clearly improve user value
 
+## Multilingual Status
+
+Current public implementation is English-first.
+
+Multilingual support is deferred to a later version and should not be added ad hoc.
+
+When multilingual work begins, architecture must also define:
+
+- locale path structure such as `/zh-cn/foods/{slug}/`
+- language mapping between equivalent pages
+- `hreflang` rules
+- localized sitemap handling
+- whether guides and hubs launch bilingual at the same time or in stages
+
 ## URL Rules
 
 ### General Rules

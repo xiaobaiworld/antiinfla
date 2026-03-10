@@ -25,3 +25,4 @@
 - Expanded homepage navigation so all live batch pages are linked from the public entry point.
 - Added `sitemap.xml` and `robots.txt` for the current public page set.
 - Advanced `next.md` to Step 7: category hubs and first guide layer.
+- Marked multilingual support as a deferred V2+ requirement in the roadmap, architecture notes, SOP, and current next-step notes.

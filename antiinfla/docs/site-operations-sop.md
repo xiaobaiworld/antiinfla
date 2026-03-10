@@ -264,6 +264,23 @@ After the site is live, maintenance should run in repeating cycles.
 - review whether guides need expansion
 - review whether older pages need content refresh
 
+## Deferred Multilingual SOP
+
+Multilingual support is not part of the current release track.
+
+It is a planned future concern and should stay visible in maintenance planning.
+
+Before any bilingual publishing begins, define:
+
+- locale URL rules
+- translation ownership and review flow
+- page parity rules between languages
+- `hreflang` implementation
+- localized sitemap updates
+- whether Chinese pages are released by page type or by content batch
+
+Until those rules exist, do not publish isolated translated pages casually.
+
 ## File Mapping
 
 This is the working map for the SOP.
