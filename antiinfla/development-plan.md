@@ -222,6 +222,10 @@ Every implementation cycle should follow the same order.
 5. write the completed work into `changelog.md`
 6. clear and rewrite `next.md` for the next step
 
+Operational detail for ongoing maintenance should follow:
+
+- `docs/site-operations-sop.md`
+
 ## Planned Steps
 
 ### Step 1

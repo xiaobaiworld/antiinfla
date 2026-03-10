@@ -1,10 +1,10 @@
 # Next Step
 
-## Step 5: Reusable Public Food Page Template
+## Step 5: Reusable Public Food Page Template And SOP Alignment
 
 Goal:
 
-Design the first reusable public page template for food detail pages.
+Design the first reusable public page template for food detail pages and keep it aligned with the new site operations SOP.
 
 This step should convert the internal scaffold model into a real public-facing HTML structure without generating all pages yet.
 
@@ -15,6 +15,7 @@ This step should convert the internal scaffold model into a real public-facing H
 3. prepare one representative public page implementation
 4. ensure the template reflects SEO, AEO, and GEO needs
 5. keep the public template aligned with the internal scaffold fields
+6. ensure the implementation flow matches `docs/site-operations-sop.md`
 
 ## Acceptance Criteria
 
@@ -22,6 +23,7 @@ This step should convert the internal scaffold model into a real public-facing H
 - the template includes the agreed section order
 - the template is realistic enough to reuse for the first production batch
 - the template stays compatible with the structured inventory model
+- the template step is consistent with the operating SOP
 
 ## Notes
 

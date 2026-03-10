@@ -57,3 +57,7 @@ python3 scripts/generate_food_drafts.py
 Generated files should remain under internal folders such as `workspace/`.
 
 They should not be linked from public HTML and should not be included in the public sitemap.
+
+For full day-to-day operating procedure, also follow:
+
+- `docs/site-operations-sop.md`

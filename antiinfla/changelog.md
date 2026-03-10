@@ -14,4 +14,6 @@
 - Completed Step 4: local content generation helpers.
 - Added `scripts/generate_food_drafts.py` to generate internal draft scaffolds for the first production batch from structured inventory data.
 - Added `docs/generation-workflow.md` to document how internal data becomes non-public draft output.
-- Advanced `next.md` to Step 5: reusable public food page template.
+- Added `docs/site-operations-sop.md` to define the long-term workflow for new pages, page updates, QA, SEO/AEO/GEO checks, and release logging.
+- Linked the SOP into the development and generation workflow docs.
+- Advanced `next.md` to Step 5: reusable public food page template and SOP alignment.
