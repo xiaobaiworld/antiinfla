@@ -1,30 +1,30 @@
 # Next Step
 
-## Step 5: Reusable Public Food Page Template And SOP Alignment
+## Step 6: First Public Batch And Crawlable Site Files
 
 Goal:
 
-Design the first reusable public page template for food detail pages and keep it aligned with the new site operations SOP.
+Publish the first small batch of real public food pages and add the basic crawlable site files that should ship with them.
 
-This step should convert the internal scaffold model into a real public-facing HTML structure without generating all pages yet.
+This step should reuse the shared template, expand public coverage beyond one representative page, and make the site ready for cleaner discovery.
 
 ## Tasks
 
-1. define the shared HTML structure for a food detail page
-2. define the shared CSS patterns needed for that template
-3. prepare one representative public page implementation
-4. ensure the template reflects SEO, AEO, and GEO needs
-5. keep the public template aligned with the internal scaffold fields
-6. ensure the implementation flow matches `docs/site-operations-sop.md`
+1. create the remaining public pages for the first production batch
+2. keep all batch pages aligned with the shared template
+3. improve homepage links into the first live batch
+4. add `sitemap.xml`
+5. add `robots.txt`
+6. verify that only real public pages are listed in crawlable files
 
 ## Acceptance Criteria
 
-- one reusable food-page structure is implemented in public site code
-- the template includes the agreed section order
-- the template is realistic enough to reuse for the first production batch
-- the template stays compatible with the structured inventory model
-- the template step is consistent with the operating SOP
+- the first production batch exists as public pages
+- the pages reuse one stable structure
+- homepage entry points reflect the live batch
+- `sitemap.xml` includes only public pages
+- `robots.txt` is present and consistent with the public site scope
 
 ## Notes
 
-This is the bridge between internal draft generation and actual content publishing.
+This step turns the prototype template into a small but real public content cluster.

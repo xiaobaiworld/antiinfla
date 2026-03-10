@@ -8,6 +8,8 @@
   --accent: #c96f3b;
   --accent-deep: #9d4d21;
   --shadow: 0 24px 80px rgba(63, 42, 21, 0.12);
+  --berry: #4062bb;
+  --berry-soft: rgba(64, 98, 187, 0.14);
 }
 
 * {
@@ -85,7 +87,9 @@ h2 {
 
 .hero-copy,
 .card p,
-.task-list {
+.task-list,
+.food-page p,
+.food-page li {
   font-size: 1rem;
   line-height: 1.7;
   color: var(--muted);
@@ -163,6 +167,151 @@ h2 {
   grid-column: 1 / -1;
 }
 
+.feature-band {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.56);
+  color: var(--text);
+}
+
+.text-link,
+.back-link,
+.link-list a {
+  color: var(--accent-deep);
+  text-decoration: none;
+}
+
+.text-link:hover,
+.back-link:hover,
+.link-list a:hover {
+  text-decoration: underline;
+}
+
+.back-link {
+  display: inline-flex;
+  margin-bottom: 18px;
+}
+
+.food-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.food-hero,
+.food-section,
+.sidebar-card {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.food-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.9fr);
+  gap: 20px;
+  padding: 28px;
+}
+
+.food-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.food-summary {
+  max-width: 54rem;
+  font-size: 1.08rem;
+}
+
+.quick-answer {
+  padding: 20px;
+  border-radius: 22px;
+  background:
+    linear-gradient(135deg, rgba(64, 98, 187, 0.1), rgba(255, 255, 255, 0.86)),
+    var(--panel-strong);
+  border: 1px solid rgba(64, 98, 187, 0.18);
+}
+
+.quick-answer h2,
+.food-section h2,
+.sidebar-card h2,
+.faq-item h3 {
+  margin: 0 0 10px;
+  line-height: 1.15;
+}
+
+.food-hero-visual {
+  min-height: 320px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.75), transparent 20%),
+    radial-gradient(circle at 62% 34%, rgba(68, 97, 194, 0.8), transparent 14%),
+    radial-gradient(circle at 42% 44%, rgba(87, 111, 212, 0.9), transparent 12%),
+    radial-gradient(circle at 70% 54%, rgba(45, 67, 151, 0.92), transparent 14%),
+    radial-gradient(circle at 34% 68%, rgba(76, 95, 181, 0.88), transparent 13%),
+    radial-gradient(circle at 60% 76%, rgba(52, 71, 150, 0.92), transparent 12%),
+    linear-gradient(180deg, #edf2ff 0%, #cfdaf5 100%);
+  border: 1px solid rgba(64, 98, 187, 0.2);
+}
+
+.food-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.75fr);
+  gap: 20px;
+}
+
+.food-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.food-section,
+.sidebar-card {
+  padding: 24px;
+}
+
+.food-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-list,
+.link-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.detail-list li + li,
+.link-list li + li {
+  margin-top: 8px;
+}
+
+.faq-item + .faq-item {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
 .task-list {
   margin: 18px 0 0;
   padding-left: 18px;
@@ -194,5 +343,14 @@ h2 {
   .card,
   .card.wide {
     grid-column: 1 / -1;
+  }
+
+  .food-hero,
+  .food-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .food-hero-visual {
+    min-height: 220px;
   }
 }

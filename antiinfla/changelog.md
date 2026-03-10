@@ -16,4 +16,8 @@
 - Added `docs/generation-workflow.md` to document how internal data becomes non-public draft output.
 - Added `docs/site-operations-sop.md` to define the long-term workflow for new pages, page updates, QA, SEO/AEO/GEO checks, and release logging.
 - Linked the SOP into the development and generation workflow docs.
-- Advanced `next.md` to Step 5: reusable public food page template and SOP alignment.
+- Completed Step 5: reusable public food page template and SOP alignment.
+- Reworked `index.html` into a real anti-inflammatory content homepage entry point.
+- Added `foods/blueberries/index.html` as the first representative public food page using the shared structure.
+- Expanded `styles.css` with reusable homepage and food-page template styles.
+- Advanced `next.md` to Step 6: first public batch and crawlable site files.

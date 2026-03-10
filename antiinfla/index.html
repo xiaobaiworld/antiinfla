@@ -1,59 +1,88 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Antiinfla</title>
+    <title>Antiinfla | Anti-Inflammatory Food Reference</title>
     <meta
       name="description"
-      content="Antiinfla 网站初始化骨架，作为后续正式开发的起点。"
+      content="A clean anti-inflammatory food reference site with structured food pages, category hubs, and practical guides."
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="page-shell">
       <header class="hero">
-        <p class="eyebrow">Initialized on March 9, 2026</p>
-        <h1>Antiinfla</h1>
+        <p class="eyebrow">Anti-Inflammatory Food Reference</p>
+        <h1>Eat with less noise.</h1>
         <p class="hero-copy">
-          一个已经可运行的站点起点。现在可以继续接入页面、接口和部署流程。
+          Antiinfla is a lean content site focused on anti-inflammatory foods, practical use cases,
+          and structured pages that are easy for people, search engines, and large models to
+          understand.
         </p>
         <div class="hero-actions">
-          <a href="#next" class="button button-primary">开始构建</a>
-          <button type="button" class="button button-secondary" id="status-toggle">
-            查看状态
-          </button>
+          <a href="./foods/blueberries/" class="button button-primary">View Sample Food Page</a>
+          <a href="#featured" class="button button-secondary">Browse Entry Points</a>
         </div>
       </header>
 
-      <main id="next" class="content-grid">
+      <main id="featured" class="content-grid">
         <section class="card">
-          <p class="card-kicker">Project status</p>
-          <h2>网站目录已初始化</h2>
+          <p class="card-kicker">Site Focus</p>
+          <h2>Food-first, structured, expandable.</h2>
           <p>
-            当前使用原生 HTML、CSS、JavaScript 作为最小骨架，适合先快速定义内容和视觉方向。
+            The site is built around reusable food detail pages, category hubs, and a small set of
+            practical guides. Each page is designed to answer one clear topic well.
           </p>
         </section>
 
         <section class="card accent">
-          <p class="card-kicker">Next moves</p>
-          <ul class="task-list">
-            <li>确认页面结构和核心内容</li>
-            <li>选定技术栈或继续保留静态方案</li>
-            <li>补充构建、部署和自动化流程</li>
-          </ul>
+          <p class="card-kicker">Representative Page</p>
+          <h2>Blueberries is the first public template target.</h2>
+          <p>
+            The first food page establishes the shared structure: summary, quick answer, nutrient
+            focus, usage ideas, FAQ, and related links.
+          </p>
+          <a href="./foods/blueberries/" class="text-link">Open Blueberries page</a>
         </section>
 
-        <section class="card wide" id="status-panel" aria-live="polite">
-          <p class="card-kicker">Working mode</p>
-          <h2>Ready for implementation</h2>
+        <section class="card wide feature-band">
+          <p class="card-kicker">Category Map</p>
+          <h2>Start from a category, then go deeper into food pages.</h2>
+          <div class="pill-row" aria-label="Primary content categories">
+            <span class="pill">Fruits</span>
+            <span class="pill">Vegetables</span>
+            <span class="pill">Spices &amp; Herbs</span>
+            <span class="pill">Nuts &amp; Seeds</span>
+            <span class="pill">Whole Grains &amp; Legumes</span>
+            <span class="pill">Healthy Fats</span>
+            <span class="pill">Fish &amp; Seafood</span>
+            <span class="pill">Drinks</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <p class="card-kicker">Why It Works</p>
+          <h2>Designed for SEO, AEO, and GEO.</h2>
           <p>
-            你已经有一个清晰、轻量、可直接修改的起点。后续每个功能点都可以继续按 Git 提交推进。
+            The public pages use stable headings, direct summaries, FAQ-driven answers, and related
+            entity links so discovery does not depend on visual decoration alone.
           </p>
+        </section>
+
+        <section class="card accent">
+          <p class="card-kicker">Next Public Pages</p>
+          <ul class="task-list">
+            <li>Broccoli</li>
+            <li>Salmon</li>
+            <li>Olive Oil</li>
+            <li>Turmeric</li>
+            <li>Green Tea</li>
+            <li>Chia Seeds</li>
+            <li>Oats</li>
+          </ul>
         </section>
       </main>
     </div>
-
-    <script src="./script.js"></script>
   </body>
 </html>
