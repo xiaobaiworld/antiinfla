@@ -77,3 +77,11 @@
 - Updated live-image-manifest to reflect the new published asset state.
 - QA validation passes after the upgrade pass.
 - Advanced `next.md` to Step 18.
+- Completed Step 18: remaining image and source coverage.
+- Created 17 new SVG hero images for all remaining placeholder pages (chia-seeds, pomegranate, garlic, matcha, cherry, kale, sweet-potato, cinnamon, almond, flax-seeds, tomato, basil, rosemary, chickpeas, quinoa, avocado-oil, sardines).
+- Updated all 17 food pages from CSS placeholder visuals to real tracked SVG assets (total published: 30 of 30).
+- Strengthened evidence notes on all remaining 15 pages to match the two-paragraph reviewed standard.
+- Upgraded source tracking in live-source-manifest for all remaining 12 pages beyond placeholder status (total reviewed: 30 of 30).
+- Updated both manifests to reflect full 30/30 coverage.
+- QA validation passes after the full coverage pass.
+- Advanced `next.md` to Step 19.

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Bowl of matcha</title>
+  <desc id="desc">Illustrated bowl of matcha tea on a soft green background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f5e9"/><stop offset="100%" stop-color="#c8e6c9"/></linearGradient>
+    <radialGradient id="tea" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#aed581"/><stop offset="100%" stop-color="#689f38"/></radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="200" ry="30" fill="#a5d6a7" opacity=".3"/>
+  <path d="M380 440c0-40 32-72 72-72h296c40 0 72 32 72 72v50c0 80-65 145-145 145H525c-80 0-145-65-145-145z" fill="#efebe9" stroke="#bcaaa4" stroke-width="6"/>
+  <ellipse cx="600" cy="440" rx="210" ry="55" fill="url(#tea)"/>
+  <ellipse cx="580" cy="430" rx="30" ry="8" fill="#c5e1a5" opacity=".5"/>
+</svg>

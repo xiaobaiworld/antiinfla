@@ -1,30 +1,32 @@
 # Next Step
 
-## Step 18: Remaining Image And Source Coverage
+## Step 19: Site Polish And Launch Readiness
 
 Goal:
 
-Complete the image and source tracking coverage for the remaining 17 placeholder-image pages and 12 placeholder-source pages.
+With all 30 food pages now at full image and source coverage, focus on final polish before considering the site launch-ready.
 
 ## Tasks
 
-1. create SVG hero images for the remaining 17 food pages still using CSS placeholders
-2. update those 17 food page HTML files to use real SVG assets
-3. upgrade source tracking for the remaining 12 placeholder-source pages
-4. strengthen evidence notes on those 12 pages
-5. update both manifests to reflect full coverage
-6. run QA after the full coverage pass
+1. review homepage messaging and ensure it reflects the complete 30-food set
+2. verify all category hub pages link to their full food sets
+3. check all guide pages for completeness and internal link coverage
+4. review sitemap and robots for accuracy
+5. check for any broken internal links across the full site
+6. consider adding a simple favicon and any missing meta tags
+7. run final QA pass
 
 ## Acceptance Criteria
 
-- all 30 food pages use real tracked SVG hero images
-- all 30 food pages have reviewed source tracking status
-- all 30 food pages have strengthened evidence notes
-- QA still passes after the full coverage pass
+- homepage accurately represents the full site scope
+- all internal links resolve correctly
+- all category hubs link to their complete food sets
+- sitemap and robots are accurate and complete
+- site is ready for public traffic
 
 ## Notes
 
-This step completes the quality foundation started in Step 17.
+This step follows the completed 30/30 image and source coverage milestone.
 
 Deferred but tracked:
 
