@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 8: Metadata And Structured SEO Hardening
+## Step 9: Second Food Batch Expansion
 
 Goal:
 
-Strengthen the public pages with page-level metadata, canonical handling, and structured data where it clearly fits.
+Expand the public food cluster with the next planned batch so the site grows beyond the initial eight pages.
 
-This step should improve machine readability without changing the site architecture again.
+This step should reuse the existing public template and keep the site structure stable while adding more topical coverage.
 
 ## Tasks
 
-1. add canonical tags to current public pages
-2. review and improve page descriptions where needed
-3. add structured data to the pages where it is appropriate and low-risk
-4. keep metadata aligned with the page type and actual content
-5. verify that the public metadata matches the current sitemap and public scope
+1. create the next planned public food pages
+2. connect the new pages into the right category hubs and guide pages
+3. update homepage and relevant guides to reflect the expanded live set
+4. update `sitemap.xml` with the new real pages
+5. keep the new pages aligned with the current content and metadata rules
 
 ## Acceptance Criteria
 
-- canonical handling exists for the current public pages
-- metadata is stronger and more consistent across page types
-- structured data is present where justified
-- no metadata points to non-public or non-existent pages
+- the second planned food batch exists as public pages
+- the new pages follow the established template
+- the link graph expands with the new pages
+- `sitemap.xml` includes the new real public pages only
 
 ## Notes
 
-This step improves crawl clarity and machine-readable context for the current live cluster.
+This step expands the live cluster before another round of guide and SEO hardening.
 
 Deferred but tracked:
 

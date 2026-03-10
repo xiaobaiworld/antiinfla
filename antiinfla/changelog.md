@@ -31,4 +31,8 @@
 - Added the first public guide page: `guides/best-anti-inflammatory-foods/`.
 - Connected homepage, food pages, category hubs, and the guide layer through internal links.
 - Updated `sitemap.xml` to include the new real public hub and guide pages.
-- Advanced `next.md` to Step 8: metadata and structured SEO hardening.
+- Completed Step 8: metadata and structured SEO hardening.
+- Added canonical handling across the current public page set.
+- Added low-risk JSON-LD by page type for homepage, food pages, category hubs, and the first guide page.
+- Strengthened page-level metadata consistency for the current live cluster.
+- Advanced `next.md` to Step 9: second food batch expansion.
