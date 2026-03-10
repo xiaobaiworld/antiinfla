@@ -1,31 +1,31 @@
 # Next Step
 
-## Step 14: More Guides And Asset Replacement
+## Step 15: Evidence Review And Content Strengthening
 
 Goal:
 
-Strengthen the site with another guide layer and continue replacing placeholder visuals with tracked public assets.
+Strengthen the existing public pages with better evidence review, sharper section quality, and more trustworthy factual framing.
 
-This step should build on the expanded food set and the current production manifests without changing the site model.
+This step should improve content quality inside the current architecture rather than expanding page count first.
 
 ## Tasks
 
-1. create another useful guide page or guide pair from the strongest current intents
-2. continue replacing placeholder visuals with tracked public assets
-3. update image manifests for any new asset transitions
-4. connect the new guides to the expanded food and hub set
-5. keep QA in the release loop for the new public pages and assets
+1. fill evidence/source tracking for a selected live subset
+2. upgrade evidence notes and FAQs on the most important public pages
+3. tighten vague wording where pages still read too generically
+4. keep manifests and source tracking aligned with the revised pages
+5. run QA after the content-quality pass
 
 ## Acceptance Criteria
 
-- at least one more guide surface exists with meaningful links
-- more live pages move to tracked public assets
-- manifests, metadata, sitemap, and QA stay aligned
-- the public cluster becomes easier to enter from multiple intents
+- a selected subset of live pages has stronger factual framing
+- evidence/source manifests move beyond placeholders for that subset
+- public wording becomes more precise on the revised pages
+- QA still passes after the content-strengthening pass
 
 ## Notes
 
-This step continues the shift from basic scale-up to better content quality and presentation.
+This step shifts the focus from expansion to trust and content quality.
 
 Deferred but tracked:
 

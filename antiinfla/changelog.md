@@ -55,3 +55,8 @@
 - Began the tracked public asset transition with local hero assets for Blueberries, Green Tea, and Oats.
 - Updated image and source manifests, category hubs, homepage notes, and `sitemap.xml` for the expanded live set.
 - Advanced `next.md` to Step 14: more guides and asset replacement.
+- Completed Step 14: more guides and guide-system completeness.
+- Added guide pages for Snacks, Foods By Category, How To Start, and Grocery List.
+- Expanded the homepage and core guide linking so the guide layer now covers multiple practical entry intents.
+- Updated `sitemap.xml` and validated the expanded guide set.
+- Advanced `next.md` to Step 15: evidence review and content strengthening.
