@@ -19,41 +19,86 @@
     <link rel="stylesheet" href="../../styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <a class="back-link" href="../../index.html">Back to home</a>
-      <article class="food-page">
-        <header class="food-hero">
-          <div class="food-hero-copy">
-            <p class="eyebrow">Food Detail Page</p>
-            <h1>Chia Seeds</h1>
-            <p class="food-summary">
-              Chia seeds are a small but practical ingredient for breakfasts and snacks. They are
-              usually included in anti-inflammatory food content because they add fiber and healthy
-              fats to routines that are easy to repeat.
-            </p>
-            <div class="quick-answer"><h2>Quick answer</h2><p>Chia seeds fit an anti-inflammatory food pattern because they are easy to add to breakfast bowls, puddings, and smoothies. Their strength is convenience and repeatability in everyday meals.</p></div>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="site-logo" href="../../">Antiinfla</a>
+        <nav class="site-nav" id="site-nav">
+          <a href="../../#foods">Foods</a>
+          <a href="../../#guides">Guides</a>
+          <a href="../../#categories">Categories</a>
+          <div class="search-wrapper">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search foods..." autocomplete="off" />
+            </div>
+            <div class="search-results" id="search-results"></div>
           </div>
-          <div class="food-hero-visual food-hero-media">
-            <img class="food-hero-image" src="../../assets/heroes/chia-seeds.svg" alt="Chia seeds in a bowl." />
+        </nav>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">&#9776;</button>
+      </div>
+    </header>
+
+    <div class="detail-page">
+      <a class="back-link" href="../../">&larr; Back to all foods</a>
+
+      <article class="detail-card">
+        <header class="detail-header">
+          <img class="detail-header-img" src="../../assets/heroes/chia-seeds.svg" alt="Chia seeds in a bowl." />
+          <div class="detail-header-text">
+            <h1>Chia Seeds</h1>
+            <p class="detail-meta">Chia seeds are a small but practical ingredient for breakfasts and snacks. They are
+              usually included in anti-inflammatory food content because they add fiber and healthy
+              fats to routines that are easy to repeat.</p>
           </div>
         </header>
-        <main class="food-layout">
-          <div class="food-main">
-            <section class="food-section"><h2>What it is</h2><p>Chia seeds are tiny edible seeds often added to oats, yogurt, smoothies, and puddings. They are especially useful when the goal is to improve breakfasts or snack structure.</p></section>
-            <section class="food-section"><h2>Why chia seeds may support an anti-inflammatory diet</h2><p>Chia seeds are valued because they add fiber and healthy fats with almost no cooking complexity. They can make simple breakfasts more satisfying and more consistent over time.</p><p>This page focuses on practical food use rather than exaggerated claims.</p></section>
-            <section class="food-section"><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Fiber</li><li>Alpha-linolenic acid</li><li>Calcium</li><li>Magnesium</li></ul></section>
-            <section class="food-section"><h2>Potential health benefits</h2><ul class="detail-list"><li>Helps build more structured breakfasts</li><li>Adds fiber to bowls and snacks</li><li>Works well in meal prep and overnight recipes</li></ul></section>
-            <section class="food-section"><h2>How to eat chia seeds</h2><ul class="detail-list"><li>Stir them into oatmeal or overnight oats</li><li>Use them in chia pudding</li><li>Add them to smoothies or yogurt bowls</li></ul></section>
-            <section class="food-section"><h2>Shopping and storage</h2><p>Store chia seeds in a sealed container in a cool, dry place. Buy a quantity you will use consistently in breakfasts and snacks.</p></section>
-            <section class="food-section"><h2>FAQ</h2><div class="faq-item"><h3>Are chia seeds anti-inflammatory?</h3><p>They are commonly included in anti-inflammatory food patterns because they are easy to use and add fiber and healthy fats to regular meals.</p></div><div class="faq-item"><h3>What is the easiest way to use chia seeds?</h3><p>Adding them to oats, yogurt, or smoothies is usually the simplest starting point.</p></div></section>
-            <section class="food-section"><h2>Evidence note</h2><p>Chia seeds are described here as a supportive ingredient within a broader eating pattern, not as a treatment by themselves.</p><p>The strongest factual framing on this page is limited to established nutrition context such as fiber, alpha-linolenic acid, calcium, and magnesium. The page does not claim that eating chia seeds guarantees a specific health outcome.</p></section>
-          </div>
-          <aside class="food-sidebar">
-            <section class="sidebar-card"><p class="card-kicker">Category</p><h2>Nuts &amp; Seeds</h2><p>Chia seeds connect breakfast pages, snack pages, and healthy-fat content.</p><a class="text-link" href="../category/nuts-seeds/">Browse Nuts &amp; Seeds hub</a></section>
-            <section class="sidebar-card"><p class="card-kicker">Related Foods</p><ul class="link-list"><li><a href="../oats/">Oats</a></li><li><a href="../blueberries/">Blueberries</a></li><li><a href="../green-tea/">Green Tea</a></li><li><a href="../../guides/best-anti-inflammatory-foods/">Best Anti-Inflammatory Foods</a></li><li><a href="../../guides/anti-inflammatory-breakfast-ideas/">Anti-Inflammatory Breakfast Ideas</a></li></ul></section>
-          </aside>
-        </main>
+
+        <div class="detail-content">
+            <div class="quick-answer"><h2>Quick answer</h2><p>Chia seeds fit an anti-inflammatory food pattern because they are easy to add to breakfast bowls, puddings, and smoothies. Their strength is convenience and repeatability in everyday meals.</p></div>
+
+            <section><h2>What it is</h2><p>Chia seeds are tiny edible seeds often added to oats, yogurt, smoothies, and puddings. They are especially useful when the goal is to improve breakfasts or snack structure.</p></section>
+            <section><h2>Why chia seeds may support an anti-inflammatory diet</h2><p>Chia seeds are valued because they add fiber and healthy fats with almost no cooking complexity. They can make simple breakfasts more satisfying and more consistent over time.</p><p>This page focuses on practical food use rather than exaggerated claims.</p></section>
+            <section><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Fiber</li><li>Alpha-linolenic acid</li><li>Calcium</li><li>Magnesium</li></ul></section>
+            <section><h2>Potential health benefits</h2><ul class="detail-list"><li>Helps build more structured breakfasts</li><li>Adds fiber to bowls and snacks</li><li>Works well in meal prep and overnight recipes</li></ul></section>
+            <section><h2>How to eat chia seeds</h2><ul class="detail-list"><li>Stir them into oatmeal or overnight oats</li><li>Use them in chia pudding</li><li>Add them to smoothies or yogurt bowls</li></ul></section>
+            <section><h2>Shopping and storage</h2><p>Store chia seeds in a sealed container in a cool, dry place. Buy a quantity you will use consistently in breakfasts and snacks.</p></section>
+            <section><h2>FAQ</h2><div class="faq-item"><h3>Are chia seeds anti-inflammatory?</h3><p>They are commonly included in anti-inflammatory food patterns because they are easy to use and add fiber and healthy fats to regular meals.</p></div><div class="faq-item"><h3>What is the easiest way to use chia seeds?</h3><p>Adding them to oats, yogurt, or smoothies is usually the simplest starting point.</p></div></section>
+            <section><h2>Evidence note</h2><p>Chia seeds are described here as a supportive ingredient within a broader eating pattern, not as a treatment by themselves.</p><p>The strongest factual framing on this page is limited to established nutrition context such as fiber, alpha-linolenic acid, calcium, and magnesium. The page does not claim that eating chia seeds guarantees a specific health outcome.</p></section>
+        </div>
       </article>
+
+        <div class="detail-sidebar">
+          <div class="sidebar-card"><h3>Category</h3><h4>Nuts &amp; Seeds</h4><p>Chia seeds connect breakfast pages, snack pages, and healthy-fat content.</p><a  href="../category/nuts-seeds/">Browse Nuts &amp; Seeds hub</a></div>
+          <div class="sidebar-card"><h3>Related Foods</h3><ul ><li><a href="../oats/">Oats</a></li><li><a href="../blueberries/">Blueberries</a></li><li><a href="../green-tea/">Green Tea</a></li><li><a href="../../guides/best-anti-inflammatory-foods/">Best Anti-Inflammatory Foods</a></li><li><a href="../../guides/anti-inflammatory-breakfast-ideas/">Anti-Inflammatory Breakfast Ideas</a></li></ul></div>
+        </div>
     </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h3>Antiinfla</h3>
+          <p>A clean anti-inflammatory food reference with structured food pages, category hubs, and practical guides.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Categories</h4>
+          <ul>
+            <li><a href="../../foods/category/fruits/">Fruits</a></li>
+            <li><a href="../../foods/category/vegetables/">Vegetables</a></li>
+            <li><a href="../../foods/category/spices-herbs/">Spices &amp; Herbs</a></li>
+            <li><a href="../../foods/category/nuts-seeds/">Nuts &amp; Seeds</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Guides</h4>
+          <ul>
+            <li><a href="../../guides/best-anti-inflammatory-foods/">Best Foods</a></li>
+            <li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How to Start</a></li>
+            <li><a href="../../guides/anti-inflammatory-grocery-list/">Grocery List</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2025 Antiinfla. All rights reserved.</div>
+    </footer>
+
+    <script src="../../script.js"></script>
   </body>
 </html>

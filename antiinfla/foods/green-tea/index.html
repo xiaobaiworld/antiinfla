@@ -19,41 +19,86 @@
     <link rel="stylesheet" href="../../styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <a class="back-link" href="../../index.html">Back to home</a>
-      <article class="food-page">
-        <header class="food-hero">
-          <div class="food-hero-copy">
-            <p class="eyebrow">Food Detail Page</p>
-            <h1>Green Tea</h1>
-            <p class="food-summary">
-              Green tea is a daily-use drink that appears often in anti-inflammatory food lists
-              because it is simple, repeatable, and tied to polyphenol-rich tea habits rather than
-              dramatic beverage claims.
-            </p>
-            <div class="quick-answer"><h2>Quick answer</h2><p>Green tea fits well into an anti-inflammatory eating pattern because it is an easy daily drink that adds polyphenol-rich variety without much effort. Its value comes from consistency and context, not from dramatic claims or a promise of treatment.</p></div>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="site-logo" href="../../">Antiinfla</a>
+        <nav class="site-nav" id="site-nav">
+          <a href="../../#foods">Foods</a>
+          <a href="../../#guides">Guides</a>
+          <a href="../../#categories">Categories</a>
+          <div class="search-wrapper">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search foods..." autocomplete="off" />
+            </div>
+            <div class="search-results" id="search-results"></div>
           </div>
-          <div class="food-hero-visual food-hero-media">
-            <img class="food-hero-image" src="../../assets/heroes/green-tea.svg" alt="Cup of green tea." />
+        </nav>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">&#9776;</button>
+      </div>
+    </header>
+
+    <div class="detail-page">
+      <a class="back-link" href="../../">&larr; Back to all foods</a>
+
+      <article class="detail-card">
+        <header class="detail-header">
+          <img class="detail-header-img" src="../../assets/heroes/green-tea.svg" alt="Cup of green tea." />
+          <div class="detail-header-text">
+            <h1>Green Tea</h1>
+            <p class="detail-meta">Green tea is a daily-use drink that appears often in anti-inflammatory food lists
+              because it is simple, repeatable, and tied to polyphenol-rich tea habits rather than
+              dramatic beverage claims.</p>
           </div>
         </header>
-        <main class="food-layout">
-          <div class="food-main">
-            <section class="food-section"><h2>What it is</h2><p>Green tea is a tea made from unoxidized tea leaves and usually consumed hot. It is one of the most practical beverage choices in food-first wellness content.</p></section>
-            <section class="food-section"><h2>Why green tea may support an anti-inflammatory diet</h2><p>Green tea is often highlighted because of catechin-related interest and because it is easy to use as a daily habit. It can be a simple alternative to more sugary or heavily processed drinks.</p><p>This page keeps the focus on dietary routine and practical use. It does not present green tea as a cure or as a substitute for broader nutrition changes.</p></section>
-            <section class="food-section"><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Catechins</li><li>Polyphenols</li><li>L-theanine</li><li>Caffeine</li></ul></section>
-            <section class="food-section"><h2>Potential health benefits</h2><ul class="detail-list"><li>Supports a simple daily drink routine</li><li>Adds beverage variety without much preparation</li><li>Pairs easily with breakfast or mid-day habits</li></ul></section>
-            <section class="food-section"><h2>How to drink green tea</h2><ul class="detail-list"><li>Drink a plain cup with breakfast</li><li>Use it as a mid-afternoon swap for sweeter drinks</li><li>Pair it with fruit, oats, or light meals</li></ul></section>
-            <section class="food-section"><h2>Shopping and storage</h2><p>Store tea in a dry place away from light and moisture. Choose a form you will realistically prepare often, whether bags or loose leaves.</p></section>
-            <section class="food-section"><h2>FAQ</h2><div class="faq-item"><h3>Is green tea anti-inflammatory?</h3><p>It is commonly included in anti-inflammatory food patterns because it is a practical polyphenol-rich drink, but that should be read as food-pattern guidance rather than a direct treatment claim.</p></div><div class="faq-item"><h3>Does bottled green tea count the same way?</h3><p>Plain brewed green tea is usually the clearest fit for this type of page. Bottled versions vary a lot, especially when sweeteners or flavorings are added.</p></div><div class="faq-item"><h3>What is the easiest way to make green tea a habit?</h3><p>Tie it to one stable moment in the day, such as breakfast or an afternoon break.</p></div></section>
-            <section class="food-section"><h2>Evidence note</h2><p>This page presents green tea as a useful daily beverage within a larger dietary pattern, not as a standalone solution.</p><p>The page limits its strongest claims to practical beverage substitution and broad polyphenol context. It does not promise that drinking green tea will independently resolve inflammation-related problems.</p></section>
-          </div>
-          <aside class="food-sidebar">
-            <section class="sidebar-card"><p class="card-kicker">Category</p><h2>Drinks</h2><p>Green tea anchors the drink category in the first public batch.</p><a class="text-link" href="../category/drinks/">Browse Drinks hub</a></section>
-            <section class="sidebar-card"><p class="card-kicker">Related Foods</p><ul class="link-list"><li><a href="../blueberries/">Blueberries</a></li><li><a href="../turmeric/">Turmeric</a></li><li><a href="../oats/">Oats</a></li><li><a href="../../guides/best-anti-inflammatory-foods/">Best Anti-Inflammatory Foods</a></li><li><a href="../../guides/anti-inflammatory-drinks/">Anti-Inflammatory Drinks</a></li></ul></section>
-          </aside>
-        </main>
+
+        <div class="detail-content">
+            <div class="quick-answer"><h2>Quick answer</h2><p>Green tea fits well into an anti-inflammatory eating pattern because it is an easy daily drink that adds polyphenol-rich variety without much effort. Its value comes from consistency and context, not from dramatic claims or a promise of treatment.</p></div>
+
+            <section><h2>What it is</h2><p>Green tea is a tea made from unoxidized tea leaves and usually consumed hot. It is one of the most practical beverage choices in food-first wellness content.</p></section>
+            <section><h2>Why green tea may support an anti-inflammatory diet</h2><p>Green tea is often highlighted because of catechin-related interest and because it is easy to use as a daily habit. It can be a simple alternative to more sugary or heavily processed drinks.</p><p>This page keeps the focus on dietary routine and practical use. It does not present green tea as a cure or as a substitute for broader nutrition changes.</p></section>
+            <section><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Catechins</li><li>Polyphenols</li><li>L-theanine</li><li>Caffeine</li></ul></section>
+            <section><h2>Potential health benefits</h2><ul class="detail-list"><li>Supports a simple daily drink routine</li><li>Adds beverage variety without much preparation</li><li>Pairs easily with breakfast or mid-day habits</li></ul></section>
+            <section><h2>How to drink green tea</h2><ul class="detail-list"><li>Drink a plain cup with breakfast</li><li>Use it as a mid-afternoon swap for sweeter drinks</li><li>Pair it with fruit, oats, or light meals</li></ul></section>
+            <section><h2>Shopping and storage</h2><p>Store tea in a dry place away from light and moisture. Choose a form you will realistically prepare often, whether bags or loose leaves.</p></section>
+            <section><h2>FAQ</h2><div class="faq-item"><h3>Is green tea anti-inflammatory?</h3><p>It is commonly included in anti-inflammatory food patterns because it is a practical polyphenol-rich drink, but that should be read as food-pattern guidance rather than a direct treatment claim.</p></div><div class="faq-item"><h3>Does bottled green tea count the same way?</h3><p>Plain brewed green tea is usually the clearest fit for this type of page. Bottled versions vary a lot, especially when sweeteners or flavorings are added.</p></div><div class="faq-item"><h3>What is the easiest way to make green tea a habit?</h3><p>Tie it to one stable moment in the day, such as breakfast or an afternoon break.</p></div></section>
+            <section><h2>Evidence note</h2><p>This page presents green tea as a useful daily beverage within a larger dietary pattern, not as a standalone solution.</p><p>The page limits its strongest claims to practical beverage substitution and broad polyphenol context. It does not promise that drinking green tea will independently resolve inflammation-related problems.</p></section>
+        </div>
       </article>
+
+        <div class="detail-sidebar">
+          <div class="sidebar-card"><h3>Category</h3><h4>Drinks</h4><p>Green tea anchors the drink category in the first public batch.</p><a  href="../category/drinks/">Browse Drinks hub</a></div>
+          <div class="sidebar-card"><h3>Related Foods</h3><ul ><li><a href="../blueberries/">Blueberries</a></li><li><a href="../turmeric/">Turmeric</a></li><li><a href="../oats/">Oats</a></li><li><a href="../../guides/best-anti-inflammatory-foods/">Best Anti-Inflammatory Foods</a></li><li><a href="../../guides/anti-inflammatory-drinks/">Anti-Inflammatory Drinks</a></li></ul></div>
+        </div>
     </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h3>Antiinfla</h3>
+          <p>A clean anti-inflammatory food reference with structured food pages, category hubs, and practical guides.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Categories</h4>
+          <ul>
+            <li><a href="../../foods/category/fruits/">Fruits</a></li>
+            <li><a href="../../foods/category/vegetables/">Vegetables</a></li>
+            <li><a href="../../foods/category/spices-herbs/">Spices &amp; Herbs</a></li>
+            <li><a href="../../foods/category/nuts-seeds/">Nuts &amp; Seeds</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Guides</h4>
+          <ul>
+            <li><a href="../../guides/best-anti-inflammatory-foods/">Best Foods</a></li>
+            <li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How to Start</a></li>
+            <li><a href="../../guides/anti-inflammatory-grocery-list/">Grocery List</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2025 Antiinfla. All rights reserved.</div>
+    </footer>
+
+    <script src="../../script.js"></script>
   </body>
 </html>

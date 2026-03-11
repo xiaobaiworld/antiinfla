@@ -19,39 +19,86 @@
     <link rel="stylesheet" href="../../styles.css" />
   </head>
   <body>
-    <div class="page-shell">
-      <a class="back-link" href="../../index.html">Back to home</a>
-      <article class="food-page">
-        <header class="food-hero">
-          <div class="food-hero-copy">
-            <p class="eyebrow">Food Detail Page</p>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="site-logo" href="../../">Antiinfla</a>
+        <nav class="site-nav" id="site-nav">
+          <a href="../../#foods">Foods</a>
+          <a href="../../#guides">Guides</a>
+          <a href="../../#categories">Categories</a>
+          <div class="search-wrapper">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search foods..." autocomplete="off" />
+            </div>
+            <div class="search-results" id="search-results"></div>
+          </div>
+        </nav>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">&#9776;</button>
+      </div>
+    </header>
+
+    <div class="detail-page">
+      <a class="back-link" href="../../">&larr; Back to all foods</a>
+
+      <article class="detail-card">
+        <header class="detail-header">
+          <img class="detail-header-img" src="../../assets/heroes/sardines.svg" alt="Prepared sardines on a plate." />
+          <div class="detail-header-text">
             <h1>Sardines</h1>
-            <p class="food-summary">
-              Sardines are small fish that fit anti-inflammatory meal patterns through practical
+            <p class="detail-meta">Sardines are small fish that fit anti-inflammatory meal patterns through practical
               omega-3-rich, protein-rich eating. They are especially useful because they are often
-              affordable, pantry-friendly, and quick to add to simple meals.
-            </p>
-            <div class="quick-answer"><h2>Quick answer</h2><p>Sardines fit well into an anti-inflammatory diet because they are a convenient source of omega-3 fats and protein in a realistic format. Their advantage is accessibility and repeatability, not hype.</p></div>
+              affordable, pantry-friendly, and quick to add to simple meals.</p>
           </div>
-          <div class="food-hero-visual food-hero-media"><img class="food-hero-image" src="../../assets/heroes/sardines.svg" alt="Prepared sardines on a plate." /></div>
         </header>
-        <main class="food-layout">
-          <div class="food-main">
-            <section class="food-section"><h2>What it is</h2><p>Sardines are small oily fish often sold canned or jarred. They can be eaten on toast, with salads, with grains, or as part of quick savory meals.</p></section>
-            <section class="food-section"><h2>Why sardines may support an anti-inflammatory diet</h2><p>Sardines are commonly highlighted for omega-3 fats along with protein and convenience. They help bring fish into the weekly diet without relying only on fresh seafood shopping.</p><p>This page keeps the framing practical and food-based rather than clinical.</p></section>
-            <section class="food-section"><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Omega-3 fats</li><li>Protein</li><li>Vitamin B12</li><li>Calcium</li></ul></section>
-            <section class="food-section"><h2>Potential health benefits</h2><ul class="detail-list"><li>Supports fish intake in a pantry-friendly way</li><li>Works in quick lunches and simple savory meals</li><li>Pairs naturally with greens, tomato, and olive oil</li></ul></section>
-            <section class="food-section"><h2>How to eat sardines</h2><ul class="detail-list"><li>Add sardines to toast or crackers with tomato</li><li>Use them in simple salads or grain bowls</li><li>Pair sardines with olive oil, lemon, and greens</li></ul></section>
-            <section class="food-section"><h2>Shopping and storage</h2><p>Canned sardines are often the most practical format. Keep a few pantry-friendly options on hand if the goal is to make fish intake more realistic during the week.</p></section>
-            <section class="food-section"><h2>FAQ</h2><div class="faq-item"><h3>Are sardines anti-inflammatory?</h3><p>Sardines are commonly included in anti-inflammatory food patterns because they are small fish that provide omega-3 fats and fit easily into simple meals.</p></div><div class="faq-item"><h3>Are canned sardines okay?</h3><p>Yes. Canned sardines are often the most practical way to use them consistently.</p></div><div class="faq-item"><h3>What do sardines go well with?</h3><p>Sardines pair well with tomato, olive oil, lemon, greens, and simple grain-based meals.</p></div></section>
-            <section class="food-section"><h2>Evidence note</h2><p>Sardines are described here as a supportive fish option within a broader eating pattern, not as a treatment by themselves.</p><p>The strongest factual framing on this page is limited to established nutrition context such as omega-3 fats, protein, calcium, and practical pantry use. The page does not claim that eating sardines guarantees a specific health outcome.</p></section>
-          </div>
-          <aside class="food-sidebar">
-            <section class="sidebar-card"><p class="card-kicker">Category</p><h2>Fish &amp; Seafood</h2><p>Sardines add an affordable, pantry-friendly branch to the fish and seafood cluster.</p><a class="text-link" href="../category/fish-seafood/">Browse Fish &amp; Seafood hub</a></section>
-            <section class="sidebar-card"><p class="card-kicker">Related Foods</p><ul class="link-list"><li><a href="../salmon/">Salmon</a></li><li><a href="../olive-oil/">Olive Oil</a></li><li><a href="../tomato/">Tomato</a></li><li><a href="../../guides/best-anti-inflammatory-foods/">Best Anti-Inflammatory Foods</a></li><li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How To Start</a></li></ul></section>
-          </aside>
-        </main>
+
+        <div class="detail-content">
+            <div class="quick-answer"><h2>Quick answer</h2><p>Sardines fit well into an anti-inflammatory diet because they are a convenient source of omega-3 fats and protein in a realistic format. Their advantage is accessibility and repeatability, not hype.</p></div>
+
+            <section><h2>What it is</h2><p>Sardines are small oily fish often sold canned or jarred. They can be eaten on toast, with salads, with grains, or as part of quick savory meals.</p></section>
+            <section><h2>Why sardines may support an anti-inflammatory diet</h2><p>Sardines are commonly highlighted for omega-3 fats along with protein and convenience. They help bring fish into the weekly diet without relying only on fresh seafood shopping.</p><p>This page keeps the framing practical and food-based rather than clinical.</p></section>
+            <section><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Omega-3 fats</li><li>Protein</li><li>Vitamin B12</li><li>Calcium</li></ul></section>
+            <section><h2>Potential health benefits</h2><ul class="detail-list"><li>Supports fish intake in a pantry-friendly way</li><li>Works in quick lunches and simple savory meals</li><li>Pairs naturally with greens, tomato, and olive oil</li></ul></section>
+            <section><h2>How to eat sardines</h2><ul class="detail-list"><li>Add sardines to toast or crackers with tomato</li><li>Use them in simple salads or grain bowls</li><li>Pair sardines with olive oil, lemon, and greens</li></ul></section>
+            <section><h2>Shopping and storage</h2><p>Canned sardines are often the most practical format. Keep a few pantry-friendly options on hand if the goal is to make fish intake more realistic during the week.</p></section>
+            <section><h2>FAQ</h2><div class="faq-item"><h3>Are sardines anti-inflammatory?</h3><p>Sardines are commonly included in anti-inflammatory food patterns because they are small fish that provide omega-3 fats and fit easily into simple meals.</p></div><div class="faq-item"><h3>Are canned sardines okay?</h3><p>Yes. Canned sardines are often the most practical way to use them consistently.</p></div><div class="faq-item"><h3>What do sardines go well with?</h3><p>Sardines pair well with tomato, olive oil, lemon, greens, and simple grain-based meals.</p></div></section>
+            <section><h2>Evidence note</h2><p>Sardines are described here as a supportive fish option within a broader eating pattern, not as a treatment by themselves.</p><p>The strongest factual framing on this page is limited to established nutrition context such as omega-3 fats, protein, calcium, and practical pantry use. The page does not claim that eating sardines guarantees a specific health outcome.</p></section>
+        </div>
       </article>
+
+        <div class="detail-sidebar">
+          <div class="sidebar-card"><h3>Category</h3><h4>Fish &amp; Seafood</h4><p>Sardines add an affordable, pantry-friendly branch to the fish and seafood cluster.</p><a  href="../category/fish-seafood/">Browse Fish &amp; Seafood hub</a></div>
+          <div class="sidebar-card"><h3>Related Foods</h3><ul ><li><a href="../salmon/">Salmon</a></li><li><a href="../olive-oil/">Olive Oil</a></li><li><a href="../tomato/">Tomato</a></li><li><a href="../../guides/best-anti-inflammatory-foods/">Best Anti-Inflammatory Foods</a></li><li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How To Start</a></li></ul></div>
+        </div>
     </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h3>Antiinfla</h3>
+          <p>A clean anti-inflammatory food reference with structured food pages, category hubs, and practical guides.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Categories</h4>
+          <ul>
+            <li><a href="../../foods/category/fruits/">Fruits</a></li>
+            <li><a href="../../foods/category/vegetables/">Vegetables</a></li>
+            <li><a href="../../foods/category/spices-herbs/">Spices &amp; Herbs</a></li>
+            <li><a href="../../foods/category/nuts-seeds/">Nuts &amp; Seeds</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Guides</h4>
+          <ul>
+            <li><a href="../../guides/best-anti-inflammatory-foods/">Best Foods</a></li>
+            <li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How to Start</a></li>
+            <li><a href="../../guides/anti-inflammatory-grocery-list/">Grocery List</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2025 Antiinfla. All rights reserved.</div>
+    </footer>
+
+    <script src="../../script.js"></script>
   </body>
 </html>
