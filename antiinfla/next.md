@@ -1,33 +1,33 @@
 # Next Step
 
-## Step 19: Site Polish And Launch Readiness
+## Step 20: Post-Redesign Polish and Launch
 
 Goal:
 
-With all 30 food pages now at full image and source coverage, focus on final polish before considering the site launch-ready.
+With the full site redesign complete, focus on final polish and any remaining launch-readiness items.
 
 ## Tasks
 
-1. review homepage messaging and ensure it reflects the complete 30-food set
-2. verify all category hub pages link to their full food sets
-3. check all guide pages for completeness and internal link coverage
-4. review sitemap and robots for accuracy
-5. check for any broken internal links across the full site
-6. consider adding a simple favicon and any missing meta tags
-7. run final QA pass
+1. verify all pages render correctly in the new design
+2. check all internal links for correctness after template changes
+3. consider adding favicon and any missing meta tags (og:image)
+4. run final QA pass with validate_public_site.py
+5. consider performance optimizations (image lazy loading, CSS minification)
+6. add Google Analytics / AdSense if needed
+7. push to production
 
 ## Acceptance Criteria
 
-- homepage accurately represents the full site scope
-- all internal links resolve correctly
-- all category hubs link to their complete food sets
-- sitemap and robots are accurate and complete
-- site is ready for public traffic
+- all pages display correctly with new green theme
+- search works on all pages at all depths
+- mobile menu works correctly
+- all internal links resolve
+- sitemap and robots are accurate
 
 ## Notes
 
-This step follows the completed 30/30 image and source coverage milestone.
+This step follows the completed site-wide design overhaul (Step 19).
 
 Deferred but tracked:
 
-- multilingual public architecture is a V2+ item and must be handled through roadmap and SOP rules before implementation
+- multilingual public architecture is a V2+ item

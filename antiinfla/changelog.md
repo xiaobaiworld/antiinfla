@@ -85,3 +85,12 @@
 - Updated both manifests to reflect full 30/30 coverage.
 - QA validation passes after the full coverage pass.
 - Advanced `next.md` to Step 19.
+- Completed Step 19: full site design overhaul.
+- Rewrote `styles.css` with a fresh green design system inspired by fruit.aolifu.org (green primary, gold secondary, white cards, system fonts, gradient background).
+- Rebuilt `index.html` with sticky header, hero section, 30-food card grid with thumbnails, guide cards, and footer.
+- Refactored all 30 food detail pages to a new centered white-card template with header image, green-bordered sections, and sidebar grid.
+- Refactored all 8 category hub pages and 7 guide pages to the new content-page-card template.
+- Rewrote `script.js` with client-side food search (30 items, name and tag filtering) and mobile menu toggle.
+- Added site-header (logo, nav, search) and site-footer to every page.
+- All SEO preserved: canonical URLs, JSON-LD, OG tags, meta descriptions, sitemap (46 URLs verified).
+- Advanced `next.md` to Step 20.
