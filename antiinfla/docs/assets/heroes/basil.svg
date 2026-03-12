@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Fresh basil leaves</title>
+  <desc id="desc">Illustrated fresh basil leaves on a light green background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f5e9"/><stop offset="100%" stop-color="#c8e6c9"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#66bb6a"/><stop offset="100%" stop-color="#2e7d32"/></linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="660" rx="180" ry="25" fill="#a5d6a7" opacity=".3"/>
+  <path d="M600 580 C580 520, 500 440, 460 360 C440 300, 480 260, 540 290 C580 310, 590 380, 600 440Z" fill="url(#leaf)"/>
+  <path d="M600 580 C620 520, 700 440, 740 360 C760 300, 720 260, 660 290 C620 310, 610 380, 600 440Z" fill="url(#leaf)"/>
+  <path d="M600 520 C570 460, 520 400, 500 340 C490 300, 520 280, 560 300 C580 310, 590 370, 600 420Z" fill="#388e3c" opacity=".8"/>
+  <path d="M600 520 C630 460, 680 400, 700 340 C710 300, 680 280, 640 300 C620 310, 610 370, 600 420Z" fill="#388e3c" opacity=".8"/>
+  <line x1="600" y1="580" x2="600" y2="300" stroke="#1b5e20" stroke-width="3" opacity=".4"/>
+</svg>

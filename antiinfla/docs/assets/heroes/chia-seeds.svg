@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Chia seeds in a bowl</title>
+  <desc id="desc">Illustrated bowl of chia seeds on a light background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f3e5f5"/><stop offset="100%" stop-color="#e1bee7"/></linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="220" ry="35" fill="#ce93d8" opacity=".25"/>
+  <path d="M380 480c0-45 35-80 76-80h288c41 0 76 35 76 80v55c0 85-70 155-155 155H535c-85 0-155-70-155-155z" fill="#fafafa" stroke="#bdbdbd" stroke-width="7"/>
+  <g fill="#455a64"><circle cx="440" cy="475" r="6"/><circle cx="470" cy="465" r="5"/><circle cx="500" cy="470" r="6"/><circle cx="530" cy="462" r="5"/><circle cx="560" cy="468" r="6"/><circle cx="590" cy="460" r="5"/><circle cx="620" cy="466" r="6"/><circle cx="650" cy="458" r="5"/><circle cx="680" cy="464" r="6"/><circle cx="710" cy="470" r="5"/><circle cx="740" cy="476" r="6"/><circle cx="460" cy="500" r="5"/><circle cx="490" cy="495" r="6"/><circle cx="520" cy="490" r="5"/><circle cx="550" cy="494" r="6"/><circle cx="580" cy="488" r="5"/><circle cx="610" cy="492" r="6"/><circle cx="640" cy="486" r="5"/><circle cx="670" cy="490" r="6"/><circle cx="700" cy="496" r="5"/><circle cx="730" cy="500" r="6"/><circle cx="480" cy="525" r="5"/><circle cx="520" cy="520" r="6"/><circle cx="560" cy="518" r="5"/><circle cx="600" cy="515" r="6"/><circle cx="640" cy="518" r="5"/><circle cx="680" cy="522" r="6"/><circle cx="720" cy="528" r="5"/></g>
+</svg>

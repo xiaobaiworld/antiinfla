@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Blueberries in bowl</title>
+  <desc id="desc">Illustrated bowl of blueberries on a light background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef3ff"/>
+      <stop offset="100%" stop-color="#cfdcf8"/>
+    </linearGradient>
+    <radialGradient id="berry" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#7f95ea"/>
+      <stop offset="70%" stop-color="#3d56b3"/>
+      <stop offset="100%" stop-color="#24347a"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="645" rx="270" ry="84" fill="#9ab0da" opacity=".35"/>
+  <path d="M340 480c0-50 38-90 84-90h352c46 0 84 40 84 90v74c0 96-78 174-174 174H514c-96 0-174-78-174-174z" fill="#f8fbff" stroke="#8ea6d4" stroke-width="12"/>
+  <g>
+    <circle cx="450" cy="470" r="64" fill="url(#berry)"/>
+    <circle cx="560" cy="434" r="60" fill="url(#berry)"/>
+    <circle cx="676" cy="464" r="62" fill="url(#berry)"/>
+    <circle cx="792" cy="438" r="58" fill="url(#berry)"/>
+    <circle cx="514" cy="540" r="62" fill="url(#berry)"/>
+    <circle cx="628" cy="558" r="66" fill="url(#berry)"/>
+    <circle cx="744" cy="534" r="60" fill="url(#berry)"/>
+  </g>
+</svg>

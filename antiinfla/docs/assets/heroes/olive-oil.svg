@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Olive oil in a small dish</title>
+  <desc id="desc">Illustrated olive oil in a dish with olives on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f9fbe7"/>
+      <stop offset="100%" stop-color="#f0f4c3"/>
+    </linearGradient>
+    <radialGradient id="oil" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffee58"/>
+      <stop offset="100%" stop-color="#f9a825"/>
+    </radialGradient>
+    <radialGradient id="olive" cx="45%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#7cb342"/>
+      <stop offset="100%" stop-color="#33691e"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="640" rx="200" ry="30" fill="#dce775" opacity=".3"/>
+  <ellipse cx="600" cy="460" rx="160" ry="40" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="4"/>
+  <ellipse cx="600" cy="450" rx="140" ry="30" fill="url(#oil)"/>
+  <ellipse cx="460" cy="520" rx="28" ry="22" fill="url(#olive)"/>
+  <ellipse cx="500" cy="540" rx="28" ry="22" fill="url(#olive)"/>
+  <ellipse cx="740" cy="520" rx="28" ry="22" fill="url(#olive)"/>
+  <circle cx="460" cy="515" r="6" fill="#4e342e"/>
+</svg>

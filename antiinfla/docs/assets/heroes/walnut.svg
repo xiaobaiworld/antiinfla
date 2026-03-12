@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Walnuts and walnut halves</title>
+  <desc id="desc">Illustrated walnuts on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#efebe9"/>
+      <stop offset="100%" stop-color="#d7ccc8"/>
+    </linearGradient>
+    <radialGradient id="shell" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#a1887f"/>
+      <stop offset="100%" stop-color="#5d4037"/>
+    </radialGradient>
+    <radialGradient id="meat" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d7ccc8"/>
+      <stop offset="100%" stop-color="#a1887f"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="640" rx="220" ry="35" fill="#bcaaa4" opacity=".3"/>
+  <ellipse cx="480" cy="440" rx="110" ry="100" fill="url(#shell)"/>
+  <ellipse cx="720" cy="440" rx="110" ry="100" fill="url(#shell)"/>
+  <ellipse cx="720" cy="440" rx="85" ry="75" fill="url(#meat)"/>
+  <path d="M680 440 C700 400, 740 400, 760 440 C740 480, 700 480, 680 440Z" fill="#8d6e63" opacity=".5"/>
+  <circle cx="600" cy="560" rx="60" ry="55" fill="url(#shell)" r="55"/>
+</svg>

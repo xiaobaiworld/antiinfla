@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Fresh cherries</title>
+  <desc id="desc">Illustrated fresh cherries on a light pink background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fce4ec"/><stop offset="100%" stop-color="#f8bbd0"/></linearGradient>
+    <radialGradient id="cherry" cx="45%" cy="38%" r="55%"><stop offset="0%" stop-color="#ef5350"/><stop offset="60%" stop-color="#c62828"/><stop offset="100%" stop-color="#8e0000"/></radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="660" rx="180" ry="25" fill="#f48fb1" opacity=".25"/>
+  <path d="M520 380 C540 300, 580 260, 600 250" stroke="#33691e" stroke-width="4" fill="none"/>
+  <path d="M680 380 C660 300, 620 260, 600 250" stroke="#33691e" stroke-width="4" fill="none"/>
+  <circle cx="520" cy="440" r="70" fill="url(#cherry)"/>
+  <circle cx="680" cy="440" r="70" fill="url(#cherry)"/>
+  <ellipse cx="505" cy="415" rx="12" ry="8" fill="#ffffff" opacity=".3"/>
+  <ellipse cx="665" cy="415" rx="12" ry="8" fill="#ffffff" opacity=".3"/>
+  <path d="M595 250 C600 240, 610 235, 615 240" fill="#4caf50"/>
+</svg>

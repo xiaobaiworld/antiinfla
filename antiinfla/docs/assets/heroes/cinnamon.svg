@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Cinnamon sticks and ground cinnamon</title>
+  <desc id="desc">Illustrated cinnamon sticks and powder on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#efebe9"/><stop offset="100%" stop-color="#d7ccc8"/></linearGradient>
+    <linearGradient id="stick" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#8d6e63"/><stop offset="100%" stop-color="#4e342e"/></linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="220" ry="30" fill="#bcaaa4" opacity=".3"/>
+  <rect x="380" y="400" width="440" height="40" rx="20" fill="url(#stick)" transform="rotate(-5 600 420)"/>
+  <rect x="400" y="460" width="400" height="36" rx="18" fill="url(#stick)" transform="rotate(3 600 478)"/>
+  <rect x="420" y="515" width="360" height="34" rx="17" fill="url(#stick)" transform="rotate(-2 600 532)"/>
+  <ellipse cx="700" cy="560" rx="60" ry="15" fill="#a1887f" opacity=".5"/>
+  <circle cx="700" cy="545" r="35" fill="#8d6e63" opacity=".6"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Whole almonds</title>
+  <desc id="desc">Illustrated whole almonds on a warm background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#efebe9"/><stop offset="100%" stop-color="#d7ccc8"/></linearGradient>
+    <radialGradient id="nut" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#d7b98e"/><stop offset="100%" stop-color="#8d6e63"/></radialGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="600" cy="650" rx="200" ry="30" fill="#bcaaa4" opacity=".3"/>
+  <ellipse cx="480" cy="420" rx="55" ry="80" fill="url(#nut)" transform="rotate(-15 480 420)"/>
+  <ellipse cx="600" cy="400" rx="55" ry="80" fill="url(#nut)" transform="rotate(5 600 400)"/>
+  <ellipse cx="720" cy="430" rx="55" ry="80" fill="url(#nut)" transform="rotate(20 720 430)"/>
+  <ellipse cx="540" cy="520" rx="50" ry="72" fill="url(#nut)" transform="rotate(-8 540 520)"/>
+  <ellipse cx="660" cy="530" rx="50" ry="72" fill="url(#nut)" transform="rotate(12 660 530)"/>
+</svg>
