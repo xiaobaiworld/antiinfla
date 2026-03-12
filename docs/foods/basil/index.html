@@ -17,41 +17,90 @@
       {"@context":"https://schema.org","@type":"Article","headline":"Basil","description":"Basil is a fresh culinary herb that supports anti-inflammatory cooking through simple savory meals, sauces, salads, and herb-based flavor building.","mainEntityOfPage":"https://www.antiinflammatorydiets.com/foods/basil/","about":["Basil","Anti-inflammatory diet"]}
     </script>
     <link rel="stylesheet" href="../../styles.css" />
+      <script src="../../google-config.js"></script>
+    <script src="../../google-tag.js"></script>
   </head>
   <body>
-    <div class="page-shell">
-      <a class="back-link" href="../../index.html">Back to home</a>
-      <article class="food-page">
-        <header class="food-hero">
-          <div class="food-hero-copy">
-            <p class="eyebrow">Food Detail Page</p>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="site-logo" href="../../">Antiinfla</a>
+        <nav class="site-nav" id="site-nav">
+          <a href="../../#foods">Foods</a>
+          <a href="../../#guides">Guides</a>
+          <a href="../../#categories">Categories</a>
+          <div class="search-wrapper">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search foods..." autocomplete="off" />
+            </div>
+            <div class="search-results" id="search-results"></div>
+          </div>
+        </nav>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">&#9776;</button>
+      </div>
+    </header>
+
+    <div class="detail-page">
+      <a class="back-link" href="../../">&larr; Back to all foods</a>
+
+      <article class="detail-card">
+        <header class="detail-header">
+          <img class="detail-header-img" src="../../assets/heroes/basil.svg" alt="Fresh basil leaves." />
+          <div class="detail-header-text">
             <h1>Basil</h1>
-            <p class="food-summary">
-              Basil is a culinary herb that helps anti-inflammatory meals taste fresher and easier
+            <p class="detail-meta">Basil is a culinary herb that helps anti-inflammatory meals taste fresher and easier
               to repeat. Its main value is practical: it supports simple home cooking with more
-              flavor and less dependence on heavily processed sauces.
-            </p>
-            <div class="quick-answer"><h2>Quick answer</h2><p>Basil fits anti-inflammatory cooking because it is an easy herb to add to sauces, salads, roasted vegetables, and simple meals. It is best understood as a flavor-building food, not as a standalone health solution.</p></div>
+              flavor and less dependence on heavily processed sauces.</p>
           </div>
-          <div class="food-hero-visual food-hero-media"><img class="food-hero-image" src="../../assets/heroes/basil.svg" alt="Fresh basil leaves." /></div>
         </header>
-        <main class="food-layout">
-          <div class="food-main">
-            <section class="food-section"><h2>What it is</h2><p>Basil is a leafy herb used fresh or dried in savory cooking. It appears often in salads, tomato dishes, dressings, and herb-based sauces.</p></section>
-            <section class="food-section"><h2>Why basil may support an anti-inflammatory diet</h2><p>Basil is useful because herbs can make vegetable- and legume-rich meals more appealing and easier to keep using. That practical role matters more than exaggerated claims about any one herb.</p><p>This page keeps the focus on food use, plant variety, and meal quality.</p></section>
-            <section class="food-section"><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Vitamin K</li><li>Manganese</li><li>Polyphenols</li><li>Essential oils</li></ul></section>
-            <section class="food-section"><h2>Potential health benefits</h2><ul class="detail-list"><li>Adds freshness to savory whole-food meals</li><li>Supports herb-based flavor building at home</li><li>Pairs well with tomato, garlic, and olive oil</li></ul></section>
-            <section class="food-section"><h2>How to use basil</h2><ul class="detail-list"><li>Add fresh basil to tomato salads</li><li>Blend basil into simple sauces or dressings</li><li>Finish soups, grain bowls, or roasted vegetables with chopped basil</li></ul></section>
-            <section class="food-section"><h2>Shopping and storage</h2><p>Use fresh basil when possible for flavor and aroma. Keep it dry and use it promptly, or choose dried basil for longer pantry storage.</p></section>
-            <section class="food-section"><h2>FAQ</h2><div class="faq-item"><h3>Is basil anti-inflammatory?</h3><p>Basil is commonly grouped into anti-inflammatory food patterns because it is a plant food that supports herb-rich home cooking, though it should not be framed like a treatment.</p></div><div class="faq-item"><h3>What foods pair best with basil?</h3><p>Basil pairs especially well with tomato, garlic, olive oil, and simple vegetable dishes.</p></div><div class="faq-item"><h3>Is fresh basil better than dried basil?</h3><p>Fresh basil usually gives a brighter flavor, but dried basil can still be useful if it helps you cook more consistently at home.</p></div></section>
-            <section class="food-section"><h2>Evidence note</h2><p>Basil is described here as a supportive culinary herb within a broader eating pattern, not as a treatment by itself.</p><p>The strongest factual framing on this page is limited to established context such as vitamin K, plant compounds, and practical savory cooking use. The page does not claim that using basil guarantees a specific health outcome.</p></section>
-          </div>
-          <aside class="food-sidebar">
-            <section class="sidebar-card"><p class="card-kicker">Category</p><h2>Spices &amp; Herbs</h2><p>Basil expands the herb cluster beyond powdered spices into fresh savory cooking.</p><a class="text-link" href="../category/spices-herbs/">Browse Spices &amp; Herbs hub</a></section>
-            <section class="sidebar-card"><p class="card-kicker">Related Foods</p><ul class="link-list"><li><a href="../garlic/">Garlic</a></li><li><a href="../rosemary/">Rosemary</a></li><li><a href="../tomato/">Tomato</a></li><li><a href="../../guides/anti-inflammatory-foods-by-category/">Foods By Category</a></li><li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How To Start</a></li></ul></section>
-          </aside>
-        </main>
+
+        <div class="detail-content">
+            <div class="quick-answer"><h2>Quick answer</h2><p>Basil fits anti-inflammatory cooking because it is an easy herb to add to sauces, salads, roasted vegetables, and simple meals. It is best understood as a flavor-building food, not as a standalone health solution.</p></div>
+
+            <section><h2>What it is</h2><p>Basil is a leafy herb used fresh or dried in savory cooking. It appears often in salads, tomato dishes, dressings, and herb-based sauces.</p></section>
+            <section><h2>Why basil may support an anti-inflammatory diet</h2><p>Basil is useful because herbs can make vegetable- and legume-rich meals more appealing and easier to keep using. That practical role matters more than exaggerated claims about any one herb.</p><p>This page keeps the focus on food use, plant variety, and meal quality.</p></section>
+            <section><h2>Key nutrients and compounds</h2><ul class="detail-list"><li>Vitamin K</li><li>Manganese</li><li>Polyphenols</li><li>Essential oils</li></ul></section>
+            <section><h2>Potential health benefits</h2><ul class="detail-list"><li>Adds freshness to savory whole-food meals</li><li>Supports herb-based flavor building at home</li><li>Pairs well with tomato, garlic, and olive oil</li></ul></section>
+            <section><h2>How to use basil</h2><ul class="detail-list"><li>Add fresh basil to tomato salads</li><li>Blend basil into simple sauces or dressings</li><li>Finish soups, grain bowls, or roasted vegetables with chopped basil</li></ul></section>
+            <section><h2>Shopping and storage</h2><p>Use fresh basil when possible for flavor and aroma. Keep it dry and use it promptly, or choose dried basil for longer pantry storage.</p></section>
+            <section><h2>FAQ</h2><div class="faq-item"><h3>Is basil anti-inflammatory?</h3><p>Basil is commonly grouped into anti-inflammatory food patterns because it is a plant food that supports herb-rich home cooking, though it should not be framed like a treatment.</p></div><div class="faq-item"><h3>What foods pair best with basil?</h3><p>Basil pairs especially well with tomato, garlic, olive oil, and simple vegetable dishes.</p></div><div class="faq-item"><h3>Is fresh basil better than dried basil?</h3><p>Fresh basil usually gives a brighter flavor, but dried basil can still be useful if it helps you cook more consistently at home.</p></div></section>
+            <section><h2>Evidence note</h2><p>Basil is described here as a supportive culinary herb within a broader eating pattern, not as a treatment by itself.</p><p>The strongest factual framing on this page is limited to established context such as vitamin K, plant compounds, and practical savory cooking use. The page does not claim that using basil guarantees a specific health outcome.</p></section>
+        </div>
       </article>
+
+        <div class="detail-sidebar">
+          <div class="sidebar-card"><h3>Category</h3><h4>Spices &amp; Herbs</h4><p>Basil expands the herb cluster beyond powdered spices into fresh savory cooking.</p><a  href="../category/spices-herbs/">Browse Spices &amp; Herbs hub</a></div>
+          <div class="sidebar-card"><h3>Related Foods</h3><ul ><li><a href="../garlic/">Garlic</a></li><li><a href="../rosemary/">Rosemary</a></li><li><a href="../tomato/">Tomato</a></li><li><a href="../../guides/anti-inflammatory-foods-by-category/">Foods By Category</a></li><li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How To Start</a></li></ul></div>
+        </div>
     </div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h3>Antiinfla</h3>
+          <p>A clean anti-inflammatory food reference with structured food pages, category hubs, and practical guides.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Categories</h4>
+          <ul>
+            <li><a href="../../foods/category/fruits/">Fruits</a></li>
+            <li><a href="../../foods/category/vegetables/">Vegetables</a></li>
+            <li><a href="../../foods/category/spices-herbs/">Spices &amp; Herbs</a></li>
+            <li><a href="../../foods/category/nuts-seeds/">Nuts &amp; Seeds</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Guides</h4>
+          <ul>
+            <li><a href="../../guides/best-anti-inflammatory-foods/">Best Foods</a></li>
+            <li><a href="../../guides/how-to-start-an-anti-inflammatory-diet/">How to Start</a></li>
+            <li><a href="../../guides/anti-inflammatory-grocery-list/">Grocery List</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2025 Antiinfla. All rights reserved.</div>
+    </footer>
+
+    <script src="../../script.js"></script>
   </body>
 </html>

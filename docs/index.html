@@ -3,264 +3,255 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Anti-Inflammatory Guides | Calm Nutrition Articles for Everyday Wellness</title>
+    <title>Antiinfla | Anti-Inflammatory Food Reference</title>
     <meta
       name="description"
-      content="A warm, editorial-style wellness site featuring anti-inflammatory food guides, meal ideas, snack suggestions, and daily routines for readable, search-friendly nutrition content."
+      content="A clean anti-inflammatory food reference site with structured food pages, category hubs, and practical guides."
     />
-    <meta name="robots" content="index,follow,max-image-preview:large" />
     <link rel="canonical" href="https://www.antiinflammatorydiets.com/" />
-    <link rel="alternate" hreflang="en" href="https://www.antiinflammatorydiets.com/" />
-    <link rel="alternate" hreflang="zh-CN" href="https://www.antiinflammatorydiets.com/zh-cn/" />
-    <link rel="alternate" hreflang="x-default" href="https://www.antiinflammatorydiets.com/" />
+    <meta property="og:title" content="Antiinfla | Anti-Inflammatory Food Reference" />
+    <meta property="og:description" content="A clean anti-inflammatory food reference site with structured food pages, category hubs, and practical guides." />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Anti-Inflammatory Guides" />
-    <meta property="og:title" content="Anti-Inflammatory Guides" />
-    <meta
-      property="og:description"
-      content="Editorial anti-inflammatory food content with a calmer, more trustworthy wellness design."
-    />
     <meta property="og:url" content="https://www.antiinflammatorydiets.com/" />
-    <meta property="og:locale" content="en_US" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Anti-Inflammatory Guides" />
-    <meta
-      name="twitter:description"
-      content="Professional, search-friendly anti-inflammatory food guides and nutrition routines."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,600;6..72,700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="./styles.css" />
-    <script src="./google-config.js"></script>
-    <script src="./google-tag.js"></script>
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "WebSite",
-            "name": "Anti-Inflammatory Guides",
-            "url": "https://www.antiinflammatorydiets.com/",
-            "inLanguage": "en"
-          },
-          {
-            "@type": "Organization",
-            "name": "Anti-Inflammatory Guides",
-            "url": "https://www.antiinflammatorydiets.com/"
-          },
-          {
-            "@type": "FAQPage",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "What kind of website is Anti-Inflammatory Guides?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "It is a static editorial website focused on anti-inflammatory food education, daily meal ideas, and wellness-oriented product storytelling."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Why are there separate pages for breakfast, snacks, and drinks?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Separate pages make the site easier to scan, easier to index, and easier to grow as a topic cluster for search."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Can this site support multiple languages?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Yes. The site uses dedicated URLs for each language, starting with English and Simplified Chinese."
-                }
-              }
-            ]
-          }
-        ]
-      }
+      {"@context":"https://schema.org","@type":"WebSite","name":"Antiinfla","url":"https://www.antiinflammatorydiets.com/","description":"A clean anti-inflammatory food reference site with structured food pages, category hubs, and practical guides."}
     </script>
+    <link rel="stylesheet" href="./styles.css" />
+      <script src="./google-config.js"></script>
+    <script src="./google-tag.js"></script>
   </head>
   <body>
-    <div class="ambient ambient-left" aria-hidden="true"></div>
-    <div class="ambient ambient-right" aria-hidden="true"></div>
-
     <header class="site-header">
-      <a class="brand" href="./">Anti-Inflammatory Guides</a>
-      <nav class="nav" aria-label="Primary">
-        <a href="#featured">Featured guides</a>
-        <a href="#principles">Principles</a>
-        <a href="#topics">Topics</a>
-        <a href="#faq">FAQ</a>
-      </nav>
-      <div class="language-switcher" aria-label="Language switcher">
-        <a class="lang-chip active" href="./">EN</a>
-        <a class="lang-chip" href="./zh-cn/">中文</a>
+      <div class="header-inner">
+        <a class="site-logo" href="./">Antiinfla</a>
+        <nav class="site-nav" id="site-nav">
+          <a href="#foods">Foods</a>
+          <a href="#guides">Guides</a>
+          <a href="#categories">Categories</a>
+          <div class="search-wrapper">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search foods..." autocomplete="off" />
+            </div>
+            <div class="search-results" id="search-results"></div>
+          </div>
+        </nav>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">&#9776;</button>
       </div>
     </header>
 
-    <main>
-      <section class="hero hero-home">
-        <div class="hero-copy">
-          <p class="eyebrow">Editorial wellness, not generic wellness</p>
-          <h1>A more thoughtful home for anti-inflammatory food content.</h1>
-          <p class="lead">
-            This site is being built as a calm, professional resource around anti-inflammatory foods, practical meal ideas, and everyday healthy eating patterns. It is designed to feel trustworthy first, commercial second.
-          </p>
-          <div class="hero-actions">
-            <a class="button button-primary" href="#featured" data-track="view_featured_guides" data-conversion="primaryCta">Browse featured guides</a>
-            <a class="button button-secondary" href="#faq" data-track="open_home_faq" data-conversion="secondaryCta">See launch FAQ</a>
-          </div>
-          <div class="trust-row">
-            <div>
-              <span>Format</span>
-              <strong>Static site, fast loading</strong>
-            </div>
-            <div>
-              <span>Structure</span>
-              <strong>Topic-cluster ready</strong>
-            </div>
-            <div>
-              <span>Language</span>
-              <strong>English first, multilingual-ready</strong>
-            </div>
-          </div>
-        </div>
+    <section class="hero-section">
+      <h1>Eat <span class="highlight">Anti-Inflammatory</span></h1>
+      <p class="hero-subtitle">
+        Explore 30 evidence-informed food pages, practical guides, and category hubs to build a simple, repeatable anti-inflammatory eating pattern.
+      </p>
+      <a href="#foods" class="hero-cta">Browse Foods &#8595;</a>
+    </section>
 
-        <aside class="hero-panel">
-          <p class="panel-label">Editorial note</p>
-          <h2>We are building for useful search intent, not for keyword stuffing.</h2>
-          <p>
-            The pages below are organized the way real readers search: best foods, breakfast ideas, snacks, and drinks. That makes the site easier to trust and easier to expand.
-          </p>
-          <ul class="calm-list">
-            <li>Readable health education tone</li>
-            <li>Warm, restrained design system</li>
-            <li>Clear internal links between guide pages</li>
-          </ul>
-        </aside>
+    <main class="page-container">
+      <!-- Category Pills -->
+      <section id="categories">
+        <h2 class="section-title">Browse by Category</h2>
+        <div class="pill-row">
+          <a class="pill" href="./foods/category/fruits/">Fruits</a>
+          <a class="pill" href="./foods/category/vegetables/">Vegetables</a>
+          <a class="pill" href="./foods/category/spices-herbs/">Spices &amp; Herbs</a>
+          <a class="pill" href="./foods/category/nuts-seeds/">Nuts &amp; Seeds</a>
+          <a class="pill" href="./foods/category/legumes-whole-grains/">Whole Grains &amp; Legumes</a>
+          <a class="pill" href="./foods/category/healthy-fats/">Healthy Fats</a>
+          <a class="pill" href="./foods/category/fish-seafood/">Fish &amp; Seafood</a>
+          <a class="pill" href="./foods/category/drinks/">Drinks</a>
+        </div>
       </section>
 
-      <section class="section section-tight" id="featured">
-        <div class="section-heading section-inline">
-          <div>
-            <p class="eyebrow">Featured guides</p>
-            <h2>The first topic cluster is now mapped as a real content hub.</h2>
-          </div>
-          <p class="section-note">These pages are written to support broad intent and adjacent long-tail searches.</p>
+      <!-- Food Cards Grid -->
+      <section id="foods">
+        <h2 class="section-title">All Foods</h2>
+        <div class="card-grid">
+          <a class="card" href="./foods/blueberries/">
+            <div class="card-thumb"><img src="./assets/heroes/blueberries.svg" alt="Blueberries" /></div>
+            <div class="card-body"><h3>Blueberries</h3><p>Antioxidant-rich berries for breakfasts and snacks.</p><span class="card-tag">Fruit</span></div>
+          </a>
+          <a class="card" href="./foods/salmon/">
+            <div class="card-thumb"><img src="./assets/heroes/salmon.svg" alt="Salmon" /></div>
+            <div class="card-body"><h3>Salmon</h3><p>Omega-3-rich fish for anti-inflammatory meals.</p><span class="card-tag">Fish</span></div>
+          </a>
+          <a class="card" href="./foods/broccoli/">
+            <div class="card-thumb"><img src="./assets/heroes/broccoli.svg" alt="Broccoli" /></div>
+            <div class="card-body"><h3>Broccoli</h3><p>Cruciferous vegetable for simple savory meals.</p><span class="card-tag">Vegetable</span></div>
+          </a>
+          <a class="card" href="./foods/turmeric/">
+            <div class="card-thumb"><img src="./assets/heroes/turmeric.svg" alt="Turmeric" /></div>
+            <div class="card-body"><h3>Turmeric</h3><p>Golden spice with curcumin for cooking and drinks.</p><span class="card-tag">Spice</span></div>
+          </a>
+          <a class="card" href="./foods/olive-oil/">
+            <div class="card-thumb"><img src="./assets/heroes/olive-oil.svg" alt="Olive Oil" /></div>
+            <div class="card-body"><h3>Olive Oil</h3><p>Healthy-fat staple for cooking and dressings.</p><span class="card-tag">Healthy Fat</span></div>
+          </a>
+          <a class="card" href="./foods/spinach/">
+            <div class="card-thumb"><img src="./assets/heroes/spinach.svg" alt="Spinach" /></div>
+            <div class="card-body"><h3>Spinach</h3><p>Nutrient-dense leafy green for meals and smoothies.</p><span class="card-tag">Vegetable</span></div>
+          </a>
+          <a class="card" href="./foods/green-tea/">
+            <div class="card-thumb"><img src="./assets/heroes/green-tea.svg" alt="Green Tea" /></div>
+            <div class="card-body"><h3>Green Tea</h3><p>Daily drink with polyphenols and simple habit value.</p><span class="card-tag">Drink</span></div>
+          </a>
+          <a class="card" href="./foods/garlic/">
+            <div class="card-thumb"><img src="./assets/heroes/garlic.svg" alt="Garlic" /></div>
+            <div class="card-body"><h3>Garlic</h3><p>Savory staple for practical home cooking.</p><span class="card-tag">Spice</span></div>
+          </a>
+          <a class="card" href="./foods/walnut/">
+            <div class="card-thumb"><img src="./assets/heroes/walnut.svg" alt="Walnut" /></div>
+            <div class="card-body"><h3>Walnut</h3><p>Omega-3-rich nut for snacks and toppings.</p><span class="card-tag">Nut</span></div>
+          </a>
+          <a class="card" href="./foods/chia-seeds/">
+            <div class="card-thumb"><img src="./assets/heroes/chia-seeds.svg" alt="Chia Seeds" /></div>
+            <div class="card-body"><h3>Chia Seeds</h3><p>Fiber-rich seeds for breakfasts and puddings.</p><span class="card-tag">Seed</span></div>
+          </a>
+          <a class="card" href="./foods/oats/">
+            <div class="card-thumb"><img src="./assets/heroes/oats.svg" alt="Oats" /></div>
+            <div class="card-body"><h3>Oats</h3><p>Whole-grain breakfast staple with easy pairings.</p><span class="card-tag">Whole Grain</span></div>
+          </a>
+          <a class="card" href="./foods/ginger/">
+            <div class="card-thumb"><img src="./assets/heroes/ginger.svg" alt="Ginger" /></div>
+            <div class="card-body"><h3>Ginger</h3><p>Warming spice for teas, cooking, and smoothies.</p><span class="card-tag">Spice</span></div>
+          </a>
+          <a class="card" href="./foods/avocado/">
+            <div class="card-thumb"><img src="./assets/heroes/avocado.svg" alt="Avocado" /></div>
+            <div class="card-body"><h3>Avocado</h3><p>Creamy fruit with healthy fats for meals.</p><span class="card-tag">Fruit</span></div>
+          </a>
+          <a class="card" href="./foods/strawberry/">
+            <div class="card-thumb"><img src="./assets/heroes/strawberry.svg" alt="Strawberry" /></div>
+            <div class="card-body"><h3>Strawberry</h3><p>Sweet berry for snacks and breakfast bowls.</p><span class="card-tag">Fruit</span></div>
+          </a>
+          <a class="card" href="./foods/lentils/">
+            <div class="card-thumb"><img src="./assets/heroes/lentils.svg" alt="Lentils" /></div>
+            <div class="card-body"><h3>Lentils</h3><p>Protein-rich legume for soups and bowls.</p><span class="card-tag">Legume</span></div>
+          </a>
+          <a class="card" href="./foods/sweet-potato/">
+            <div class="card-thumb"><img src="./assets/heroes/sweet-potato.svg" alt="Sweet Potato" /></div>
+            <div class="card-body"><h3>Sweet Potato</h3><p>Beta-carotene-rich root vegetable for meals.</p><span class="card-tag">Vegetable</span></div>
+          </a>
+          <a class="card" href="./foods/pomegranate/">
+            <div class="card-thumb"><img src="./assets/heroes/pomegranate.svg" alt="Pomegranate" /></div>
+            <div class="card-body"><h3>Pomegranate</h3><p>Antioxidant fruit for seeds, bowls, and juice.</p><span class="card-tag">Fruit</span></div>
+          </a>
+          <a class="card" href="./foods/kale/">
+            <div class="card-thumb"><img src="./assets/heroes/kale.svg" alt="Kale" /></div>
+            <div class="card-body"><h3>Kale</h3><p>Nutrient-dense green for salads and smoothies.</p><span class="card-tag">Vegetable</span></div>
+          </a>
+          <a class="card" href="./foods/almond/">
+            <div class="card-thumb"><img src="./assets/heroes/almond.svg" alt="Almond" /></div>
+            <div class="card-body"><h3>Almond</h3><p>Versatile nut for snacking and cooking.</p><span class="card-tag">Nut</span></div>
+          </a>
+          <a class="card" href="./foods/matcha/">
+            <div class="card-thumb"><img src="./assets/heroes/matcha.svg" alt="Matcha" /></div>
+            <div class="card-body"><h3>Matcha</h3><p>Concentrated green tea powder for daily drinks.</p><span class="card-tag">Drink</span></div>
+          </a>
+          <a class="card" href="./foods/flax-seeds/">
+            <div class="card-thumb"><img src="./assets/heroes/flax-seeds.svg" alt="Flax Seeds" /></div>
+            <div class="card-body"><h3>Flax Seeds</h3><p>Omega-3-rich seeds for smoothies and baking.</p><span class="card-tag">Seed</span></div>
+          </a>
+          <a class="card" href="./foods/cinnamon/">
+            <div class="card-thumb"><img src="./assets/heroes/cinnamon.svg" alt="Cinnamon" /></div>
+            <div class="card-body"><h3>Cinnamon</h3><p>Warm spice for oatmeal, drinks, and baking.</p><span class="card-tag">Spice</span></div>
+          </a>
+          <a class="card" href="./foods/tomato/">
+            <div class="card-thumb"><img src="./assets/heroes/tomato.svg" alt="Tomato" /></div>
+            <div class="card-body"><h3>Tomato</h3><p>Lycopene-rich fruit for fresh and cooked meals.</p><span class="card-tag">Vegetable</span></div>
+          </a>
+          <a class="card" href="./foods/quinoa/">
+            <div class="card-thumb"><img src="./assets/heroes/quinoa.svg" alt="Quinoa" /></div>
+            <div class="card-body"><h3>Quinoa</h3><p>Complete protein grain for bowls and salads.</p><span class="card-tag">Whole Grain</span></div>
+          </a>
+          <a class="card" href="./foods/chickpeas/">
+            <div class="card-thumb"><img src="./assets/heroes/chickpeas.svg" alt="Chickpeas" /></div>
+            <div class="card-body"><h3>Chickpeas</h3><p>Flexible legume for hummus, meals, and snacks.</p><span class="card-tag">Legume</span></div>
+          </a>
+          <a class="card" href="./foods/sardines/">
+            <div class="card-thumb"><img src="./assets/heroes/sardines.svg" alt="Sardines" /></div>
+            <div class="card-body"><h3>Sardines</h3><p>Affordable small fish with omega-3 benefits.</p><span class="card-tag">Fish</span></div>
+          </a>
+          <a class="card" href="./foods/basil/">
+            <div class="card-thumb"><img src="./assets/heroes/basil.svg" alt="Basil" /></div>
+            <div class="card-body"><h3>Basil</h3><p>Fresh herb for savory flavor and simple meals.</p><span class="card-tag">Herb</span></div>
+          </a>
+          <a class="card" href="./foods/rosemary/">
+            <div class="card-thumb"><img src="./assets/heroes/rosemary.svg" alt="Rosemary" /></div>
+            <div class="card-body"><h3>Rosemary</h3><p>Savory herb for roasting and home cooking.</p><span class="card-tag">Herb</span></div>
+          </a>
+          <a class="card" href="./foods/avocado-oil/">
+            <div class="card-thumb"><img src="./assets/heroes/avocado-oil.svg" alt="Avocado Oil" /></div>
+            <div class="card-body"><h3>Avocado Oil</h3><p>High-heat cooking oil with healthy fats.</p><span class="card-tag">Healthy Fat</span></div>
+          </a>
+          <a class="card" href="./foods/cherry/">
+            <div class="card-thumb"><img src="./assets/heroes/cherry.svg" alt="Cherry" /></div>
+            <div class="card-body"><h3>Cherry</h3><p>Anthocyanin-rich fruit for snacks and recovery.</p><span class="card-tag">Fruit</span></div>
+          </a>
         </div>
+      </section>
 
-        <div class="guide-grid">
+      <!-- Guides Section -->
+      <section id="guides">
+        <h2 class="section-title">Practical Guides</h2>
+        <div class="card-grid">
           <a class="guide-card" href="./guides/best-anti-inflammatory-foods/">
-            <p class="tag">Core guide</p>
             <h3>Best Anti-Inflammatory Foods</h3>
-            <p>A broad educational article covering vegetables, berries, beans, grains, healthy fats, and fish.</p>
+            <p>A practical overview of the top foods organized by category.</p>
           </a>
           <a class="guide-card" href="./guides/anti-inflammatory-breakfast-ideas/">
-            <p class="tag">Meal ideas</p>
             <h3>Anti-Inflammatory Breakfast Ideas</h3>
-            <p>Practical breakfast combinations built around oats, berries, yogurt-style foods, nuts, and seeds.</p>
-          </a>
-          <a class="guide-card" href="./guides/anti-inflammatory-snacks/">
-            <p class="tag">Everyday habits</p>
-            <h3>Anti-Inflammatory Snacks</h3>
-            <p>A snack-focused page for people looking for easy swaps, portable foods, and lower-friction choices.</p>
+            <p>Simple morning meals built around anti-inflammatory staples.</p>
           </a>
           <a class="guide-card" href="./guides/anti-inflammatory-drinks/">
-            <p class="tag">Daily routines</p>
             <h3>Anti-Inflammatory Drinks</h3>
-            <p>A beverage guide centered on tea, hydration, smoothies, and calmer evening routines.</p>
+            <p>Daily beverages that support an anti-inflammatory pattern.</p>
           </a>
-        </div>
-      </section>
-
-      <section class="section" id="principles">
-        <div class="section-heading">
-          <p class="eyebrow">Site principles</p>
-          <h2>Professional health content relies on tone, hierarchy, and restraint.</h2>
-        </div>
-        <div class="feature-grid">
-          <article class="feature-card">
-            <h3>Readable hierarchy</h3>
-            <p>Every page should work for both scanning and deep reading, with clear summaries, subheads, and related links.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Warm but not vague</h3>
-            <p>The visual language should feel calm and premium without becoming overly soft, decorative, or trend-driven.</p>
-          </article>
-          <article class="feature-card">
-            <h3>SEO by structure</h3>
-            <p>Separate URLs, unique metadata, topic-focused pages, and internal linking matter more than clever wording alone.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="topics">
-        <div class="section-heading section-inline">
-          <div>
-            <p class="eyebrow">Core topics</p>
-            <h2>What readers usually want to know before they trust a wellness site.</h2>
-          </div>
-        </div>
-        <div class="topic-layout">
-          <div class="topic-copy">
-            <p>
-              Most readers are not searching for one giant explanation. They are searching for meal patterns, practical food examples, and easier starting points. A serious content site should meet that behavior directly.
-            </p>
-            <p>
-              That is why the site now focuses on a small cluster of pages rather than a single decorative homepage. This is the right direction for indexing, future article growth, and eventual product alignment.
-            </p>
-          </div>
-          <div class="topic-stack">
-            <div class="topic-item">
-              <span>Broad intent</span>
-              <p>“Best anti-inflammatory foods”</p>
-            </div>
-            <div class="topic-item">
-              <span>Meal intent</span>
-              <p>“Anti-inflammatory breakfast ideas”</p>
-            </div>
-            <div class="topic-item">
-              <span>Habit intent</span>
-              <p>“Healthy anti-inflammatory snacks”</p>
-            </div>
-            <div class="topic-item">
-              <span>Routine intent</span>
-              <p>“Anti-inflammatory drinks”</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section faq" id="faq">
-        <div class="section-heading">
-          <p class="eyebrow">Launch FAQ</p>
-          <h2>What is still needed before this becomes a serious SEO project?</h2>
-        </div>
-        <div class="faq-list">
-          <details open>
-            <summary>Is GitHub Pages acceptable for SEO at this stage?</summary>
-            <p>Yes. The more important factors are content quality, indexing setup, metadata, internal linking, sitemap submission, and topic expansion.</p>
-          </details>
-          <details>
-            <summary>What makes this version more SEO-ready than the previous draft?</summary>
-            <p>It now uses a stronger content architecture, multiple guide pages, better internal links, more useful metadata, and a clearer editorial identity.</p>
-          </details>
-          <details>
-            <summary>What should happen next after this first step?</summary>
-            <p>The next phase is to replace placeholder analytics IDs, define real conversion events, and validate everything in Google Analytics, Ads, and Search Console.</p>
-          </details>
+          <a class="guide-card" href="./guides/anti-inflammatory-snacks/">
+            <h3>Anti-Inflammatory Snacks</h3>
+            <p>Easy snack ideas for between meals.</p>
+          </a>
+          <a class="guide-card" href="./guides/anti-inflammatory-foods-by-category/">
+            <h3>Foods by Category</h3>
+            <p>Browse all foods organized into their category groups.</p>
+          </a>
+          <a class="guide-card" href="./guides/how-to-start-an-anti-inflammatory-diet/">
+            <h3>How to Start an Anti-Inflammatory Diet</h3>
+            <p>A beginner-friendly guide to building your eating pattern.</p>
+          </a>
+          <a class="guide-card" href="./guides/anti-inflammatory-grocery-list/">
+            <h3>Anti-Inflammatory Grocery List</h3>
+            <p>A ready-to-use shopping list for weekly meal prep.</p>
+          </a>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <p>Anti-Inflammatory Guides · editorial static wellness site</p>
-      <button class="soft-toggle" id="soft-toggle" type="button">Toggle softer mode</button>
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <h3>Antiinfla</h3>
+          <p>A clean anti-inflammatory food reference with structured food pages, category hubs, and practical guides.</p>
+        </div>
+        <div class="footer-links">
+          <h4>Categories</h4>
+          <ul>
+            <li><a href="./foods/category/fruits/">Fruits</a></li>
+            <li><a href="./foods/category/vegetables/">Vegetables</a></li>
+            <li><a href="./foods/category/spices-herbs/">Spices &amp; Herbs</a></li>
+            <li><a href="./foods/category/nuts-seeds/">Nuts &amp; Seeds</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Guides</h4>
+          <ul>
+            <li><a href="./guides/best-anti-inflammatory-foods/">Best Foods</a></li>
+            <li><a href="./guides/how-to-start-an-anti-inflammatory-diet/">How to Start</a></li>
+            <li><a href="./guides/anti-inflammatory-grocery-list/">Grocery List</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; 2025 Antiinfla. All rights reserved.</div>
     </footer>
 
     <script src="./script.js"></script>
