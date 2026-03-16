@@ -1,17 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
-  <title id="title">Garlic bulbs and cloves</title>
-  <desc id="desc">Illustrated garlic bulbs and cloves on a light background.</desc>
+  <title id="title">Garlic bulbs and cloves illustration</title>
+  <desc id="desc">A stylized garlic bulb with separated cloves on a warm kitchen-style background.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fafafa"/><stop offset="100%" stop-color="#eeeeee"/></linearGradient>
-    <radialGradient id="bulb" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#f5f5f5"/><stop offset="60%" stop-color="#e0e0e0"/><stop offset="100%" stop-color="#bdbdbd"/></radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fffaf0"/>
+      <stop offset="100%" stop-color="#efe6d8"/>
+    </linearGradient>
+    <radialGradient id="bulbMain" cx="45%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#fffdf7"/>
+      <stop offset="65%" stop-color="#efe5d4"/>
+      <stop offset="100%" stop-color="#d7c4a8"/>
+    </radialGradient>
+    <radialGradient id="clove" cx="40%" cy="35%" r="70%">
+      <stop offset="0%" stop-color="#fffef9"/>
+      <stop offset="70%" stop-color="#f0e6d7"/>
+      <stop offset="100%" stop-color="#d8c4a6"/>
+    </radialGradient>
   </defs>
+
   <rect width="1200" height="800" fill="url(#bg)"/>
-  <ellipse cx="600" cy="650" rx="200" ry="30" fill="#e0e0e0" opacity=".3"/>
-  <ellipse cx="550" cy="420" rx="120" ry="140" fill="url(#bulb)" stroke="#9e9e9e" stroke-width="3"/>
-  <path d="M550 280 L540 310 L560 310Z" fill="#8d6e63"/>
-  <line x1="500" y1="360" x2="550" y2="280" stroke="#bdbdbd" stroke-width="2" opacity=".5"/>
-  <line x1="550" y1="340" x2="550" y2="280" stroke="#bdbdbd" stroke-width="2" opacity=".5"/>
-  <line x1="600" y1="360" x2="550" y2="280" stroke="#bdbdbd" stroke-width="2" opacity=".5"/>
-  <ellipse cx="720" cy="500" rx="45" ry="65" fill="url(#bulb)" stroke="#9e9e9e" stroke-width="2" transform="rotate(-15 720 500)"/>
-  <ellipse cx="780" cy="520" rx="40" ry="58" fill="url(#bulb)" stroke="#9e9e9e" stroke-width="2" transform="rotate(10 780 520)"/>
+  <ellipse cx="610" cy="690" rx="255" ry="34" fill="#c9b79d" opacity="0.22"/>
+
+  <!-- Main garlic bulb -->
+  <path d="M615 250 C500 250 430 340 430 460 C430 585 505 655 615 655 C725 655 800 585 800 460 C800 340 730 250 615 250 Z"
+        fill="url(#bulbMain)" stroke="#b79f7f" stroke-width="5"/>
+
+  <!-- Bulb segment lines -->
+  <path d="M615 265 C603 360 603 560 615 648" stroke="#ccb796" stroke-width="4" opacity="0.75" fill="none"/>
+  <path d="M570 280 C545 360 545 535 570 635" stroke="#d3bf9e" stroke-width="3" opacity="0.7" fill="none"/>
+  <path d="M660 280 C685 360 685 535 660 635" stroke="#d3bf9e" stroke-width="3" opacity="0.7" fill="none"/>
+
+  <!-- Stem -->
+  <path d="M598 216 C606 235 624 235 632 216 L624 276 L606 276 Z" fill="#967859"/>
+  <path d="M606 244 C612 251 618 251 624 244" stroke="#7d6246" stroke-width="2" fill="none"/>
+
+  <!-- Separated cloves -->
+  <g transform="translate(820,500) rotate(15)">
+    <path d="M0 0 C-40 -20 -70 20 -68 62 C-66 99 -38 126 -3 124 C31 122 58 94 58 60 C58 25 35 -5 0 0 Z"
+          fill="url(#clove)" stroke="#b89e7d" stroke-width="3"/>
+    <path d="M-8 10 C-10 38 -10 88 -2 118" stroke="#cfb999" stroke-width="2" opacity="0.75" fill="none"/>
+  </g>
+
+  <g transform="translate(885,548) rotate(-8)">
+    <path d="M0 0 C-34 -16 -58 16 -56 50 C-54 80 -30 102 -1 101 C28 100 50 78 50 49 C50 20 30 -4 0 0 Z"
+          fill="url(#clove)" stroke="#b89e7d" stroke-width="3"/>
+    <path d="M-6 8 C-7 30 -7 69 -1 95" stroke="#cfb999" stroke-width="2" opacity="0.75" fill="none"/>
+  </g>
+
+  <g transform="translate(502,566) rotate(-20)">
+    <path d="M0 0 C-26 -14 -45 12 -43 40 C-41 65 -24 82 -2 81 C21 80 37 63 37 39 C37 16 20 -4 0 0 Z"
+          fill="url(#clove)" stroke="#b89e7d" stroke-width="2.5"/>
+    <path d="M-5 6 C-6 22 -6 55 -1 76" stroke="#cfb999" stroke-width="1.8" opacity="0.75" fill="none"/>
+  </g>
 </svg>

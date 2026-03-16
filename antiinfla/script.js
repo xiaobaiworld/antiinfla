@@ -1,4 +1,4 @@
-/* Antiinfla — site script */
+/* Antiinfla-food — site script */
 
 (function () {
   "use strict";

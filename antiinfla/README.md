@@ -1,4 +1,4 @@
-# Antiinfla
+# Antiinfla-food
 
 最小网站初始化目录，基于纯静态页面方案。
 
