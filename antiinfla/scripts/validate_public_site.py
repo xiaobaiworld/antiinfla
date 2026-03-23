@@ -10,6 +10,12 @@ BASE = "https://www.antiinflammatorydiets.com"
 
 def collect_public_pages() -> list[Path]:
     pages = [ROOT / "index.html"]
+    pages.extend(
+        [
+            ROOT / "privacy" / "index.html",
+            ROOT / "terms" / "index.html",
+        ]
+    )
     pages.extend(sorted((ROOT / "foods").glob("*/index.html")))
     pages.extend(sorted((ROOT / "foods/category").glob("*/index.html")))
     pages.extend(sorted((ROOT / "guides").glob("*/index.html")))

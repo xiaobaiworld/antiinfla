@@ -759,6 +759,19 @@ img {
   text-align: center;
 }
 
+.footer-bottom a {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.footer-bottom a:hover {
+  color: var(--primary);
+}
+
+.footer-separator {
+  margin: 0 8px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
 /* ===== Search Results Dropdown ===== */
 
 .search-wrapper {
