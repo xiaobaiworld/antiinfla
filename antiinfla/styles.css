@@ -1,4 +1,4 @@
-/* ===== Design System — Antiinfla-food (fruit-fresh theme) ===== */
+/* ===== Design System �?Anti-inflammatory foods (fruit-fresh theme) ===== */
 
 :root {
   --primary: #43c463;
@@ -260,18 +260,23 @@ img {
 
 .card-thumb {
   width: 100%;
-  height: 180px;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 3 / 2;
   background: var(--primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .card-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.card-thumb img[src*="strawberry-real.jpg"] {
+  object-position: center;
 }
 
 .card-body {
@@ -398,10 +403,56 @@ img {
   width: 180px;
   height: 180px;
   border-radius: var(--radius);
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
   background: #fff;
   border: 1px solid var(--line);
+  padding: 12px;
+}
+
+.detail-header-img[src*="-real.jpg"] {
+  object-fit: cover;
+  object-position: center;
+  background: #f7f7f4;
+  padding: 0;
+  cursor: zoom-in;
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 18, 22, 0.82);
+  z-index: 500;
+}
+
+.image-lightbox.open {
+  display: flex;
+}
+
+.image-lightbox img {
+  max-width: min(92vw, 1200px);
+  max-height: 86vh;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  background: #fff;
+}
+
+.image-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
 }
 
 .detail-header-text h1 {
@@ -481,8 +532,9 @@ img {
 }
 
 .quick-answer p {
-  margin-bottom: 0;
-}
+    margin-bottom: 0;
+  }
+
 
 /* FAQ */
 
@@ -551,6 +603,10 @@ img {
 .sidebar-card ul {
   list-style: none;
   padding: 0;
+}
+
+.detail-header-img[src*="strawberry-real.jpg"] {
+  object-position: center;
 }
 
 .sidebar-card ul li {
@@ -655,13 +711,39 @@ img {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 16px 20px;
+  padding: 14px 16px 18px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: #fff;
   color: var(--text);
   text-decoration: none;
   transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.food-link-card-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 170px;
+  padding: 18px 20px;
+  border-radius: calc(var(--radius) - 2px);
+  background: linear-gradient(135deg, var(--primary-light), #fdfdf8);
+  overflow: visible;
+}
+
+.food-link-card-thumb img {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 132px;
+  object-fit: contain;
+  display: block;
+}
+
+.food-link-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .food-link-card:hover {
@@ -888,6 +970,11 @@ img {
     height: 140px;
   }
 
+  .detail-header-img[src*="-real.jpg"] {
+    width: 160px;
+    height: 160px;
+  }
+
   .detail-content {
     padding: 24px;
   }
@@ -913,6 +1000,10 @@ img {
   .search-results {
     width: calc(100vw - 32px);
     right: -16px;
+  }
+
+  .image-lightbox {
+    padding: 16px;
   }
 }
 

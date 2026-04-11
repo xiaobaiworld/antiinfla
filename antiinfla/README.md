@@ -1,6 +1,6 @@
-# Antiinfla-food
+# Anti-inflammatory foods
 
-最小网站初始化目录，基于纯静态页面方案。
+最小网站初始化目录，基于纯静态页面方案�?
 
 ## Files
 
@@ -10,4 +10,4 @@
 
 ## Run
 
-不需要后端和构建工具，直接在浏览器打开 `index.html` 即可预览。
+不需要后端和构建工具，直接在浏览器打开 `index.html` 即可预览�?

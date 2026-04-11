@@ -1,4 +1,4 @@
-/* Antiinfla-food — site script */
+/* Anti-inflammatory foods - site script */
 
 (function () {
   "use strict";
@@ -53,6 +53,14 @@
   if (searchInput && searchResults) {
     const rootPath = getRootPath();
 
+    function getMatches(query) {
+      return foods.filter(
+        (f) =>
+          f.name.toLowerCase().includes(query) ||
+          f.tag.toLowerCase().includes(query)
+      );
+    }
+
     searchInput.addEventListener("input", function () {
       const query = this.value.trim().toLowerCase();
       if (query.length < 2) {
@@ -61,11 +69,7 @@
         return;
       }
 
-      const matches = foods.filter(
-        (f) =>
-          f.name.toLowerCase().includes(query) ||
-          f.tag.toLowerCase().includes(query)
-      );
+      const matches = getMatches(query);
 
       if (matches.length === 0) {
         searchResults.innerHTML =
@@ -79,6 +83,25 @@
           .join("");
       }
       searchResults.classList.add("active");
+    });
+
+    searchInput.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter") {
+        return;
+      }
+
+      const query = this.value.trim().toLowerCase();
+      if (query.length < 2) {
+        return;
+      }
+
+      const matches = getMatches(query);
+      if (matches.length === 0) {
+        return;
+      }
+
+      event.preventDefault();
+      window.location.href = `${rootPath}foods/${matches[0].slug}/`;
     });
 
     // Close search results on outside click
@@ -97,5 +120,63 @@
     menuBtn.addEventListener("click", function () {
       siteNav.classList.toggle("open");
     });
+  }
+
+  /* ===== Detail image lightbox ===== */
+  const detailImages = document.querySelectorAll(".detail-header-img");
+
+  if (detailImages.length > 0) {
+    const lightbox = document.createElement("div");
+    lightbox.className = "image-lightbox";
+    lightbox.setAttribute("aria-hidden", "true");
+    lightbox.innerHTML =
+      '<button class="image-lightbox-close" type="button" aria-label="Close image viewer">&times;</button><img alt="" />';
+
+    const lightboxImg = lightbox.querySelector("img");
+    const closeBtn = lightbox.querySelector(".image-lightbox-close");
+
+    function closeLightbox() {
+      lightbox.classList.remove("open");
+      lightbox.setAttribute("aria-hidden", "true");
+      lightboxImg.removeAttribute("src");
+      lightboxImg.alt = "";
+      document.body.style.overflow = "";
+    }
+
+    function openLightbox(img) {
+      lightboxImg.src = img.currentSrc || img.src;
+      lightboxImg.alt = img.alt || "";
+      lightbox.classList.add("open");
+      lightbox.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    detailImages.forEach((img) => {
+      img.setAttribute("tabindex", "0");
+      img.setAttribute("role", "button");
+      img.setAttribute("aria-label", `${img.alt || "Image"} - open larger view`);
+      img.addEventListener("click", () => openLightbox(img));
+      img.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openLightbox(img);
+        }
+      });
+    });
+
+    closeBtn.addEventListener("click", closeLightbox);
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && lightbox.classList.contains("open")) {
+        closeLightbox();
+      }
+    });
+
+    document.body.appendChild(lightbox);
   }
 })();
