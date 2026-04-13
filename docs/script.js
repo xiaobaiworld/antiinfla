@@ -3,6 +3,30 @@
 (function () {
   "use strict";
 
+  function trackEvent(name, params) {
+    if (typeof window.gtag !== "function") {
+      return;
+    }
+
+    window.gtag("event", name, params || {});
+  }
+
+  function getPageType() {
+    const path = window.location.pathname;
+
+    if (/\/foods\/category\//.test(path)) return "category";
+    if (/\/foods\/[^/]+\/$/.test(path)) return "food";
+    if (/\/guides\/[^/]+\/$/.test(path)) return "guide";
+    return "home";
+  }
+
+  function getTextLabel(element, fallback) {
+    const text = (element && element.textContent ? element.textContent : fallback || "")
+      .replace(/\s+/g, " ")
+      .trim();
+    return text || fallback || "";
+  }
+
   /* ===== Analytics ===== */
   const siteConfig = window.SITE_CONFIG || {
     gaMeasurementId: "G-QZHTKEW60L",
@@ -139,6 +163,8 @@
 
   if (searchInput && searchResults) {
     const rootPath = getRootPath();
+    let lastTrackedSearchTerm = "";
+    let lastNoResultsTerm = "";
     const searchItems = [
       ...foods.map((food) => ({
         name: food.name,
@@ -190,6 +216,28 @@
     searchInput.addEventListener("input", function () {
       const query = this.value.trim().toLowerCase();
       const matches = getMatches(query);
+
+      if (query.length >= 2 && query !== lastTrackedSearchTerm) {
+        trackEvent("search_input", {
+          search_term: query,
+          result_count: matches.length,
+          page_type: getPageType(),
+        });
+        lastTrackedSearchTerm = query;
+      }
+
+      if (query.length >= 2 && matches.length === 0 && query !== lastNoResultsTerm) {
+        trackEvent("search_no_results", {
+          search_term: query,
+          page_type: getPageType(),
+        });
+        lastNoResultsTerm = query;
+      }
+
+      if (matches.length > 0) {
+        lastNoResultsTerm = "";
+      }
+
       renderResults(matches, query);
     });
 
@@ -209,7 +257,29 @@
       }
 
       event.preventDefault();
+      trackEvent("search_enter_redirect", {
+        search_term: query,
+        result_name: matches[0].name,
+        result_type: matches[0].tag,
+        page_type: getPageType(),
+      });
       window.location.href = matches[0].href;
+    });
+
+    searchResults.addEventListener("click", function (event) {
+      const resultLink = event.target.closest(".search-result-item[href]");
+      if (!resultLink) {
+        return;
+      }
+
+      const resultName = getTextLabel(resultLink.querySelector("strong"), "Unknown result");
+      const resultType = getTextLabel(resultLink.querySelector("span"), "Unknown");
+      trackEvent("search_select", {
+        search_term: searchInput.value.trim().toLowerCase(),
+        result_name: resultName,
+        result_type: resultType,
+        page_type: getPageType(),
+      });
     });
 
     const urlQuery = new URLSearchParams(window.location.search).get("q");
@@ -230,12 +300,77 @@
   /* ===== Mobile menu toggle ===== */
   const menuBtn = document.getElementById("mobile-menu-btn");
   const siteNav = document.getElementById("site-nav");
+  const siteLogo = document.querySelector(".site-logo");
 
   if (menuBtn && siteNav) {
     menuBtn.addEventListener("click", function () {
       siteNav.classList.toggle("open");
+      trackEvent("mobile_menu_toggle", {
+        state: siteNav.classList.contains("open") ? "open" : "close",
+        page_type: getPageType(),
+      });
     });
   }
+
+  if (siteLogo) {
+    siteLogo.addEventListener("click", function () {
+      trackEvent("nav_click", {
+        nav_label: getTextLabel(siteLogo, "Logo"),
+        nav_target: siteLogo.getAttribute("href") || "",
+        page_type: getPageType(),
+      });
+    });
+  }
+
+  if (siteNav) {
+    siteNav.addEventListener("click", function (event) {
+      const navLink = event.target.closest("a[href]");
+      if (!navLink || navLink.closest(".search-results")) {
+        return;
+      }
+
+      trackEvent("nav_click", {
+        nav_label: getTextLabel(navLink, "Navigation"),
+        nav_target: navLink.getAttribute("href") || "",
+        page_type: getPageType(),
+      });
+    });
+  }
+
+  document.addEventListener("click", function (event) {
+    const clickedCard = event.target.closest(".card, .guide-card, .pill, .food-link-card");
+    if (!clickedCard) {
+      return;
+    }
+
+    let eventName = "content_card_click";
+    let sourceSection = "unknown";
+
+    if (clickedCard.classList.contains("card")) {
+      eventName = "food_card_click";
+      sourceSection = "all_foods";
+    } else if (clickedCard.classList.contains("guide-card")) {
+      eventName = "guide_card_click";
+      sourceSection = "practical_guides";
+    } else if (clickedCard.classList.contains("pill")) {
+      eventName = "category_card_click";
+      sourceSection = "browse_by_category";
+    } else if (clickedCard.classList.contains("food-link-card")) {
+      eventName = "food_card_click";
+      sourceSection = "category_food_links";
+    }
+
+    trackEvent(eventName, {
+      item_name: getTextLabel(
+        clickedCard.querySelector("h3, strong"),
+        getTextLabel(clickedCard)
+      ),
+      item_type: getTextLabel(clickedCard.querySelector(".card-tag"), "Link"),
+      source_section: sourceSection,
+      destination: clickedCard.getAttribute("href") || "",
+      page_type: getPageType(),
+    });
+  });
 
   /* ===== Detail image lightbox ===== */
   const detailImages = document.querySelectorAll(".detail-header-img");
@@ -251,6 +386,10 @@
     const closeBtn = lightbox.querySelector(".image-lightbox-close");
 
     function closeLightbox() {
+      trackEvent("food_image_close", {
+        image_alt: lightboxImg.alt || "",
+        page_type: getPageType(),
+      });
       lightbox.classList.remove("open");
       lightbox.setAttribute("aria-hidden", "true");
       lightboxImg.removeAttribute("src");
@@ -259,6 +398,10 @@
     }
 
     function openLightbox(img) {
+      trackEvent("food_image_open", {
+        image_alt: img.alt || "",
+        page_type: getPageType(),
+      });
       lightboxImg.src = img.currentSrc || img.src;
       lightboxImg.alt = img.alt || "";
       lightbox.classList.add("open");
