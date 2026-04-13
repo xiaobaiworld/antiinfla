@@ -1,0 +1,651 @@
+version: v1
+tools:
+  - id: ripgrep
+    name: ripgrep
+    command: rg
+    category: file-text
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [brew, apt]
+    example: rg "TODO" .
+    notes: Fast recursive search for code and text.
+
+  - id: fd
+    name: fd
+    command: fd
+    category: file-text
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [brew, apt]
+    example: fd "\.md$" docs
+    notes: Friendly alternative to find.
+
+  - id: jq
+    name: jq
+    command: jq
+    category: file-text
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [brew, apt]
+    example: cat data.json | jq '.items[] | .name'
+    notes: JSON query and transformation.
+
+  - id: yq
+    name: yq
+    command: yq
+    category: file-text
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [brew, apt]
+    example: yq '.services.web.image' docker-compose.yml
+    notes: YAML and JSON processing.
+
+  - id: xsv
+    name: xsv
+    command: xsv
+    category: file-text
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: unknown
+    install: [brew, binary]
+    example: xsv stats data.csv
+    notes: CSV processing toolkit.
+
+  - id: sd
+    name: sd
+    command: sd
+    category: file-text
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, cargo]
+    example: sd "foo" "bar" README.md
+    notes: Intuitive find-and-replace tool.
+
+  - id: pandoc
+    name: pandoc
+    command: pandoc
+    category: file-text
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: pandoc input.md -o output.html
+    notes: Document conversion.
+
+  - id: imagemagick
+    name: ImageMagick
+    command: magick
+    category: file-text
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: magick input.png -resize 800x output.png
+    notes: Batch image manipulation.
+
+  - id: curl
+    name: curl
+    command: curl
+    category: http-api
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [system, brew, apt]
+    example: curl -s https://example.com/api/health
+    notes: Universal HTTP client.
+
+  - id: httpie
+    name: HTTPie
+    command: http
+    category: http-api
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, pip, apt]
+    example: http GET https://example.com/api/users
+    notes: Human-friendly HTTP client.
+
+  - id: xh
+    name: xh
+    command: xh
+    category: http-api
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, cargo]
+    example: xh GET https://example.com/api/status
+    notes: Fast HTTP client inspired by HTTPie.
+
+  - id: wget
+    name: wget
+    command: wget
+    category: http-api
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [system, brew, apt]
+    example: wget -qO- https://example.com/feed.xml
+    notes: Reliable downloader.
+
+  - id: grpcurl
+    name: grpcurl
+    command: grpcurl
+    category: http-api
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, binary]
+    example: grpcurl -plaintext localhost:50051 list
+    notes: gRPC endpoint inspection and calls.
+
+  - id: websocat
+    name: websocat
+    command: websocat
+    category: http-api
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: unknown
+    install: [brew, cargo]
+    example: websocat ws://localhost:8080/socket
+    notes: WebSocket CLI helper.
+
+  - id: k6
+    name: k6
+    command: k6
+    category: http-api
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt, binary]
+    example: k6 run loadtest.js
+    notes: API and load testing.
+
+  - id: oha
+    name: oha
+    command: oha
+    category: http-api
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, cargo]
+    example: oha -n 1000 -c 20 https://example.com
+    notes: Lightweight HTTP load testing.
+
+  - id: sqlite3
+    name: SQLite
+    command: sqlite3
+    category: data-db
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [system, brew, apt]
+    example: sqlite3 app.db "select count(*) from users;"
+    notes: Embedded SQL database CLI.
+
+  - id: psql
+    name: PostgreSQL Client
+    command: psql
+    category: data-db
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: psql "$DATABASE_URL" -c "select now();"
+    notes: Postgres client shell.
+
+  - id: mysql
+    name: MySQL Client
+    command: mysql
+    category: data-db
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: mysql -h 127.0.0.1 -u root -p
+    notes: MySQL command-line client.
+
+  - id: redis-cli
+    name: Redis CLI
+    command: redis-cli
+    category: data-db
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: redis-cli ping
+    notes: Redis command-line interface.
+
+  - id: mongosh
+    name: Mongo Shell
+    command: mongosh
+    category: data-db
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: mongosh "mongodb://localhost:27017"
+    notes: MongoDB shell.
+
+  - id: duckdb
+    name: DuckDB
+    command: duckdb
+    category: data-db
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt, binary]
+    example: duckdb -c "select * from 'data.parquet' limit 5"
+    notes: Fast local analytics DB.
+
+  - id: clickhouse-client
+    name: ClickHouse Client
+    command: clickhouse-client
+    category: data-db
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: clickhouse-client --query "select version()"
+    notes: ClickHouse SQL CLI.
+
+  - id: usql
+    name: usql
+    command: usql
+    category: data-db
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, binary]
+    example: usql postgres://user:pass@localhost/db
+    notes: Universal SQL client.
+
+  - id: git
+    name: Git
+    command: git
+    category: dev-code
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [system, brew, apt]
+    example: git status --short
+    notes: Version control core tool.
+
+  - id: gh
+    name: GitHub CLI
+    command: gh
+    category: dev-code
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: gh pr list --limit 5
+    notes: GitHub workflows via CLI.
+
+  - id: just
+    name: just
+    command: just
+    category: dev-code
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, cargo]
+    example: just test
+    notes: Command runner for project tasks.
+
+  - id: make
+    name: GNU Make
+    command: make
+    category: dev-code
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [system, brew, apt]
+    example: make build
+    notes: Legacy but ubiquitous task runner.
+
+  - id: task
+    name: Task
+    command: task
+    category: dev-code
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, binary]
+    example: task lint
+    notes: YAML-based task runner.
+
+  - id: tmux
+    name: tmux
+    command: tmux
+    category: dev-code
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [system, brew, apt]
+    example: tmux new -s dev
+    notes: Terminal multiplexer.
+
+  - id: fzf
+    name: fzf
+    command: fzf
+    category: dev-code
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: git branch | fzf
+    notes: Fuzzy finder utility.
+
+  - id: bat
+    name: bat
+    command: bat
+    category: dev-code
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: bat README.md
+    notes: cat with syntax highlighting.
+
+  - id: eza
+    name: eza
+    command: eza
+    category: dev-code
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: eza -la
+    notes: Modern ls replacement.
+
+  - id: docker
+    name: Docker
+    command: docker
+    category: ops
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 5
+    maintained: yes
+    install: [brew, apt]
+    example: docker ps
+    notes: Container runtime CLI.
+
+  - id: docker-compose
+    name: Docker Compose
+    command: docker compose
+    category: ops
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: docker compose up -d
+    notes: Multi-service container orchestration.
+
+  - id: kubectl
+    name: kubectl
+    command: kubectl
+    category: ops
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: kubectl get pods -A
+    notes: Kubernetes control plane CLI.
+
+  - id: helm
+    name: Helm
+    command: helm
+    category: ops
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: helm list -A
+    notes: Kubernetes package manager.
+
+  - id: terraform
+    name: Terraform
+    command: terraform
+    category: ops
+    kind: traditional-cli
+    priority: A
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt, binary]
+    example: terraform plan
+    notes: Infrastructure as code.
+
+  - id: ansible
+    name: Ansible
+    command: ansible
+    category: ops
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt, pip]
+    example: ansible all -i hosts -m ping
+    notes: Agentless automation tool.
+
+  - id: rsync
+    name: rsync
+    command: rsync
+    category: ops
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [system, brew, apt]
+    example: rsync -av ./src/ /tmp/backup/src/
+    notes: Incremental file sync.
+
+  - id: rclone
+    name: rclone
+    command: rclone
+    category: ops
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt, binary]
+    example: rclone ls remote:bucket
+    notes: Cloud storage sync and copy.
+
+  - id: restic
+    name: restic
+    command: restic
+    category: ops
+    kind: traditional-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [brew, apt]
+    example: restic snapshots
+    notes: Encrypted backup tool.
+
+  - id: ollama
+    name: Ollama
+    command: ollama
+    category: llm-agent
+    kind: ai-native-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [brew, apt]
+    example: ollama run qwen3:8b "hello"
+    notes: Local LLM runtime.
+
+  - id: llm
+    name: LLM (Simon Willison)
+    command: llm
+    category: llm-agent
+    kind: ai-native-cli
+    priority: A
+    agent_ready_level: high
+    agent_ready_score: 4
+    maintained: yes
+    install: [pip]
+    example: llm "summarize this" < notes.txt
+    notes: Extensible LLM CLI with plugins.
+
+  - id: aider
+    name: Aider
+    command: aider
+    category: llm-agent
+    kind: ai-native-cli
+    priority: A
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [pip]
+    example: aider --model o3-mini
+    notes: AI pair programming in terminal.
+
+  - id: shell-gpt
+    name: Shell-GPT
+    command: sgpt
+    category: llm-agent
+    kind: ai-native-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [pip]
+    example: sgpt "write a bash script to list large files"
+    notes: Shell-focused LLM assistant.
+
+  - id: open-interpreter
+    name: Open Interpreter
+    command: interpreter
+    category: llm-agent
+    kind: ai-native-cli
+    priority: B
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: unknown
+    install: [pip]
+    example: interpreter -y
+    notes: Local execution agent framework.
+
+  - id: codex-cli
+    name: Codex CLI
+    command: codex
+    category: llm-agent
+    kind: ai-native-cli
+    priority: A
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [npm, pip]
+    example: codex --help
+    notes: Agentic coding CLI workflow.
+
+  - id: mcp-server-filesystem
+    name: MCP Filesystem Server
+    command: mcp-server-filesystem
+    category: llm-agent
+    kind: mcp-server
+    priority: A
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [npm]
+    example: mcp-server-filesystem --help
+    notes: Exposes filesystem tools via MCP.
+
+  - id: mcp-server-github
+    name: MCP GitHub Server
+    command: mcp-server-github
+    category: llm-agent
+    kind: mcp-server
+    priority: A
+    agent_ready_level: medium
+    agent_ready_score: 3
+    maintained: yes
+    install: [npm]
+    example: mcp-server-github --help
+    notes: Exposes GitHub operations via MCP.
