@@ -37,6 +37,27 @@
     { name: "Walnut", slug: "walnut", tag: "Nut" },
   ];
 
+  const guides = [
+    { name: "Best Anti-Inflammatory Foods", slug: "best-anti-inflammatory-foods", tag: "Guide" },
+    { name: "Anti-Inflammatory Breakfast Ideas", slug: "anti-inflammatory-breakfast-ideas", tag: "Guide" },
+    { name: "Anti-Inflammatory Drinks", slug: "anti-inflammatory-drinks", tag: "Guide" },
+    { name: "Anti-Inflammatory Grocery List", slug: "anti-inflammatory-grocery-list", tag: "Guide" },
+    { name: "Anti-Inflammatory Snack Ideas", slug: "anti-inflammatory-snacks", tag: "Guide" },
+    { name: "Anti-Inflammatory Foods by Category", slug: "anti-inflammatory-foods-by-category", tag: "Guide" },
+    { name: "How to Start an Anti-Inflammatory Diet", slug: "how-to-start-an-anti-inflammatory-diet", tag: "Guide" },
+  ];
+
+  const categories = [
+    { name: "Anti-Inflammatory Fruits", slug: "fruits", tag: "Category" },
+    { name: "Anti-Inflammatory Vegetables", slug: "vegetables", tag: "Category" },
+    { name: "Anti-Inflammatory Spices and Herbs", slug: "spices-herbs", tag: "Category" },
+    { name: "Anti-Inflammatory Nuts and Seeds", slug: "nuts-seeds", tag: "Category" },
+    { name: "Anti-Inflammatory Whole Grains and Legumes", slug: "legumes-whole-grains", tag: "Category" },
+    { name: "Anti-Inflammatory Healthy Fats", slug: "healthy-fats", tag: "Category" },
+    { name: "Anti-Inflammatory Fish and Seafood", slug: "fish-seafood", tag: "Category" },
+    { name: "Anti-Inflammatory Drink Foods", slug: "drinks", tag: "Category" },
+  ];
+
   /* ===== Determine root path ===== */
   function getRootPath() {
     const path = window.location.pathname;
@@ -52,24 +73,30 @@
 
   if (searchInput && searchResults) {
     const rootPath = getRootPath();
+    const searchItems = [
+      ...foods.map((food) => ({
+        name: food.name,
+        tag: food.tag,
+        href: `${rootPath}foods/${food.slug}/`,
+      })),
+      ...guides.map((guide) => ({
+        name: guide.name,
+        tag: guide.tag,
+        href: `${rootPath}guides/${guide.slug}/`,
+      })),
+      ...categories.map((category) => ({
+        name: category.name,
+        tag: category.tag,
+        href: `${rootPath}foods/category/${category.slug}/`,
+      })),
+    ];
 
-    function getMatches(query) {
-      return foods.filter(
-        (f) =>
-          f.name.toLowerCase().includes(query) ||
-          f.tag.toLowerCase().includes(query)
-      );
-    }
-
-    searchInput.addEventListener("input", function () {
-      const query = this.value.trim().toLowerCase();
+    function renderResults(matches, query) {
       if (query.length < 2) {
         searchResults.classList.remove("active");
         searchResults.innerHTML = "";
         return;
       }
-
-      const matches = getMatches(query);
 
       if (matches.length === 0) {
         searchResults.innerHTML =
@@ -77,12 +104,27 @@
       } else {
         searchResults.innerHTML = matches
           .map(
-            (f) =>
-              `<a class="search-result-item" href="${rootPath}foods/${f.slug}/"><strong>${f.name}</strong><span>${f.tag}</span></a>`
+            (item) =>
+              `<a class="search-result-item" href="${item.href}"><strong>${item.name}</strong><span>${item.tag}</span></a>`
           )
           .join("");
       }
+
       searchResults.classList.add("active");
+    }
+
+    function getMatches(query) {
+      return searchItems.filter(
+        (item) =>
+          item.name.toLowerCase().includes(query) ||
+          item.tag.toLowerCase().includes(query)
+      );
+    }
+
+    searchInput.addEventListener("input", function () {
+      const query = this.value.trim().toLowerCase();
+      const matches = getMatches(query);
+      renderResults(matches, query);
     });
 
     searchInput.addEventListener("keydown", function (event) {
@@ -101,8 +143,15 @@
       }
 
       event.preventDefault();
-      window.location.href = `${rootPath}foods/${matches[0].slug}/`;
+      window.location.href = matches[0].href;
     });
+
+    const urlQuery = new URLSearchParams(window.location.search).get("q");
+    if (urlQuery) {
+      const normalizedQuery = urlQuery.trim().toLowerCase();
+      searchInput.value = urlQuery.trim();
+      renderResults(getMatches(normalizedQuery), normalizedQuery);
+    }
 
     // Close search results on outside click
     document.addEventListener("click", function (e) {
