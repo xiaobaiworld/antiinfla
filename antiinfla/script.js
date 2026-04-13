@@ -3,6 +3,72 @@
 (function () {
   "use strict";
 
+  /* ===== Analytics ===== */
+  const siteConfig = window.SITE_CONFIG || {
+    gaMeasurementId: "G-QZHTKEW60L",
+    googleAdsId: "",
+    conversionLabels: {
+      primaryCta: "",
+      secondaryCta: "",
+      contact: "",
+    },
+  };
+
+  (function initGoogleTag() {
+    const gaId = siteConfig.gaMeasurementId;
+    const adsId = siteConfig.googleAdsId;
+
+    if (
+      !gaId ||
+      gaId === "G-XXXXXXXXXX" ||
+      typeof document === "undefined" ||
+      document.querySelector(`script[src*="${gaId}"]`)
+    ) {
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+    document.head.appendChild(script);
+
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag() {
+      window.dataLayer.push(arguments);
+    };
+
+    window.gtag("js", new Date());
+    window.gtag("config", gaId, { anonymize_ip: true });
+
+    if (adsId && adsId !== "AW-XXXXXXXXX") {
+      window.gtag("config", adsId);
+    }
+
+    window.reportAdsConversion = function reportAdsConversion(key, url) {
+      const label = siteConfig.conversionLabels && siteConfig.conversionLabels[key];
+      if (!adsId || !label || typeof window.gtag !== "function") {
+        if (url) {
+          window.location = url;
+        }
+        return false;
+      }
+
+      const sendTo = `${adsId}/${label}`;
+      const callback = function callback() {
+        if (url) {
+          window.location = url;
+        }
+      };
+
+      window.gtag("event", "conversion", {
+        send_to: sendTo,
+        event_callback: callback,
+      });
+
+      return false;
+    };
+  })();
+
   /* ===== Food search data ===== */
   const foods = [
     { name: "Almond", slug: "almond", tag: "Nut" },
