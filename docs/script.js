@@ -337,6 +337,27 @@
     });
   }
 
+  /* ===== Sister site footer link ===== */
+  const footerInner = document.querySelector(".site-footer .footer-inner");
+
+  if (footerInner && !footerInner.querySelector(".footer-links.sister-site-links")) {
+    const guidesBlock = Array.from(footerInner.querySelectorAll(".footer-links")).find((block) => {
+      const heading = block.querySelector("h4");
+      return heading && heading.textContent.trim().toLowerCase() === "guides";
+    });
+
+    const sisterBlock = document.createElement("div");
+    sisterBlock.className = "footer-links sister-site-links";
+    sisterBlock.innerHTML =
+      '<h4>Also Explore</h4><ul><li><a href="https://www.guthealthfoods.net/en" target="_blank" rel="noopener noreferrer">Gut Health Foods</a></li></ul>';
+
+    if (guidesBlock && guidesBlock.nextSibling) {
+      footerInner.insertBefore(sisterBlock, guidesBlock.nextSibling);
+    } else {
+      footerInner.appendChild(sisterBlock);
+    }
+  }
+
   document.addEventListener("click", function (event) {
     const clickedCard = event.target.closest(".card, .guide-card, .pill, .food-link-card");
     if (!clickedCard) {
