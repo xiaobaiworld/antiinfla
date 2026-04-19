@@ -348,8 +348,8 @@
 
     const sisterBlock = document.createElement("div");
     sisterBlock.className = "footer-links sister-site-links";
-    sisterBlock.innerHTML =
-      '<h4>Also Explore</h4><ul><li><a href="https://www.guthealthfoods.net/en" target="_blank" rel="noopener noreferrer">Gut Health Foods</a></li></ul>';
+  sisterBlock.innerHTML =
+    '<h4>Useful Links</h4><ul><li><a href="https://www.guthealthfoods.net/en" target="_blank" rel="noopener noreferrer">Gut Health Foods</a></li></ul>';
 
     if (guidesBlock && guidesBlock.nextSibling) {
       footerInner.insertBefore(sisterBlock, guidesBlock.nextSibling);
