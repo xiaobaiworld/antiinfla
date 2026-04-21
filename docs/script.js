@@ -358,6 +358,36 @@
     }
   }
 
+  const footerBottom = document.querySelector(".site-footer .footer-bottom");
+
+  if (footerBottom) {
+    const ensureFooterLink = function ensureFooterLink(href, label) {
+      const existing = Array.from(footerBottom.querySelectorAll("a")).find(function (link) {
+        const normalizedHref = link.getAttribute("href") || "";
+        const normalizedText = (link.textContent || "").trim().toLowerCase();
+        return normalizedHref === href || normalizedText === label.toLowerCase();
+      });
+
+      if (existing) {
+        return;
+      }
+
+      const separator = document.createElement("span");
+      separator.className = "footer-separator";
+      separator.textContent = "|";
+
+      const anchor = document.createElement("a");
+      anchor.href = href;
+      anchor.textContent = label;
+
+      footerBottom.appendChild(separator);
+      footerBottom.appendChild(anchor);
+    };
+
+    ensureFooterLink("/about/", "About");
+    ensureFooterLink("/contact/", "Contact");
+  }
+
   document.addEventListener("click", function (event) {
     const clickedCard = event.target.closest(".card, .guide-card, .pill, .food-link-card");
     if (!clickedCard) {
