@@ -423,6 +423,30 @@
     });
   });
 
+  document.addEventListener("click", function (event) {
+    const footerLink = event.target.closest(".site-footer a[href]");
+    if (!footerLink) {
+      return;
+    }
+
+    if (footerLink.closest(".sister-site-links")) {
+      trackEvent("sister_site_click", {
+        link_label: getTextLabel(footerLink, "Sister Site"),
+        destination: footerLink.href || footerLink.getAttribute("href") || "",
+        page_type: getPageType(),
+      });
+      return;
+    }
+
+    if (footerLink.closest(".footer-bottom")) {
+      trackEvent("footer_utility_click", {
+        link_label: getTextLabel(footerLink, "Footer Utility"),
+        destination: footerLink.getAttribute("href") || "",
+        page_type: getPageType(),
+      });
+    }
+  });
+
   /* ===== Detail image lightbox ===== */
   const detailImages = document.querySelectorAll(".detail-header-img");
 
