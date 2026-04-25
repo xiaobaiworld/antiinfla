@@ -135,6 +135,7 @@
     { name: "Anti-Inflammatory Snack Ideas", slug: "anti-inflammatory-snacks", tag: "Guide" },
     { name: "Anti-Inflammatory Foods by Category", slug: "anti-inflammatory-foods-by-category", tag: "Guide" },
     { name: "How to Start an Anti-Inflammatory Diet", slug: "how-to-start-an-anti-inflammatory-diet", tag: "Guide" },
+    { name: "Foods for Bloating and Gas", slug: "foods-for-bloating-and-gas", tag: "Guide" },
   ];
 
   const categories = [
