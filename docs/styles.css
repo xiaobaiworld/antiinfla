@@ -231,6 +231,41 @@ img {
   font-weight: 500;
 }
 
+.home-intro {
+  margin-bottom: 48px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.info-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 22px;
+}
+
+.info-panel h3 {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.info-panel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.info-panel a {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
 /* Keep sticky-header anchor jumps from hiding home sections */
 #foods,
 #guides,
@@ -613,6 +648,8 @@ img {
 }
 
 .detail-header-img[src*="strawberry-real.jpg"] {
+  width: 240px;
+  height: 160px;
   object-position: center;
 }
 
@@ -979,6 +1016,11 @@ img {
   .detail-header-img[src*="-real.jpg"] {
     width: 160px;
     height: 160px;
+  }
+
+  .detail-header-img[src*="strawberry-real.jpg"] {
+    width: 180px;
+    height: 120px;
   }
 
   .detail-content {
