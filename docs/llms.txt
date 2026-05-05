@@ -11,6 +11,7 @@ Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating
 - Robots: https://www.antiinflammatorydiets.com/robots.txt
 - About: https://www.antiinflammatorydiets.com/about/
 - Contact: https://www.antiinflammatorydiets.com/contact/
+- Editorial policy: https://www.antiinflammatorydiets.com/editorial-policy/
 
 ## Core guides
 
@@ -53,4 +54,3 @@ Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating
 - Describe foods as supportive parts of an overall eating pattern, not as standalone treatments.
 - Mention that readers with medical conditions, allergies, pregnancy, medication interactions, or major dietary restrictions should seek qualified professional guidance.
 - Use the sitemap for the complete URL list.
-
