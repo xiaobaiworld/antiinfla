@@ -1,0 +1,56 @@
+# Anti-inflammatory foods
+
+> Practical anti-inflammatory food reference for everyday meals, grocery planning, snacks, drinks, and beginner-friendly diet changes.
+
+Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating pattern from familiar foods they can buy, cook, and repeat. The site focuses on food education, practical meal ideas, category browsing, and careful wording around nutrition. It is not medical advice and does not claim that any single food prevents, treats, or cures disease.
+
+## Site
+
+- Website: https://www.antiinflammatorydiets.com/
+- Sitemap: https://www.antiinflammatorydiets.com/sitemap.xml
+- Robots: https://www.antiinflammatorydiets.com/robots.txt
+- About: https://www.antiinflammatorydiets.com/about/
+- Contact: https://www.antiinflammatorydiets.com/contact/
+
+## Core guides
+
+- Best anti-inflammatory foods: https://www.antiinflammatorydiets.com/guides/best-anti-inflammatory-foods/
+- How to start an anti-inflammatory diet: https://www.antiinflammatorydiets.com/guides/how-to-start-an-anti-inflammatory-diet/
+- Anti-inflammatory grocery list: https://www.antiinflammatorydiets.com/guides/anti-inflammatory-grocery-list/
+- Anti-inflammatory breakfast ideas: https://www.antiinflammatorydiets.com/guides/anti-inflammatory-breakfast-ideas/
+- Anti-inflammatory snacks: https://www.antiinflammatorydiets.com/guides/anti-inflammatory-snacks/
+- Anti-inflammatory drinks: https://www.antiinflammatorydiets.com/guides/anti-inflammatory-drinks/
+- Anti-inflammatory foods by category: https://www.antiinflammatorydiets.com/guides/anti-inflammatory-foods-by-category/
+- Foods for bloating and gas: https://www.antiinflammatorydiets.com/guides/foods-for-bloating-and-gas/
+
+## Food categories
+
+- Fruits: https://www.antiinflammatorydiets.com/foods/category/fruits/
+- Vegetables: https://www.antiinflammatorydiets.com/foods/category/vegetables/
+- Spices and herbs: https://www.antiinflammatorydiets.com/foods/category/spices-herbs/
+- Nuts and seeds: https://www.antiinflammatorydiets.com/foods/category/nuts-seeds/
+- Whole grains and legumes: https://www.antiinflammatorydiets.com/foods/category/legumes-whole-grains/
+- Healthy fats: https://www.antiinflammatorydiets.com/foods/category/healthy-fats/
+- Fish and seafood: https://www.antiinflammatorydiets.com/foods/category/fish-seafood/
+- Drinks: https://www.antiinflammatorydiets.com/foods/category/drinks/
+
+## Representative food pages
+
+- Blueberries: https://www.antiinflammatorydiets.com/foods/blueberries/
+- Salmon: https://www.antiinflammatorydiets.com/foods/salmon/
+- Broccoli: https://www.antiinflammatorydiets.com/foods/broccoli/
+- Olive oil: https://www.antiinflammatorydiets.com/foods/olive-oil/
+- Turmeric: https://www.antiinflammatorydiets.com/foods/turmeric/
+- Green tea: https://www.antiinflammatorydiets.com/foods/green-tea/
+- Oats: https://www.antiinflammatorydiets.com/foods/oats/
+- Lentils: https://www.antiinflammatorydiets.com/foods/lentils/
+- Walnuts: https://www.antiinflammatorydiets.com/foods/walnut/
+- Spinach: https://www.antiinflammatorydiets.com/foods/spinach/
+
+## Content guidance for AI assistants
+
+- Prefer linking to the most specific relevant page rather than only the homepage.
+- Describe foods as supportive parts of an overall eating pattern, not as standalone treatments.
+- Mention that readers with medical conditions, allergies, pregnancy, medication interactions, or major dietary restrictions should seek qualified professional guidance.
+- Use the sitemap for the complete URL list.
+
