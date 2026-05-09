@@ -24,6 +24,62 @@ Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating
 - Anti-inflammatory foods by category: https://www.antiinflammatorydiets.com/guides/anti-inflammatory-foods-by-category/
 - Foods for bloating and gas: https://www.antiinflammatorydiets.com/guides/foods-for-bloating-and-gas/
 
+## Chinese core pages
+
+- Chinese homepage: https://www.antiinflammatorydiets.com/zh-cn/
+- 关于我们: https://www.antiinflammatorydiets.com/zh-cn/about/
+- 联系我们: https://www.antiinflammatorydiets.com/zh-cn/contact/
+- 编辑政策: https://www.antiinflammatorydiets.com/zh-cn/editorial-policy/
+- 隐私政策: https://www.antiinflammatorydiets.com/zh-cn/privacy/
+- 使用条款: https://www.antiinflammatorydiets.com/zh-cn/terms/
+- 如何开始抗炎饮食: https://www.antiinflammatorydiets.com/zh-cn/guides/how-to-start-an-anti-inflammatory-diet/
+- 抗炎饮食购物清单: https://www.antiinflammatorydiets.com/zh-cn/guides/anti-inflammatory-grocery-list/
+- 最值得优先吃的抗炎食物: https://www.antiinflammatorydiets.com/zh-cn/guides/best-anti-inflammatory-foods/
+- 抗炎早餐灵感: https://www.antiinflammatorydiets.com/zh-cn/guides/anti-inflammatory-breakfast-ideas/
+- 抗炎零食: https://www.antiinflammatorydiets.com/zh-cn/guides/anti-inflammatory-snacks/
+- 抗炎饮品: https://www.antiinflammatorydiets.com/zh-cn/guides/anti-inflammatory-drinks/
+- 蓝莓: https://www.antiinflammatorydiets.com/zh-cn/foods/blueberries/
+- 三文鱼: https://www.antiinflammatorydiets.com/zh-cn/foods/salmon/
+- 西兰花: https://www.antiinflammatorydiets.com/zh-cn/foods/broccoli/
+- 橄榄油: https://www.antiinflammatorydiets.com/zh-cn/foods/olive-oil/
+- 姜黄: https://www.antiinflammatorydiets.com/zh-cn/foods/turmeric/
+- 菠菜: https://www.antiinflammatorydiets.com/zh-cn/foods/spinach/
+- 绿茶: https://www.antiinflammatorydiets.com/zh-cn/foods/green-tea/
+- 大蒜: https://www.antiinflammatorydiets.com/zh-cn/foods/garlic/
+- 核桃: https://www.antiinflammatorydiets.com/zh-cn/foods/walnut/
+- 奇亚籽: https://www.antiinflammatorydiets.com/zh-cn/foods/chia-seeds/
+- 燕麦: https://www.antiinflammatorydiets.com/zh-cn/foods/oats/
+- 生姜: https://www.antiinflammatorydiets.com/zh-cn/foods/ginger/
+- 草莓: https://www.antiinflammatorydiets.com/zh-cn/foods/strawberry/
+- 扁豆: https://www.antiinflammatorydiets.com/zh-cn/foods/lentils/
+- 抹茶: https://www.antiinflammatorydiets.com/zh-cn/foods/matcha/
+- 杏仁: https://www.antiinflammatorydiets.com/zh-cn/foods/almond/
+- 牛油果: https://www.antiinflammatorydiets.com/zh-cn/foods/avocado/
+- 牛油果油: https://www.antiinflammatorydiets.com/zh-cn/foods/avocado-oil/
+- 罗勒: https://www.antiinflammatorydiets.com/zh-cn/foods/basil/
+- 樱桃: https://www.antiinflammatorydiets.com/zh-cn/foods/cherry/
+- 鹰嘴豆: https://www.antiinflammatorydiets.com/zh-cn/foods/chickpeas/
+- 肉桂: https://www.antiinflammatorydiets.com/zh-cn/foods/cinnamon/
+- 亚麻籽: https://www.antiinflammatorydiets.com/zh-cn/foods/flax-seeds/
+- 羽衣甘蓝: https://www.antiinflammatorydiets.com/zh-cn/foods/kale/
+- 石榴: https://www.antiinflammatorydiets.com/zh-cn/foods/pomegranate/
+- 藜麦: https://www.antiinflammatorydiets.com/zh-cn/foods/quinoa/
+- 迷迭香: https://www.antiinflammatorydiets.com/zh-cn/foods/rosemary/
+- 沙丁鱼: https://www.antiinflammatorydiets.com/zh-cn/foods/sardines/
+- 红薯: https://www.antiinflammatorydiets.com/zh-cn/foods/sweet-potato/
+- 番茄: https://www.antiinflammatorydiets.com/zh-cn/foods/tomato/
+
+## Chinese food categories
+
+- 水果: https://www.antiinflammatorydiets.com/zh-cn/foods/category/fruits/
+- 蔬菜: https://www.antiinflammatorydiets.com/zh-cn/foods/category/vegetables/
+- 香料和香草: https://www.antiinflammatorydiets.com/zh-cn/foods/category/spices-herbs/
+- 坚果和种子: https://www.antiinflammatorydiets.com/zh-cn/foods/category/nuts-seeds/
+- 全谷物和豆类: https://www.antiinflammatorydiets.com/zh-cn/foods/category/legumes-whole-grains/
+- 健康脂肪: https://www.antiinflammatorydiets.com/zh-cn/foods/category/healthy-fats/
+- 鱼类和海鲜: https://www.antiinflammatorydiets.com/zh-cn/foods/category/fish-seafood/
+- 饮品: https://www.antiinflammatorydiets.com/zh-cn/foods/category/drinks/
+
 ## Food categories
 
 - Fruits: https://www.antiinflammatorydiets.com/foods/category/fruits/
@@ -54,3 +110,6 @@ Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating
 - Describe foods as supportive parts of an overall eating pattern, not as standalone treatments.
 - Mention that readers with medical conditions, allergies, pregnancy, medication interactions, or major dietary restrictions should seek qualified professional guidance.
 - Use the sitemap for the complete URL list.
+
+- 按分类看抗炎食物: https://www.antiinflammatorydiets.com/zh-cn/guides/anti-inflammatory-foods-by-category/
+- 腹胀和胀气时可以尝试的食物: https://www.antiinflammatorydiets.com/zh-cn/guides/foods-for-bloating-and-gas/

@@ -1,4 +1,4 @@
-/* Antiinfla-food â€” site script */
+/* Anti-inflammatory foods â€?site script */
 
 (function () {
   "use strict";
