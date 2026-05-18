@@ -125,7 +125,7 @@
     { name: "Strawberry", slug: "strawberry", tag: "Fruit", aliases: "strawberry strawberries fruit berries vitamin c breakfast snack yogurt smoothie" },
     { name: "Sweet Potato", slug: "sweet-potato", tag: "Vegetable", aliases: "sweet potato vegetable root beta carotene fiber dinner bowl meal prep" },
     { name: "Tomato", slug: "tomato", tag: "Vegetable", aliases: "tomato tomatoes vegetable fruit lycopene salad sauce cooked fresh mediterranean" },
-    { name: "Turmeric", slug: "turmeric", tag: "Spice", aliases: "turmeric spice curcumin golden milk curry drink cooking ginger" },
+    { name: "Turmeric", slug: "turmeric", tag: "Spice", aliases: "turmeric spice curcumin anti inflammatory inflammation joint pain arthritis turmeric tea golden milk supplement curry drink cooking ginger" },
     { name: "Walnut", slug: "walnut", tag: "Nut", aliases: "walnut walnuts nut nuts omega-3 omega3 ala snack topping breakfast salad" },
   ];
 
@@ -160,7 +160,7 @@
     { name: "草莓", slug: "strawberry", tag: "水果", aliases: "strawberry fruit 草莓 水果 浆果 维生素c 早餐 零食 酸奶 奶昔" },
     { name: "红薯", slug: "sweet-potato", tag: "蔬菜", aliases: "sweet potato vegetable 红薯 甘薯 蔬菜 根茎 β胡萝卜素 纤维 晚餐 碗餐" },
     { name: "番茄", slug: "tomato", tag: "蔬菜", aliases: "tomato vegetable 番茄 西红柿 蔬菜 水果 番茄红素 沙拉 酱汁 熟番茄 地中海" },
-    { name: "姜黄", slug: "turmeric", tag: "香料", aliases: "turmeric spice 姜黄 香料 姜黄素 黄金奶 咖喱 饮品 烹饪 生姜" },
+    { name: "姜黄", slug: "turmeric", tag: "香料", aliases: "turmeric spice 姜黄 香料 姜黄素 抗炎 炎症 关节不适 关节炎 姜黄茶 黄金奶 补充剂 咖喱 饮品 烹饪 生姜" },
     { name: "核桃", slug: "walnut", tag: "坚果", aliases: "walnut nut 核桃 坚果 omega-3 omega3 欧米伽3 ala 零食 早餐 沙拉" },
   ];
 
