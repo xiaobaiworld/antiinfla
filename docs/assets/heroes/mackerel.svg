@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Mackerel fillets with lemon and herbs</title>
+  <desc id="desc">Illustrated mackerel fillets on a plate with lemon and herbs.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef8f4"/>
+      <stop offset="100%" stop-color="#d7eef0"/>
+    </linearGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#cfd8dc"/>
+      <stop offset="46%" stop-color="#78909c"/>
+      <stop offset="100%" stop-color="#37474f"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1f4f5f"/>
+      <stop offset="100%" stop-color="#5f8b95"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <ellipse cx="610" cy="640" rx="300" ry="42" fill="#6aa989" opacity=".16"/>
+  <ellipse cx="600" cy="460" rx="330" ry="210" fill="#fffdf6" stroke="#e1eadf" stroke-width="6"/>
+  <path d="M350 420 C455 330 660 320 820 382 C870 402 875 436 824 454 C640 520 455 505 350 420Z" fill="url(#fish)"/>
+  <path d="M383 407 C505 355 668 356 810 402 C657 414 514 424 383 407Z" fill="url(#skin)" opacity=".92"/>
+  <path d="M430 386 C474 405 520 408 570 383" fill="none" stroke="#e8f5e9" stroke-width="13" stroke-linecap="round" opacity=".72"/>
+  <path d="M545 371 C596 392 644 396 704 372" fill="none" stroke="#e8f5e9" stroke-width="13" stroke-linecap="round" opacity=".72"/>
+  <path d="M650 389 C698 410 740 412 792 392" fill="none" stroke="#e8f5e9" stroke-width="12" stroke-linecap="round" opacity=".7"/>
+  <circle cx="396" cy="414" r="8" fill="#263238"/>
+  <path d="M780 395 L910 340 L858 460Z" fill="#607d8b"/>
+  <path d="M400 515 C520 475 682 488 790 548 C650 604 490 600 400 515Z" fill="#e8eef0"/>
+  <path d="M430 518 C540 496 668 504 760 548" fill="none" stroke="#9eb4bc" stroke-width="11" stroke-linecap="round" opacity=".65"/>
+  <circle cx="836" cy="536" r="44" fill="#fff176" opacity=".86"/>
+  <circle cx="836" cy="536" r="30" fill="#fffde7"/>
+  <path d="M836 536 L836 492 M836 536 L874 558 M836 536 L798 558" stroke="#fbc02d" stroke-width="5" stroke-linecap="round"/>
+  <path d="M300 560 C332 538 368 532 406 542" fill="none" stroke="#66bb6a" stroke-width="12" stroke-linecap="round"/>
+  <path d="M318 548 C330 520 346 500 370 486" fill="none" stroke="#81c784" stroke-width="9" stroke-linecap="round"/>
+  <path d="M342 548 C358 520 382 504 414 500" fill="none" stroke="#81c784" stroke-width="9" stroke-linecap="round"/>
+</svg>

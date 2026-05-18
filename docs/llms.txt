@@ -66,6 +66,8 @@ Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating
 - 藜麦: https://www.antiinflammatorydiets.com/zh-cn/foods/quinoa/
 - 迷迭香: https://www.antiinflammatorydiets.com/zh-cn/foods/rosemary/
 - 沙丁鱼: https://www.antiinflammatorydiets.com/zh-cn/foods/sardines/
+- 鲭鱼: https://www.antiinflammatorydiets.com/zh-cn/foods/mackerel/
+- 金枪鱼: https://www.antiinflammatorydiets.com/zh-cn/foods/tuna/
 - 红薯: https://www.antiinflammatorydiets.com/zh-cn/foods/sweet-potato/
 - 番茄: https://www.antiinflammatorydiets.com/zh-cn/foods/tomato/
 
@@ -95,6 +97,8 @@ Anti-inflammatory foods helps readers build a realistic anti-inflammatory eating
 
 - Blueberries: https://www.antiinflammatorydiets.com/foods/blueberries/
 - Salmon: https://www.antiinflammatorydiets.com/foods/salmon/
+- Mackerel: https://www.antiinflammatorydiets.com/foods/mackerel/
+- Tuna: https://www.antiinflammatorydiets.com/foods/tuna/
 - Broccoli: https://www.antiinflammatorydiets.com/foods/broccoli/
 - Olive oil: https://www.antiinflammatorydiets.com/foods/olive-oil/
 - Turmeric: https://www.antiinflammatorydiets.com/foods/turmeric/
