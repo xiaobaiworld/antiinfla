@@ -1,0 +1,13 @@
+services:
+  demo:
+    image: docker-demo:${TAG:-0.1.0}
+    container_name: docker-demo
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    environment:
+      DATA_DIR: /data
+      MOUNT_DIR: /mnt/books
+    volumes:
+      - ./data:/data
+      - ${BOOKS_HOST_PATH:-/tmp}:/mnt/books:ro

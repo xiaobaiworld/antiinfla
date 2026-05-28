@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+.venv*/
+*.tar
+*.tar.gz
+.git/
+.DS_Store
+README.md
+REFACTOR-PLAN.md
+
+# 本地数据：迁移走的是 rsync,不能进镜像
+**/*.db
+**/*.db-shm
+**/*.db-wal
+**/*.bak.*
+**/covers/
+**/*.log
+data/

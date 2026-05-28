@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv*/
+
+# Claude Code worktree / 本地配置
+.claude/
+
+# 本地数据库与备份(每台机器独立维护)
+*.db
+*.db-shm
+*.db-wal
+*.bak.*
+
+# 运行时日志
+*.log
+
+# 抽取的封面缓存(由 pipeline 重新生成)
+books_organizer/covers/
+
+# Docker 镜像产物
+*.tar
+*.tar.gz
+
+# macOS
+.DS_Store
+
+# 临时数据目录(docker-demo 跑出来的)
+docker-demo/data/

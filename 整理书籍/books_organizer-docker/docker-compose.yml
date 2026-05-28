@@ -1,0 +1,30 @@
+services:
+  web:
+    image: books-organizer-web:${TAG:-0.1.0}
+    container_name: books-organizer-web
+    restart: unless-stopped
+    ports:
+      - "8765:8765"
+    environment:
+      BOOKS_ROOT: /books
+      BOOKS_DATA_DIR: /data
+      LANG: C.UTF-8
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ${BOOKS_HOST_PATH:-/Volumes/book}:/books:ro
+      - ./data:/data
+
+  pipeline:
+    image: books-organizer:${TAG:-0.1.0}
+    profiles: ["manual"]
+    environment:
+      BOOKS_ROOT: /books
+      BOOKS_DATA_DIR: /data
+      LANG: C.UTF-8
+      LC_ALL: C
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ${BOOKS_HOST_PATH:-/Volumes/book}:/books
+      - ./data:/data
+    entrypoint: ["python", "-m", "books_organizer"]
+    command: ["status"]
