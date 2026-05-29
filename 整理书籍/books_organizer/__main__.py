@@ -161,6 +161,10 @@ def build_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("dedupe", help="阶段 4：版本/重复聚类")
     d.set_defaults(func=cmd_dedupe)
 
+    ri = sub.add_parser("reindex", help="补 title_sort(拼音排序键)和 pub_year(出版年代)")
+    ri.add_argument("--force", action="store_true", help="全表重算,默认只补空值")
+    ri.set_defaults(func=cmd_reindex)
+
     pp = sub.add_parser("pipeline", help="一键端到端：scan → extract → lookup → dedupe → plan → apply")
     pp.add_argument("--root", default=str(DEFAULT_ROOT))
     pp.add_argument("--organized", default=str(DEFAULT_ORGANIZED))
@@ -202,6 +206,15 @@ def cmd_pipeline(args: argparse.Namespace) -> int:
 def cmd_web(args: argparse.Namespace) -> int:
     from . import web as web_mod
     web_mod.run(host=args.host, port=args.port)
+    return 0
+
+
+def cmd_reindex(args: argparse.Namespace) -> int:
+    from . import index_fields
+    conn = db.connect(Path(args.db))
+    db.init(conn)
+    stats = index_fields.reindex(conn, force=args.force)
+    print(f"reindex done — {stats}", file=sys.stderr)
     return 0
 
 

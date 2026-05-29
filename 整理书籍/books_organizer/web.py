@@ -10,12 +10,14 @@
 """
 from __future__ import annotations
 
+import json
 import mimetypes
 import sqlite3
 from pathlib import Path
 
 from flask import Flask, Response, abort, jsonify, render_template_string, request, send_file
 
+from . import index_fields
 from .paths import BOOKS_ROOT as ROOT, DB_PATH, COVER_DIR
 
 app = Flask(__name__)
@@ -96,12 +98,24 @@ def api_books():
     if category2:
         where.append("m.category2 = ?")
         params.append(category2)
+    subject = args.get("subject", "").strip()
+    if subject:
+        where.append("m.subjects LIKE ?")
+        params.append(f'%"{subject}"%')
+    decade = args.get("decade", "").strip()
+    if decade.isdigit():
+        d = int(decade)
+        where.append("m.pub_year >= ? AND m.pub_year < ?")
+        params += [d, d + 10]
 
     order = {
         "title": "m.title ASC",
         "author": "m.author ASC",
         "id": "f.id DESC",
         "confidence": "m.confidence DESC",
+        "pinyin": "COALESCE(NULLIF(m.title_sort, ''), m.title) ASC",
+        "pub_year_desc": "(m.pub_year IS NULL), m.pub_year DESC, m.title ASC",
+        "pub_year_asc": "(m.pub_year IS NULL), m.pub_year ASC, m.title ASC",
     }.get(sort, "m.title ASC")
 
     where_sql = " AND ".join(where)
@@ -139,27 +153,56 @@ def api_facets():
         f"AND m.author != '' AND {primary_filter} "
         f"GROUP BY m.author ORDER BY n DESC LIMIT 80"
     )]
-    # 层级 facets：{cat1: {n: 5000, subs: {cat2: 1000, cat2b: 800}}}
     rows = conn.execute(
-        f"SELECT m.category, m.category2, COUNT(*) n FROM metadata m "
+        f"SELECT m.category, m.category2, m.subjects, COUNT(*) n FROM metadata m "
         f"WHERE m.category IS NOT NULL AND {primary_filter} "
-        f"GROUP BY m.category, m.category2"
+        f"GROUP BY m.category, m.category2, m.subjects"
     ).fetchall()
     tree: dict = {}
     for r in rows:
         c1, c2, n = r["category"], r["category2"], r["n"]
         node = tree.setdefault(c1, {"n": 0, "subs": {}})
         node["n"] += n
-        if c2:
-            node["subs"][c2] = node["subs"].get(c2, 0) + n
+        if not c2:
+            continue
+        sub_node = node["subs"].setdefault(c2, {"n": 0, "subjects": {}})
+        sub_node["n"] += n
+        if r["subjects"]:
+            try:
+                for s in json.loads(r["subjects"])[:6]:
+                    if not s:
+                        continue
+                    sub_node["subjects"][s] = sub_node["subjects"].get(s, 0) + n
+            except (ValueError, TypeError):
+                pass
+
+    def _build_subs(subs_dict):
+        out = []
+        for sk, sv in subs_dict.items():
+            subjects_top = sorted(
+                ({"key": kk, "n": vv} for kk, vv in sv["subjects"].items()
+                 if vv >= 2 and kk != sk),
+                key=lambda x: -x["n"],
+            )[:30]
+            out.append({"key": sk, "n": sv["n"], "subjects": subjects_top})
+        return sorted(out, key=lambda x: -x["n"])
+
     cats = sorted(
-        [{"key": k, "n": v["n"],
-          "subs": sorted([{"key": sk, "n": sn} for sk, sn in v["subs"].items()],
-                          key=lambda x: -x["n"])}
+        [{"key": k, "n": v["n"], "subs": _build_subs(v["subs"])}
          for k, v in tree.items()],
         key=lambda x: -x["n"],
     )
-    return jsonify({"exts": exts, "authors": authors, "categories": cats})
+
+    decades_rows = conn.execute(
+        f"SELECT (m.pub_year / 10) * 10 AS decade, COUNT(*) n FROM metadata m "
+        f"WHERE m.pub_year IS NOT NULL AND {primary_filter} "
+        f"GROUP BY decade ORDER BY decade DESC"
+    ).fetchall()
+    decades = [{"key": r["decade"], "n": r["n"]} for r in decades_rows if r["decade"]]
+
+    return jsonify({
+        "exts": exts, "authors": authors, "categories": cats, "decades": decades,
+    })
 
 
 @app.route("/api/book/<int:file_id>")
@@ -235,11 +278,17 @@ HOME_HTML = """<!doctype html>
   <h1>📚 书库</h1>
   <input type="search" id="q" placeholder="搜索书名或作者…">
   <select id="category"><option value="">所有分类</option></select>
-  <select id="category2" disabled><option value="">—</option></select>
+  <select id="category2" disabled><option value="">— 二级分类 —</option></select>
+  <select id="subject" disabled><option value="">— 跨界相关 —</option></select>
+  <select id="author"><option value="">所有作者</option></select>
+  <select id="decade"><option value="">所有年代</option></select>
   <select id="ext"><option value="">所有格式</option></select>
   <select id="sort">
     <option value="title">按书名</option>
+    <option value="pinyin">按书名 A-Z(拼音)</option>
     <option value="author">按作者</option>
+    <option value="pub_year_desc">出版年代(新→旧)</option>
+    <option value="pub_year_asc">出版年代(旧→新)</option>
     <option value="id">按入库</option>
     <option value="confidence">按置信度</option>
   </select>
@@ -278,10 +327,23 @@ async function loadFacets() {
     o.textContent = `${CATEGORY_LABEL[c.key] || c.key} (${c.n})`;
     csel.appendChild(o);
   }
+  const asel = document.getElementById('author');
+  for (const a of (d.authors || [])) {
+    const o = document.createElement('option');
+    o.value = a; o.textContent = a; asel.appendChild(o);
+  }
+  const dsel = document.getElementById('decade');
+  for (const dec of (d.decades || [])) {
+    const o = document.createElement('option');
+    o.value = dec.key; o.textContent = `${dec.key}s (${dec.n})`;
+    dsel.appendChild(o);
+  }
 }
 function updateCategory2(selectedL1) {
   const sel = document.getElementById('category2');
   sel.innerHTML = '<option value="">— 二级分类 —</option>';
+  document.getElementById('subject').innerHTML = '<option value="">— 跨界相关 —</option>';
+  document.getElementById('subject').disabled = true;
   if (!selectedL1) { sel.disabled = true; return; }
   const node = CATEGORY_TREE.find(c => c.key === selectedL1);
   if (!node || !node.subs.length) { sel.disabled = true; return; }
@@ -292,6 +354,20 @@ function updateCategory2(selectedL1) {
     sel.appendChild(o);
   }
 }
+function updateSubject(selectedL1, selectedL2) {
+  const sel = document.getElementById('subject');
+  sel.innerHTML = '<option value="">— 跨界相关 —</option>';
+  if (!selectedL1 || !selectedL2) { sel.disabled = true; return; }
+  const c1 = CATEGORY_TREE.find(c => c.key === selectedL1);
+  const c2 = c1 && c1.subs.find(s => s.key === selectedL2);
+  if (!c2 || !c2.subjects || !c2.subjects.length) { sel.disabled = true; return; }
+  sel.disabled = false;
+  for (const sj of c2.subjects) {
+    const o = document.createElement('option');
+    o.value = sj.key; o.textContent = `${sj.key} (${sj.n})`;
+    sel.appendChild(o);
+  }
+}
 
 async function load() {
   const params = new URLSearchParams({
@@ -299,6 +375,9 @@ async function load() {
     q: document.getElementById('q').value.trim(),
     category: document.getElementById('category').value,
     category2: document.getElementById('category2').value,
+    subject: document.getElementById('subject').value,
+    author: document.getElementById('author').value,
+    decade: document.getElementById('decade').value,
     ext: document.getElementById('ext').value,
     sort: document.getElementById('sort').value,
   });
@@ -341,7 +420,13 @@ document.getElementById('category').addEventListener('change', (e) => {
   updateCategory2(e.target.value);
   page=1; load();
 });
-document.getElementById('category2').addEventListener('change', () => { page=1; load(); });
+document.getElementById('category2').addEventListener('change', (e) => {
+  updateSubject(document.getElementById('category').value, e.target.value);
+  page=1; load();
+});
+document.getElementById('subject').addEventListener('change', () => { page=1; load(); });
+document.getElementById('author').addEventListener('change', () => { page=1; load(); });
+document.getElementById('decade').addEventListener('change', () => { page=1; load(); });
 document.getElementById('ext').addEventListener('change', () => { page=1; load(); });
 document.getElementById('sort').addEventListener('change', () => { page=1; load(); });
 document.getElementById('prev').addEventListener('click', () => { page=Math.max(1,page-1); load(); });
@@ -531,4 +616,9 @@ def read_page(file_id: int):
 
 
 def run(host: str = "0.0.0.0", port: int = 8765):
+    conn = sqlite3.connect(DB_PATH)
+    try:
+        index_fields.ensure_columns(conn)
+    finally:
+        conn.close()
     app.run(host=host, port=port, debug=False, threaded=True)
