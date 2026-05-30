@@ -165,6 +165,16 @@ def build_parser() -> argparse.ArgumentParser:
     ri.add_argument("--force", action="store_true", help="全表重算,默认只补空值")
     ri.set_defaults(func=cmd_reindex)
 
+    lt = sub.add_parser("llm-tag", help="阶段 5：LLM 细粒度标签 + 分类纠正")
+    lt.add_argument("--db", default=str(DEFAULT_DB))
+    lt.add_argument("--model", default=None, help="默认 claude-haiku-4-5")
+    lt.add_argument("--limit", type=int, default=None, help="只处理前 N 本(试跑)")
+    lt.add_argument("--batch-size", type=int, default=25)
+    lt.add_argument("--concurrency", type=int, default=4)
+    lt.add_argument("--dry-run", action="store_true", help="只打印 prompt,不调 API")
+    lt.add_argument("--force", action="store_true", help="重标已标注过的书")
+    lt.set_defaults(func=cmd_llm_tag)
+
     pp = sub.add_parser("pipeline", help="一键端到端：scan → extract → lookup → dedupe → plan → apply")
     pp.add_argument("--root", default=str(DEFAULT_ROOT))
     pp.add_argument("--organized", default=str(DEFAULT_ORGANIZED))
@@ -216,6 +226,22 @@ def cmd_reindex(args: argparse.Namespace) -> int:
     stats = index_fields.reindex(conn, force=args.force)
     print(f"reindex done — {stats}", file=sys.stderr)
     return 0
+
+
+def cmd_llm_tag(args: argparse.Namespace) -> int:
+    from . import llm_tag
+    conn = db.connect(Path(args.db))
+    db.init(conn)
+    stats = llm_tag.run(
+        conn,
+        model=args.model or llm_tag.DEFAULT_MODEL,
+        limit=args.limit,
+        batch_size=args.batch_size,
+        concurrency=args.concurrency,
+        dry_run=args.dry_run,
+        force=args.force,
+    )
+    return 1 if stats.get("error") else 0
 
 
 def main(argv: list[str] | None = None) -> int:
