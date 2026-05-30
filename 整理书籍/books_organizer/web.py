@@ -10,8 +10,10 @@
 """
 from __future__ import annotations
 
+import datetime
 import json
 import mimetypes
+import random
 import sqlite3
 from pathlib import Path
 
@@ -137,6 +139,74 @@ def api_books():
         "total": total, "page": page, "per_page": per_page,
         "books": [dict(r) for r in rows],
     })
+
+
+@app.route("/api/featured")
+def api_featured():
+    """每日精选：business 8本, literature 6本, humanities 6本, other 4本。
+    以当天日期为随机种子,同一天结果稳定,次日更换。"""
+    seed = datetime.date.today().isoformat()  # e.g. "2026-05-30"
+    rng = random.Random(seed)
+
+    conn = get_db()
+    primary_filter = "(m.cluster_role = 'primary' OR m.cluster_role IS NULL)"
+    base_where = f"m.title IS NOT NULL AND m.title != '' AND {primary_filter}"
+
+    # 目标分布: category -> count
+    distribution = [
+        ("business", 8),
+        ("literature", 6),
+        ("humanities", 6),
+    ]
+    other_count = 4
+
+    selected: list[dict] = []
+    used_ids: set[int] = set()
+
+    for cat, target_n in distribution:
+        rows = conn.execute(
+            f"""SELECT f.id, f.ext, m.title, m.author, m.confidence, m.pub_year
+                FROM files f JOIN metadata m ON m.file_id=f.id
+                WHERE {base_where} AND m.category = ?
+                ORDER BY (m.pub_year IS NULL), m.pub_year DESC, m.confidence DESC
+                LIMIT ?""",
+            (cat, target_n * 3),
+        ).fetchall()
+        pool = [dict(r) for r in rows]
+        if len(pool) <= target_n:
+            chosen = pool
+        else:
+            chosen = rng.sample(pool, target_n)
+        for b in chosen:
+            used_ids.add(b["id"])
+            selected.append(b)
+
+    # "other": 排除已选类别, 从剩余中选 other_count 本
+    already_cats = tuple(c for c, _ in distribution)
+    placeholders = ",".join("?" * len(already_cats))
+    other_rows = conn.execute(
+        f"""SELECT f.id, f.ext, m.title, m.author, m.confidence, m.pub_year
+            FROM files f JOIN metadata m ON m.file_id=f.id
+            WHERE {base_where} AND (m.category NOT IN ({placeholders}) OR m.category IS NULL)
+            ORDER BY (m.pub_year IS NULL), m.pub_year DESC, m.confidence DESC
+            LIMIT ?""",
+        list(already_cats) + [other_count * 3],
+    ).fetchall()
+    other_pool = [dict(r) for r in other_rows if r["id"] not in used_ids]
+    if len(other_pool) <= other_count:
+        other_chosen = other_pool
+    else:
+        other_chosen = rng.sample(other_pool, other_count)
+    selected.extend(other_chosen)
+
+    # 最终打乱顺序
+    rng.shuffle(selected)
+
+    # 去掉 pub_year(前端不需要)
+    for b in selected:
+        b.pop("pub_year", None)
+
+    return jsonify({"books": selected, "total": len(selected)})
 
 
 @app.route("/api/facets")
@@ -295,6 +365,7 @@ HOME_HTML = """<!doctype html>
   <span id="count" style="margin-left:auto; color:#777; font-size:.85rem;"></span>
 </header>
 <main>
+  <div id="featured-hint" style="padding:.4rem 0 .8rem; color:#a09070; font-size:.8rem;">今日精选 · 每日更新</div>
   <div class="grid" id="grid"></div>
   <div class="pager">
     <button id="prev">上一页</button>
@@ -304,6 +375,7 @@ HOME_HTML = """<!doctype html>
 </main>
 <script>
 let page = 1, perPage = 40, total = 0;
+let featuredMode = true;  // true = 首页精选模式, false = 正常浏览模式
 
 const CATEGORY_LABEL = {
   tech: '科技工程', business: '商业管理', humanities: '人文社科',
@@ -369,26 +441,46 @@ function updateSubject(selectedL1, selectedL2) {
   }
 }
 
+function enterBrowseMode() {
+  if (featuredMode) {
+    featuredMode = false;
+    document.getElementById('featured-hint').style.display = 'none';
+  }
+}
+
 async function load() {
-  const params = new URLSearchParams({
-    page, per_page: perPage,
-    q: document.getElementById('q').value.trim(),
-    category: document.getElementById('category').value,
-    category2: document.getElementById('category2').value,
-    subject: document.getElementById('subject').value,
-    author: document.getElementById('author').value,
-    decade: document.getElementById('decade').value,
-    ext: document.getElementById('ext').value,
-    sort: document.getElementById('sort').value,
-  });
-  const r = await fetch('/api/books?' + params);
-  const d = await r.json();
-  total = d.total;
-  document.getElementById('count').textContent = `共 ${total} 本`;
-  document.getElementById('pageinfo').textContent =
-    `第 ${page} / ${Math.max(1, Math.ceil(total / perPage))} 页`;
-  document.getElementById('prev').disabled = page <= 1;
-  document.getElementById('next').disabled = page * perPage >= total;
+  let d;
+  if (featuredMode) {
+    // 首屏:加载每日精选
+    const r = await fetch('/api/featured');
+    d = await r.json();
+    total = d.total;
+    document.getElementById('count').textContent = `今日精选 ${total} 本`;
+    document.getElementById('pageinfo').textContent = '';
+    document.getElementById('prev').disabled = true;
+    document.getElementById('next').disabled = true;
+  } else {
+    // 用户触发了筛选/搜索:走正常浏览逻辑
+    const params = new URLSearchParams({
+      page, per_page: perPage,
+      q: document.getElementById('q').value.trim(),
+      category: document.getElementById('category').value,
+      category2: document.getElementById('category2').value,
+      subject: document.getElementById('subject').value,
+      author: document.getElementById('author').value,
+      decade: document.getElementById('decade').value,
+      ext: document.getElementById('ext').value,
+      sort: document.getElementById('sort').value,
+    });
+    const r = await fetch('/api/books?' + params);
+    d = await r.json();
+    total = d.total;
+    document.getElementById('count').textContent = `共 ${total} 本`;
+    document.getElementById('pageinfo').textContent =
+      `第 ${page} / ${Math.max(1, Math.ceil(total / perPage))} 页`;
+    document.getElementById('prev').disabled = page <= 1;
+    document.getElementById('next').disabled = page * perPage >= total;
+  }
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
   if (d.books.length === 0) {
@@ -415,20 +507,20 @@ function escapeHtml(s) {
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-document.getElementById('q').addEventListener('input', debounce(() => { page=1; load(); }, 250));
+document.getElementById('q').addEventListener('input', debounce(() => { enterBrowseMode(); page=1; load(); }, 250));
 document.getElementById('category').addEventListener('change', (e) => {
   updateCategory2(e.target.value);
-  page=1; load();
+  enterBrowseMode(); page=1; load();
 });
 document.getElementById('category2').addEventListener('change', (e) => {
   updateSubject(document.getElementById('category').value, e.target.value);
-  page=1; load();
+  enterBrowseMode(); page=1; load();
 });
-document.getElementById('subject').addEventListener('change', () => { page=1; load(); });
-document.getElementById('author').addEventListener('change', () => { page=1; load(); });
-document.getElementById('decade').addEventListener('change', () => { page=1; load(); });
-document.getElementById('ext').addEventListener('change', () => { page=1; load(); });
-document.getElementById('sort').addEventListener('change', () => { page=1; load(); });
+document.getElementById('subject').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
+document.getElementById('author').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
+document.getElementById('decade').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
+document.getElementById('ext').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
+document.getElementById('sort').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
 document.getElementById('prev').addEventListener('click', () => { page=Math.max(1,page-1); load(); });
 document.getElementById('next').addEventListener('click', () => { page+=1; load(); });
 
