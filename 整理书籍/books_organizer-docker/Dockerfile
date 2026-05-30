@@ -19,7 +19,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY books_organizer/ ./books_organizer/
+COPY --from=books_organizer . ./books_organizer/
 
 ENV BOOKS_ROOT=/books \
     BOOKS_DATA_DIR=/data \

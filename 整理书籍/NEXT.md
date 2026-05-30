@@ -5,9 +5,65 @@
 
 ## 一句话现状
 
-books_organizer 源码 + Docker 部署资产 + docker-demo 验证项目 已合并到 `main`;
-web 站新加了 **拼音排序 / 跨界相关 / 出版年代 / 作者筛选** 四组功能,本机已验证可用。
-**接下来重点**:跑 docker-demo 8 步验收 → 容器化 books_organizer → NAS 部署。
+books_organizer 源码 + web 新功能(拼音 / 跨界相关 / 出版年代 / 作者筛选)已在 `main`;
+**最新版 `web-0.6.0` 已部署到绿联 NAS 并 healthy 运行中** → http://192.168.1.44:8766/
+
+**2026-05-30 本会话:把最新版部署上了 NAS,接管了之前的 0.5.0。**
+- 之前 NAS 上跑的是 `web-0.5.0`(旧代码,facets 无 decades、db 无 pub_year/title_sort 列)——
+  那是早期试验版,NEXT.md 旧版本不知道它的存在。
+- 本次:同步最新源码 + 推最新 db(114M,39751 行,pub_year/title_sort 齐全)→ 在 NAS 上构建
+  `web-0.6.0` → 切换上线 → 全功能验证(decades / decade=2020→509 / 拼音 / 跨界相关 / 封面)通过。
+
+**接下来可做**:E 项细粒度三级标签(数据问题,见下);或把本会话改动 commit(见下)。
+
+---
+
+## NAS 部署事实(权威,替代旧的"待办 A-D")
+
+| 项 | 值 |
+|---|---|
+| SSH | `ssh nas`(已在 `~/.ssh/config`:`bai@192.168.1.44:10022`,密钥 `~/.ssh/id_ed25519`) |
+| 机器 | 绿联 DX4600,Linux **x86_64**,Docker 26.1.0 / compose v2.26.1 |
+| compose 项目 | `/volume1/docker/books_organizer/src/`(项目名 `src`),`.env` 设 `TAG=web-0.6.0 HOST_PORT=8766` |
+| 运行容器 | `books_web` = `books_organizer:web-0.6.0`,端口 **8766→8765**,healthy |
+| 数据 | `src/data/books.db`(114M)+ `src/data/covers/`(49058,与 Mac 一致) |
+| 书源 | external named volume `books_share` → CIFS `//192.168.1.36/book`(挂 `/books:ro`) |
+| 构建方式 | **在 NAS 上** `cd src && docker build -f Dockerfile.web -t books_organizer:web-0.6.0 .`(NAS 能到 pypi;Dockerfile.web 已加 `pypinyin`) |
+
+### 回滚(若 0.6.0 出问题)
+```bash
+ssh nas 'cd /volume1/docker/books_organizer/src
+  # 代码+镜像回滚:
+  TAG=web-0.5.0 docker compose up -d web
+  # 若还要回滚数据:
+  docker compose stop web
+  cp -p data/books.db.pre060.* data/books.db   # 旧 db(5/26,无 pub_year 列)
+  TAG=web-0.5.0 docker compose up -d web'
+```
+备份物:`src/data/books.db.pre060.*`(旧 db)、`src.bak.pre060/`(旧 src)、镜像 `web-0.1.0~0.5.0` 均在。
+
+### 下次更新版本的标准流程(code+data)
+1. Mac 上 `VACUUM INTO` 出干净 db(见下"给新书回填"后)
+2. `tar czf - -C books_organizer --exclude=__pycache__ . | ssh nas 'cd .../src/books_organizer && tar xzf -'`(同步源码;**rsync/scp 在这台 NAS 路径解析有 bug,用 tar/cat over ssh**)
+3. `ssh nas 'cat > .../src/data/books.db.new' < 干净db` 然后 cutover(stop web → rm -f books.db-wal/-shm → mv → up)
+4. NAS 上 bump `.env` 的 TAG,`docker build` 新 tag,`docker compose up -d web`
+
+---
+
+## 本会话修改待提交(未 commit)
+
+| 文件 | 改动 |
+|---|---|
+| `books_organizer-docker/Dockerfile` | `COPY books_organizer/ ...` → `COPY --from=books_organizer . ...`(用 Makefile 的命名 build context;原写法必然构建失败) |
+| `books_organizer-docker/Dockerfile.web` | 同上 |
+
+提交建议:`fix(books_organizer-docker): Dockerfile 用命名 build context 复制源码`
+
+### 本会话已生成的本地产物(未跟踪)
+- `docker-demo/docker-demo-0.1.0.tar.gz`(47M,steps 5-8 待 scp 上 NAS)
+- `books_organizer-docker/data/books.db`(114M,VACUUM INTO 的一致副本,39751 行)
+- 镜像:`docker-demo:0.1.0`、`books-organizer-web:0.1.0`(均 amd64)
+- 容器 `books-organizer-web` 当前在 8765 端口运行中,浏览器可开 http://localhost:8765
 
 ---
 
