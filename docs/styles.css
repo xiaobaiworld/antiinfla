@@ -54,6 +54,47 @@ img {
   height: auto;
 }
 
+/* ===== AdSense placements ===== */
+
+.ad-placement {
+  width: min(100% - 48px, var(--max-width));
+  margin: 32px auto;
+}
+
+.ad-placement-home {
+  width: 100%;
+  margin: 8px 0 40px;
+}
+
+.adsense-slot {
+  width: 100%;
+}
+
+.adsense-slot-preview {
+  display: grid;
+  min-height: 112px;
+  place-content: center;
+  gap: 4px;
+  padding: 20px;
+  border: 1px dashed #b8c7bd;
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.68);
+  text-align: center;
+}
+
+.adsense-slot-label {
+  color: var(--light-text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.adsense-slot-preview small {
+  font-size: 0.8rem;
+}
+
 /* ===== Site Header ===== */
 
 .site-header {

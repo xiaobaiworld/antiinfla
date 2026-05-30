@@ -25,6 +25,8 @@
     </script>
     <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
     <link rel="stylesheet" href="./styles.css" />
+      <script src="./adsense-config.js"></script>
+    <script src="./adsense.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -126,7 +128,10 @@
       </section>
 
       <!-- Food Cards Grid -->
-      <section id="foods">
+            <section class="ad-placement ad-placement-home" aria-label="Advertisement">
+        <div class="adsense-slot" data-ad-slot-key="homeFeed"></div>
+      </section>
+<section id="foods">
         <h2 class="section-title">All Foods</h2>
         <div class="card-grid">
           <a class="card" href="./foods/blueberries/">
@@ -318,7 +323,10 @@
       </section>
     </main>
 
-    <footer class="site-footer">
+        <section class="ad-placement ad-placement-footer" aria-label="Advertisement">
+      <div class="adsense-slot" data-ad-slot-key="contentFooter"></div>
+    </section>
+<footer class="site-footer">
       <div class="footer-inner">
         <div class="footer-brand">
           <h3>Anti-inflammatory foods</h3>
