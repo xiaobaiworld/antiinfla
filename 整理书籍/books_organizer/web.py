@@ -572,7 +572,7 @@ def api_bookmarks_get(user_id: str, book_id: int):
     conn = get_user_db()
     uid = resolve_user(conn, user_id)
     rows = conn.execute(
-        "SELECT id, position, label, created_at FROM bookmarks "
+        "SELECT id, position, label, color, created_at FROM bookmarks "
         "WHERE user_id=? AND book_id=? ORDER BY created_at",
         (uid, book_id)
     ).fetchall()
@@ -1469,9 +1469,10 @@ BOOK_HTML = """<!doctype html>
   .note-item .nt { font-size: .88rem; line-height: 1.6; white-space: pre-wrap; }
   .note-item .na { font-size: .72rem; color: #aaa; margin-top: .3rem; }
   /* Bookmarks */
-  .bm-item { display: flex; justify-content: space-between; align-items: center;
+  .bm-item { display: flex; align-items: center; gap: .45rem;
              padding: .4rem 0; border-bottom: 1px solid #f0ede8; font-size: .85rem; }
-  .bm-del { background: none; border: 0; color: #aaa; cursor: pointer; font-size: 1rem; }
+  .bm-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .bm-del { background: none; border: 0; color: #aaa; cursor: pointer; font-size: 1rem; margin-left: auto; }
   /* Note input */
   .note-input { width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid #d0cdc4;
                 border-radius: 6px; font-size: .9rem; resize: vertical; min-height: 80px;
@@ -1677,6 +1678,7 @@ async function deleteNote(bookId, noteId) {
   loadNotes(bookId);
 }
 
+const BM_COLORS = {red:'#e74c3c',orange:'#f39c12',green:'#27ae60',blue:'#3498db',purple:'#9b59b6'};
 async function loadBookmarks(bookId) {
   if (!UID) return;
   const el = document.getElementById('bookmarks-section');
@@ -1686,12 +1688,14 @@ async function loadBookmarks(bookId) {
     const bms = d.bookmarks || [];
     if (!bms.length) { el.innerHTML = ''; return; }
     el.innerHTML = '<div class="section"><h3>书签（' + bms.length + '）</h3>' +
-      bms.map(bm =>
-        '<div class="bm-item">' +
+      bms.map(bm => {
+        const col = BM_COLORS[bm.color] || BM_COLORS.orange;
+        return '<div class="bm-item">' +
+          '<span class="bm-dot" style="background:' + col + '"></span>' +
           '<span>' + esc(bm.label || bm.position || '书签') + '</span>' +
           '<button class="bm-del" onclick="deleteBm(' + bookId + ',' + bm.id + ')">×</button>' +
-        '</div>'
-      ).join('') +
+        '</div>';
+      }).join('') +
     '</div>';
   } catch(e) {}
 }
@@ -1788,6 +1792,16 @@ READER_EPUB_HTML = """<!doctype html>
             padding:.1rem .3rem; flex-shrink:0; }
   .bkm-x { background:none; border:0; color:#bbb; cursor:pointer; font-size:.9rem;
            padding:.1rem .3rem; flex-shrink:0; }
+  /* TOC panel (left side) */
+  .tp { position:fixed; left:0; top:0; bottom:0; width:280px; background:#fff; color:#222;
+        border-right:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:4px 0 20px rgba(0,0,0,.5); }
+  .tp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .tp-body { flex:1; overflow-y:auto; }
+  .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
+             border-bottom:1px solid #f0ede8; line-height:1.4; }
+  .tc-item:hover { background:#f5f3ee; }
 </style></head>
 <body>
 <header>
@@ -1796,11 +1810,19 @@ READER_EPUB_HTML = """<!doctype html>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
   <span id="loc" style="color:#888;font-size:.85rem;"></span>
-  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleToc()" title="目录" style="margin-left:auto;">☰</button>
+  <button onclick="toggleNotes()" title="笔记">📝</button>
   <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<!-- TOC panel -->
+<div class="tp" id="tp" style="display:none;">
+  <div class="tp-hd">☰ 目录
+    <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="tp-body" id="tp-body"><div style="color:#aaa;font-size:.82rem;padding:.6rem;">加载中…</div></div>
+</div>
 <!-- Notes panel -->
 <div class="np" id="np" style="display:none;">
   <div class="np-hd">📝 笔记
@@ -1836,15 +1858,16 @@ READER_EPUB_HTML = """<!doctype html>
 <script>
 const BOOK_ID = {{ id }};
 const UID = localStorage.getItem('books_uid');
-let rendition;
+let rendition, book;
 let saveTimer = null;
 let notesOpen = false;
+let tocItems = [], tocOpen = false;
 
 async function init() {
   const resp = await fetch('/file/{{ id }}');
   if (!resp.ok) { document.getElementById('viewer').textContent = '文件加载失败'; return; }
   const buffer = await resp.arrayBuffer();
-  const book = ePub(buffer);
+  book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
 
   let startCfi = null;
@@ -1863,6 +1886,17 @@ async function init() {
     document.getElementById('loc').textContent =
       loc.start.location ? '位置 ' + loc.start.location : '';
     scheduleSave(cfi, pct);
+  });
+
+  book.loaded.navigation.then(nav => {
+    const toc = nav.toc || [];
+    if (toc.length > 0) {
+      tocItems = flattenToc(toc);
+    } else {
+      tocItems = (book.spine.items || []).slice(0, 30).map((item, i) => ({
+        label: '第 ' + (i + 1) + ' 章', href: item.href || '', depth: 0
+      }));
+    }
   });
 }
 
@@ -1885,6 +1919,34 @@ async function saveProgress(cfi, pct) {
 function getCurrentPos() {
   if (!rendition) return '';
   try { const l = rendition.currentLocation(); return l&&l.start?l.start.cfi:''; } catch(e){return '';}
+}
+
+// TOC panel
+function flattenToc(items, depth) {
+  depth = depth || 0;
+  const result = [];
+  for (const item of (items || [])) {
+    result.push({label:(item.label||'').trim(), href:item.href||'', depth});
+    if (item.subitems && item.subitems.length) result.push(...flattenToc(item.subitems, depth+1));
+  }
+  return result;
+}
+function toggleToc() {
+  tocOpen = !tocOpen;
+  document.getElementById('tp').style.display = tocOpen ? 'flex' : 'none';
+  if (tocOpen) loadToc();
+}
+function loadToc() {
+  const el = document.getElementById('tp-body');
+  if (!tocItems.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.6rem;">暂无目录</div>'; return; }
+  el.innerHTML = tocItems.map((item, i) =>
+    '<div class="tc-item" style="padding-left:'+(0.7+item.depth*1.1)+'rem" onclick="jumpChapter('+i+')">'+en(item.label||'章节')+'</div>'
+  ).join('');
+}
+function jumpChapter(idx) {
+  const item = tocItems[idx];
+  if (item && rendition) rendition.display(item.href);
+  toggleToc();
 }
 
 // Notes panel
@@ -2074,6 +2136,15 @@ READER_TXT_HTML = """<!doctype html>
   .bkm-pos { font-size:.7rem; color:#aaa; }
   .bkm-go { background:none; border:0; color:#2d6cdf; cursor:pointer; font-size:.78rem; padding:.1rem .3rem; flex-shrink:0; }
   .bkm-x  { background:none; border:0; color:#bbb; cursor:pointer; font-size:.9rem; padding:.1rem .3rem; flex-shrink:0; }
+  .tp { position:fixed; left:0; top:0; bottom:0; width:280px; background:#fff; color:#222;
+        border-right:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:4px 0 20px rgba(0,0,0,.3); }
+  .tp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .tp-body { flex:1; overflow-y:auto; }
+  .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
+             border-bottom:1px solid #f0ede8; line-height:1.4; }
+  .tc-item:hover { background:#f5f3ee; }
 </style></head>
 <body>
 <header>
@@ -2084,11 +2155,19 @@ READER_TXT_HTML = """<!doctype html>
   <button id="bmd" class="active">中</button>
   <button id="blg">大</button>
   <button id="btheme" style="margin-left:.3rem;">深色</button>
-  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleToc()" title="目录" style="margin-left:auto;">☰</button>
+  <button onclick="toggleNotes()" title="笔记">📝</button>
   <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator"></span>
 </header>
 <div id="content"><div id="text">加载中…</div></div>
+<!-- TOC panel -->
+<div class="tp" id="tp" style="display:none;">
+  <div class="tp-hd">☰ 目录
+    <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="tp-body" id="tp-body"><div style="color:#aaa;font-size:.82rem;padding:.6rem;">加载中…</div></div>
+</div>
 <!-- Notes panel -->
 <div class="np" id="np" style="display:none;">
   <div class="np-hd">📝 笔记
@@ -2131,6 +2210,7 @@ let dark = false;
 let saveTimer = null;
 let totalLen = 0;
 let notesOpen = false;
+let tocItems = [], tocOpen = false;
 
 document.getElementById('btheme').onclick = function() {
   dark = !dark;
@@ -2155,6 +2235,7 @@ async function load() {
           catch { text = new TextDecoder('latin-1').decode(buf); } }
   textEl.textContent = text;
   totalLen = text.length;
+  tocItems = buildTxtToc(text);
   if (UID) {
     try {
       const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
@@ -2164,6 +2245,21 @@ async function load() {
       }
     } catch(e) {}
   }
+}
+function buildTxtToc(text) {
+  const pat = /^(第[〇一二三四五六七八九十百千万\\d零]+[章节回篇集卷][^\\n]{0,30}|Chapter\\s+\\d+[^\\n]{0,30}|CHAPTER\\s+\\d+[^\\n]{0,30})$/m;
+  const lines = text.split('\n');
+  let offset = 0;
+  const items = [];
+  for (const line of lines) {
+    const t = line.trim();
+    if (t && pat.test(t) && items.length < 200) items.push({label:t, pct:offset/text.length});
+    offset += line.length + 1;
+  }
+  if (!items.length) {
+    return ['开头','10%','20%','30%','40%','50%','60%','70%','80%','90%'].map((label,i)=>({label,pct:i*0.1}));
+  }
+  return items;
 }
 
 contentEl.addEventListener('scroll', () => {
@@ -2186,6 +2282,26 @@ async function saveProgress() {
 function getCurrentPos() {
   const maxScroll = Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
   return (contentEl.scrollTop/maxScroll*100).toFixed(1) + '%';
+}
+
+// TOC panel
+function toggleToc() {
+  tocOpen = !tocOpen;
+  document.getElementById('tp').style.display = tocOpen ? 'flex' : 'none';
+  if (tocOpen) loadToc();
+}
+function loadToc() {
+  const el = document.getElementById('tp-body');
+  if (!tocItems.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.6rem;">暂无目录</div>'; return; }
+  el.innerHTML = tocItems.map((item, i) =>
+    '<div class="tc-item" onclick="jumpChapter('+i+')">' + en(item.label) + '</div>'
+  ).join('');
+}
+function jumpChapter(idx) {
+  const item = tocItems[idx];
+  const maxScroll = Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
+  contentEl.scrollTop = item.pct * maxScroll;
+  toggleToc();
 }
 
 // Notes panel
@@ -2332,14 +2448,30 @@ READER_DOCX_HTML = """<!doctype html>
              border-radius:5px; font-size:.85rem; resize:vertical; font-family:inherit; }
   .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
               border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
+  .tp { position:fixed; left:0; top:0; bottom:0; width:280px; background:#fff; color:#222;
+        border-right:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:4px 0 20px rgba(0,0,0,.3); }
+  .tp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .tp-body { flex:1; overflow-y:auto; }
+  .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
+             border-bottom:1px solid #f0ede8; line-height:1.4; }
+  .tc-item:hover { background:#f5f3ee; }
 </style></head>
 <body>
 <header>
   <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
-  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleToc()" title="目录" style="margin-left:auto;">☰</button>
+  <button onclick="toggleNotes()" title="笔记">📝</button>
 </header>
 <div id="content"><div id="doc">加载中…</div></div>
+<div class="tp" id="tp" style="display:none;">
+  <div class="tp-hd">☰ 目录
+    <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="tp-body" id="tp-body"><div style="color:#aaa;font-size:.82rem;padding:.6rem;">加载中…</div></div>
+</div>
 <div class="np" id="np" style="display:none;">
   <div class="np-hd">📝 笔记
     <button onclick="toggleNotes()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
@@ -2354,6 +2486,7 @@ READER_DOCX_HTML = """<!doctype html>
 const BOOK_ID = {{ id }};
 const UID = localStorage.getItem('books_uid');
 let notesOpen = false;
+let tocItems = [], tocOpen = false;
 
 async function load() {
   const docEl = document.getElementById('doc');
@@ -2363,9 +2496,38 @@ async function load() {
     const buf = await resp.arrayBuffer();
     const result = await mammoth.convertToHtml({arrayBuffer: buf});
     docEl.innerHTML = result.value || '<p class="err">文档内容为空</p>';
+    tocItems = buildDocxToc(docEl);
   } catch(e) {
     docEl.innerHTML = '<p class="err">文档转换失败：' + e.message + '</p>';
   }
+}
+function buildDocxToc(docEl) {
+  const headings = docEl.querySelectorAll('h1,h2,h3');
+  if (!headings.length) return [];
+  return Array.from(headings).map((el, i) => {
+    const id = 'h-' + i;
+    el.id = id;
+    const depth = parseInt(el.tagName[1]) - 1;
+    return {label: el.textContent.trim(), id, depth};
+  });
+}
+function toggleToc() {
+  tocOpen = !tocOpen;
+  document.getElementById('tp').style.display = tocOpen ? 'flex' : 'none';
+  if (tocOpen) loadToc();
+}
+function loadToc() {
+  const el = document.getElementById('tp-body');
+  if (!tocItems.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.6rem;">暂无目录</div>'; return; }
+  el.innerHTML = tocItems.map((item, i) =>
+    '<div class="tc-item" style="padding-left:'+(0.7+item.depth*1.1)+'rem" onclick="jumpChapter('+i+')">' + en(item.label||'标题') + '</div>'
+  ).join('');
+}
+function jumpChapter(idx) {
+  const item = tocItems[idx];
+  const target = document.getElementById(item.id);
+  if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+  toggleToc();
 }
 function toggleNotes() {
   notesOpen = !notesOpen;
@@ -2453,6 +2615,15 @@ READER_MOBI_HTML = """<!doctype html>
   .bkm-pos { font-size:.7rem; color:#aaa; }
   .bkm-go { background:none; border:0; color:#2d6cdf; cursor:pointer; font-size:.78rem; padding:.1rem .3rem; flex-shrink:0; }
   .bkm-x  { background:none; border:0; color:#bbb; cursor:pointer; font-size:.9rem; padding:.1rem .3rem; flex-shrink:0; }
+  .tp { position:fixed; left:0; top:0; bottom:0; width:280px; background:#fff; color:#222;
+        border-right:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:4px 0 20px rgba(0,0,0,.5); }
+  .tp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .tp-body { flex:1; overflow-y:auto; }
+  .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
+             border-bottom:1px solid #f0ede8; line-height:1.4; }
+  .tc-item:hover { background:#f5f3ee; }
 </style></head>
 <body>
 <header>
@@ -2462,11 +2633,18 @@ READER_MOBI_HTML = """<!doctype html>
   <button id="next">下一页</button>
   <span id="converting">正在通过 calibre 转换…</span>
   <span id="loc" style="color:#888;font-size:.85rem;"></span>
-  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleToc()" title="目录" style="margin-left:auto;">☰</button>
+  <button onclick="toggleNotes()" title="笔记">📝</button>
   <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<div class="tp" id="tp" style="display:none;">
+  <div class="tp-hd">☰ 目录
+    <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="tp-body" id="tp-body"><div style="color:#aaa;font-size:.82rem;padding:.6rem;">加载中…</div></div>
+</div>
 <div class="np" id="np" style="display:none;">
   <div class="np-hd">📝 笔记
     <button onclick="toggleNotes()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
@@ -2500,9 +2678,10 @@ READER_MOBI_HTML = """<!doctype html>
 <script>
 const BOOK_ID = {{ id }};
 const UID = localStorage.getItem('books_uid');
-let rendition;
+let rendition, book;
 let saveTimer = null;
 let notesOpen = false;
+let tocItems = [], tocOpen = false;
 
 async function init() {
   const resp = await fetch('/api/epub-proxy/{{ id }}');
@@ -2512,7 +2691,7 @@ async function init() {
     return;
   }
   const buffer = await resp.arrayBuffer();
-  const book = ePub(buffer);
+  book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
   let startCfi = null;
   if (UID) {
@@ -2530,6 +2709,17 @@ async function init() {
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
   });
+
+  book.loaded.navigation.then(nav => {
+    const toc = nav.toc || [];
+    if (toc.length > 0) {
+      tocItems = flattenToc(toc);
+    } else {
+      tocItems = (book.spine.items || []).slice(0, 30).map((item, i) => ({
+        label: '第 ' + (i + 1) + ' 章', href: item.href || '', depth: 0
+      }));
+    }
+  });
 }
 async function saveProgress(cfi, pct) {
   if (!UID) return;
@@ -2545,6 +2735,34 @@ async function saveProgress(cfi, pct) {
 function getCurrentPos() {
   if (!rendition) return '';
   try { const l = rendition.currentLocation(); return l&&l.start?l.start.cfi:''; } catch(e){return '';}
+}
+
+// TOC panel
+function flattenToc(items, depth) {
+  depth = depth || 0;
+  const result = [];
+  for (const item of (items || [])) {
+    result.push({label:(item.label||'').trim(), href:item.href||'', depth});
+    if (item.subitems && item.subitems.length) result.push(...flattenToc(item.subitems, depth+1));
+  }
+  return result;
+}
+function toggleToc() {
+  tocOpen = !tocOpen;
+  document.getElementById('tp').style.display = tocOpen ? 'flex' : 'none';
+  if (tocOpen) loadToc();
+}
+function loadToc() {
+  const el = document.getElementById('tp-body');
+  if (!tocItems.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.6rem;">暂无目录</div>'; return; }
+  el.innerHTML = tocItems.map((item, i) =>
+    '<div class="tc-item" style="padding-left:'+(0.7+item.depth*1.1)+'rem" onclick="jumpChapter('+i+')">'+en(item.label||'章节')+'</div>'
+  ).join('');
+}
+function jumpChapter(idx) {
+  const item = tocItems[idx];
+  if (item && rendition) rendition.display(item.href);
+  toggleToc();
 }
 
 function toggleNotes() {
