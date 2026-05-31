@@ -1737,13 +1737,30 @@ READER_EPUB_HTML = """<!doctype html>
 <style>
   body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
          display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
-  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: 1rem;
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .8rem;
            align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
   header a { color: #aaa; text-decoration: none; }
-  #viewer { flex: 1; background: #fff; color: #222; }
+  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
   #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
+  /* Notes panel */
+  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:-4px 0 20px rgba(0,0,0,.5); }
+  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px;
+        padding:.55rem; margin-bottom:.5rem; }
+  .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
+  .ni .nm { font-size:.7rem; color:#aaa; margin-top:.3rem; }
+  .nt-area { width:100%; box-sizing:border-box; min-height:75px; padding:.45rem;
+             border:1px solid #ccc; border-radius:5px; font-size:.85rem;
+             resize:vertical; font-family:inherit; }
+  .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
+              border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
 </style></head>
 <body>
 <header>
@@ -1752,14 +1769,27 @@ READER_EPUB_HTML = """<!doctype html>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
   <span id="loc" style="color:#888;font-size:.85rem;"></span>
-  <span id="save-indicator"></span>
+  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<!-- Notes panel -->
+<div class="np" id="np" style="display:none;">
+  <div class="np-hd">📝 笔记
+    <button onclick="toggleNotes()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="np-body" id="np-body"><div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载中…</div></div>
+  <div class="np-foot">
+    <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记（自动记录当前位置）"></textarea>
+    <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
 <script>
 const BOOK_ID = {{ id }};
 const UID = localStorage.getItem('books_uid');
 let rendition;
 let saveTimer = null;
+let notesOpen = false;
 
 async function init() {
   const resp = await fetch('/file/{{ id }}');
@@ -1768,15 +1798,12 @@ async function init() {
   const book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
 
-  // Restore position if available
   let startCfi = null;
   if (UID) {
     try {
       const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
       const h = await r.json();
-      if (h && h.last_position && h.last_position.startsWith('epubcfi')) {
-        startCfi = h.last_position;
-      }
+      if (h && h.last_position && h.last_position.startsWith('epubcfi')) startCfi = h.last_position;
     } catch(e) {}
   }
   rendition.display(startCfi || undefined);
@@ -1795,24 +1822,63 @@ function scheduleSave(cfi, pct) {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
 }
-
 async function saveProgress(cfi, pct) {
   if (!UID) return;
   try {
     await fetch('/api/user/' + UID + '/history', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({book_id: BOOK_ID, progress_pct: pct, last_position: cfi})
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({book_id:BOOK_ID, progress_pct:pct, last_position:cfi})
     });
     const ind = document.getElementById('save-indicator');
-    ind.textContent = '已保存';
-    setTimeout(() => ind.textContent = '', 2000);
+    ind.textContent = '已保存'; setTimeout(() => ind.textContent='', 2000);
   } catch(e) {}
 }
+function getCurrentPos() {
+  if (!rendition) return '';
+  try { const l = rendition.currentLocation(); return l&&l.start?l.start.cfi:''; } catch(e){return '';}
+}
 
-window.addEventListener('beforeunload', () => {
-  clearTimeout(saveTimer);
-});
+// Notes panel
+function toggleNotes() {
+  notesOpen = !notesOpen;
+  document.getElementById('np').style.display = notesOpen ? 'flex' : 'none';
+  if (notesOpen) loadNotes();
+}
+async function loadNotes() {
+  const el = document.getElementById('np-body');
+  if (!UID) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>'; return; }
+  try {
+    const r = await fetch('/api/user/'+UID+'/notes/'+BOOK_ID);
+    const d = await r.json();
+    const notes = d.notes || [];
+    if (!notes.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无笔记，在下方输入保存</div>'; return; }
+    el.innerHTML = notes.map(n =>
+      '<div class="ni"><div class="nt">'+en(n.text)+'</div>' +
+      '<div class="nm">'+fd(n.updated_at||n.created_at)+
+      ' <button onclick="delNote('+n.id+')" style="background:none;border:0;color:#bbb;cursor:pointer;font-size:.75rem;">删除</button></div></div>'
+    ).join('');
+  } catch(e) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载失败</div>'; }
+}
+async function saveNote() {
+  if (!UID) return;
+  const text = document.getElementById('nt-input').value.trim();
+  if (!text) return;
+  await fetch('/api/user/'+UID+'/note', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({book_id:BOOK_ID, text, position:getCurrentPos()})
+  });
+  document.getElementById('nt-input').value='';
+  loadNotes();
+}
+async function delNote(id) {
+  if (!UID) return;
+  await fetch('/api/user/'+UID+'/note/'+id, {method:'DELETE'});
+  loadNotes();
+}
+function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
 
+window.addEventListener('beforeunload', () => clearTimeout(saveTimer));
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
@@ -1861,7 +1927,23 @@ READER_TXT_HTML = """<!doctype html>
   #text.sz-sm { font-size: 13px; }
   #text.sz-md { font-size: 16px; }
   #text.sz-lg { font-size: 20px; }
-  #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
+  #save-indicator { font-size: .72rem; color: #666; }
+  /* Notes panel */
+  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:-4px 0 20px rgba(0,0,0,.3); }
+  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px;
+        padding:.55rem; margin-bottom:.5rem; }
+  .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
+  .ni .nm { font-size:.7rem; color:#aaa; margin-top:.3rem; }
+  .nt-area { width:100%; min-height:75px; padding:.45rem; border:1px solid #ccc;
+             border-radius:5px; font-size:.85rem; resize:vertical; font-family:inherit; }
+  .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
+              border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
 </style></head>
 <body>
 <header>
@@ -1871,10 +1953,22 @@ READER_TXT_HTML = """<!doctype html>
   <button id="bsm">小</button>
   <button id="bmd" class="active">中</button>
   <button id="blg">大</button>
-  <button id="btheme" style="margin-left:.5rem;">深色</button>
+  <button id="btheme" style="margin-left:.3rem;">深色</button>
+  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
   <span id="save-indicator"></span>
 </header>
 <div id="content"><div id="text">加载中…</div></div>
+<!-- Notes panel -->
+<div class="np" id="np" style="display:none;">
+  <div class="np-hd">📝 笔记
+    <button onclick="toggleNotes()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="np-body" id="np-body"><div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载中…</div></div>
+  <div class="np-foot">
+    <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记（自动记录当前阅读位置）"></textarea>
+    <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
 <script>
 const BOOK_ID = {{ id }};
 const UID = localStorage.getItem('books_uid');
@@ -1884,6 +1978,7 @@ const body = document.body;
 let dark = false;
 let saveTimer = null;
 let totalLen = 0;
+let notesOpen = false;
 
 document.getElementById('btheme').onclick = function() {
   dark = !dark;
@@ -1908,15 +2003,12 @@ async function load() {
           catch { text = new TextDecoder('latin-1').decode(buf); } }
   textEl.textContent = text;
   totalLen = text.length;
-
-  // Restore scroll position
   if (UID) {
     try {
       const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
       const h = await r.json();
       if (h && h.progress_pct > 0) {
-        const scrollTo = h.progress_pct * (contentEl.scrollHeight - contentEl.clientHeight);
-        contentEl.scrollTop = scrollTo;
+        contentEl.scrollTop = h.progress_pct * (contentEl.scrollHeight - contentEl.clientHeight);
       }
     } catch(e) {}
   }
@@ -1926,21 +2018,64 @@ contentEl.addEventListener('scroll', () => {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(saveProgress, 5000);
 });
-
 async function saveProgress() {
   if (!UID) return;
   const maxScroll = Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
   const pct = Math.min(1, contentEl.scrollTop / maxScroll);
   try {
     await fetch('/api/user/' + UID + '/history', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({book_id: BOOK_ID, progress_pct: pct, last_position: String(Math.round(pct*totalLen))})
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({book_id:BOOK_ID, progress_pct:pct, last_position:String(Math.round(pct*totalLen))})
     });
     const ind = document.getElementById('save-indicator');
-    ind.textContent = '已保存';
-    setTimeout(() => ind.textContent = '', 2000);
+    ind.textContent = '已保存'; setTimeout(() => ind.textContent='', 2000);
   } catch(e) {}
 }
+function getCurrentPos() {
+  const maxScroll = Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
+  return (contentEl.scrollTop/maxScroll*100).toFixed(1) + '%';
+}
+
+// Notes panel
+function toggleNotes() {
+  notesOpen = !notesOpen;
+  document.getElementById('np').style.display = notesOpen ? 'flex' : 'none';
+  if (notesOpen) loadNotes();
+}
+async function loadNotes() {
+  const el = document.getElementById('np-body');
+  if (!UID) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>'; return; }
+  try {
+    const r = await fetch('/api/user/'+UID+'/notes/'+BOOK_ID);
+    const d = await r.json();
+    const notes = d.notes || [];
+    if (!notes.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无笔记，在下方输入保存</div>'; return; }
+    el.innerHTML = notes.map(n =>
+      '<div class="ni"><div class="nt">'+en(n.text)+'</div>' +
+      '<div class="nm">'+fd(n.updated_at||n.created_at)+
+      (n.position ? ' · '+en(n.position):'') +
+      ' <button onclick="delNote('+n.id+')" style="background:none;border:0;color:#bbb;cursor:pointer;font-size:.75rem;">删除</button></div></div>'
+    ).join('');
+  } catch(e) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载失败</div>'; }
+}
+async function saveNote() {
+  if (!UID) return;
+  const text = document.getElementById('nt-input').value.trim();
+  if (!text) return;
+  await fetch('/api/user/'+UID+'/note', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({book_id:BOOK_ID, text, position:getCurrentPos()})
+  });
+  document.getElementById('nt-input').value='';
+  loadNotes();
+}
+async function delNote(id) {
+  if (!UID) return;
+  await fetch('/api/user/'+UID+'/note/'+id, {method:'DELETE'});
+  loadNotes();
+}
+function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
 
 window.addEventListener('beforeunload', () => { clearTimeout(saveTimer); saveProgress(); });
 load();
@@ -1956,9 +2091,11 @@ READER_DOCX_HTML = """<!doctype html>
   * { box-sizing: border-box; }
   body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
          display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
-  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: 1rem;
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .8rem;
            align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
   header a { color: #aaa; text-decoration: none; }
+  button { padding: .35rem .7rem; background: #444; color: #ddd; border: 0;
+           border-radius: 4px; cursor: pointer; font-size: .85rem; }
   #content { flex: 1; overflow-y: auto; padding: 2rem 1rem; background: #f5f5f5; }
   #doc { max-width: 900px; margin: 0 auto; background: #fff; padding: 2.5rem 3rem;
          border-radius: 4px; color: #222; font-size: 15px; line-height: 1.8; }
@@ -1967,14 +2104,43 @@ READER_DOCX_HTML = """<!doctype html>
   #doc table { border-collapse: collapse; width: 100%; }
   #doc td, #doc th { border: 1px solid #ccc; padding: .4rem .6rem; }
   .err { color: #c44; text-align: center; padding: 3rem; font-size: 1rem; }
+  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:-4px 0 20px rgba(0,0,0,.3); }
+  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px; padding:.55rem; margin-bottom:.5rem; }
+  .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
+  .ni .nm { font-size:.7rem; color:#aaa; margin-top:.3rem; }
+  .nt-area { width:100%; min-height:75px; padding:.45rem; border:1px solid #ccc;
+             border-radius:5px; font-size:.85rem; resize:vertical; font-family:inherit; }
+  .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
+              border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
 </style></head>
 <body>
 <header>
   <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
+  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
 </header>
 <div id="content"><div id="doc">加载中…</div></div>
+<div class="np" id="np" style="display:none;">
+  <div class="np-hd">📝 笔记
+    <button onclick="toggleNotes()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="np-body" id="np-body"></div>
+  <div class="np-foot">
+    <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记…"></textarea>
+    <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
 <script>
+const BOOK_ID = {{ id }};
+const UID = localStorage.getItem('books_uid');
+let notesOpen = false;
+
 async function load() {
   const docEl = document.getElementById('doc');
   try {
@@ -1987,6 +2153,44 @@ async function load() {
     docEl.innerHTML = '<p class="err">文档转换失败：' + e.message + '</p>';
   }
 }
+function toggleNotes() {
+  notesOpen = !notesOpen;
+  document.getElementById('np').style.display = notesOpen ? 'flex' : 'none';
+  if (notesOpen) loadNotes();
+}
+async function loadNotes() {
+  const el = document.getElementById('np-body');
+  if (!UID) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>'; return; }
+  try {
+    const r = await fetch('/api/user/'+UID+'/notes/'+BOOK_ID);
+    const d = await r.json();
+    const notes = d.notes || [];
+    if (!notes.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无笔记</div>'; return; }
+    el.innerHTML = notes.map(n =>
+      '<div class="ni"><div class="nt">'+en(n.text)+'</div>' +
+      '<div class="nm">'+fd(n.updated_at||n.created_at)+
+      ' <button onclick="delNote('+n.id+')" style="background:none;border:0;color:#bbb;cursor:pointer;font-size:.75rem;">删除</button></div></div>'
+    ).join('');
+  } catch(e) {}
+}
+async function saveNote() {
+  if (!UID) return;
+  const text = document.getElementById('nt-input').value.trim();
+  if (!text) return;
+  await fetch('/api/user/'+UID+'/note', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({book_id:BOOK_ID, text, position:''})
+  });
+  document.getElementById('nt-input').value='';
+  loadNotes();
+}
+async function delNote(id) {
+  if (!UID) return;
+  await fetch('/api/user/'+UID+'/note/'+id, {method:'DELETE'});
+  loadNotes();
+}
+function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
 load();
 </script></body></html>
 """
@@ -2000,14 +2204,28 @@ READER_MOBI_HTML = """<!doctype html>
 <style>
   body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
          display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
-  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: 1rem;
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .8rem;
            align-items: center; border-bottom: 1px solid #333; }
   header a { color: #aaa; text-decoration: none; }
-  #converting { font-size: .78rem; color: #888; margin-left: .5rem; }
-  #viewer { flex: 1; background: #fff; color: #222; }
+  #converting { font-size: .78rem; color: #888; }
+  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
   #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
+  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+        box-shadow:-4px 0 20px rgba(0,0,0,.5); }
+  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px; padding:.55rem; margin-bottom:.5rem; }
+  .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
+  .ni .nm { font-size:.7rem; color:#aaa; margin-top:.3rem; }
+  .nt-area { width:100%; min-height:75px; padding:.45rem; border:1px solid #ccc;
+             border-radius:5px; font-size:.85rem; resize:vertical; font-family:inherit; }
+  .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
+              border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
 </style></head>
 <body>
 <header>
@@ -2017,14 +2235,26 @@ READER_MOBI_HTML = """<!doctype html>
   <button id="next">下一页</button>
   <span id="converting">正在通过 calibre 转换…</span>
   <span id="loc" style="color:#888;font-size:.85rem;"></span>
-  <span id="save-indicator"></span>
+  <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<div class="np" id="np" style="display:none;">
+  <div class="np-hd">📝 笔记
+    <button onclick="toggleNotes()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="np-body" id="np-body"></div>
+  <div class="np-foot">
+    <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记（自动记录当前位置）"></textarea>
+    <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
 <script>
 const BOOK_ID = {{ id }};
 const UID = localStorage.getItem('books_uid');
 let rendition;
 let saveTimer = null;
+let notesOpen = false;
 
 async function init() {
   const resp = await fetch('/api/epub-proxy/{{ id }}');
@@ -2036,7 +2266,6 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   const book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
-
   let startCfi = null;
   if (UID) {
     try {
@@ -2046,29 +2275,68 @@ async function init() {
     } catch(e) {}
   }
   rendition.display(startCfi || undefined);
-
   rendition.on('relocated', loc => {
     const pct = loc.start.percentage || 0;
     const cfi = loc.start.cfi || '';
-    document.getElementById('loc').textContent =
-      loc.start.location ? '位置 ' + loc.start.location : '';
+    document.getElementById('loc').textContent = loc.start.location ? '位置 ' + loc.start.location : '';
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
   });
 }
-
 async function saveProgress(cfi, pct) {
   if (!UID) return;
   try {
     await fetch('/api/user/' + UID + '/history', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({book_id: BOOK_ID, progress_pct: pct, last_position: cfi})
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({book_id:BOOK_ID, progress_pct:pct, last_position:cfi})
     });
     const ind = document.getElementById('save-indicator');
-    ind.textContent = '已保存';
-    setTimeout(() => ind.textContent = '', 2000);
+    ind.textContent = '已保存'; setTimeout(() => ind.textContent='', 2000);
   } catch(e) {}
 }
+function getCurrentPos() {
+  if (!rendition) return '';
+  try { const l = rendition.currentLocation(); return l&&l.start?l.start.cfi:''; } catch(e){return '';}
+}
+
+function toggleNotes() {
+  notesOpen = !notesOpen;
+  document.getElementById('np').style.display = notesOpen ? 'flex' : 'none';
+  if (notesOpen) loadNotes();
+}
+async function loadNotes() {
+  const el = document.getElementById('np-body');
+  if (!UID) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>'; return; }
+  try {
+    const r = await fetch('/api/user/'+UID+'/notes/'+BOOK_ID);
+    const d = await r.json();
+    const notes = d.notes || [];
+    if (!notes.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无笔记</div>'; return; }
+    el.innerHTML = notes.map(n =>
+      '<div class="ni"><div class="nt">'+en(n.text)+'</div>' +
+      '<div class="nm">'+fd(n.updated_at||n.created_at)+
+      ' <button onclick="delNote('+n.id+')" style="background:none;border:0;color:#bbb;cursor:pointer;font-size:.75rem;">删除</button></div></div>'
+    ).join('');
+  } catch(e) {}
+}
+async function saveNote() {
+  if (!UID) return;
+  const text = document.getElementById('nt-input').value.trim();
+  if (!text) return;
+  await fetch('/api/user/'+UID+'/note', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({book_id:BOOK_ID, text, position:getCurrentPos()})
+  });
+  document.getElementById('nt-input').value='';
+  loadNotes();
+}
+async function delNote(id) {
+  if (!UID) return;
+  await fetch('/api/user/'+UID+'/note/'+id, {method:'DELETE'});
+  loadNotes();
+}
+function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
 
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
