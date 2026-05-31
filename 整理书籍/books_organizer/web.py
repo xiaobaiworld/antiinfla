@@ -1869,6 +1869,7 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
+  book.ready.then(() => book.locations.generate(1024));
 
   let startCfi = null;
   if (UID) {
@@ -2693,6 +2694,7 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
+  book.ready.then(() => book.locations.generate(1024));
   let startCfi = null;
   if (UID) {
     try {
