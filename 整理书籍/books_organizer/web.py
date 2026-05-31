@@ -877,6 +877,7 @@ HOME_HTML = """<!doctype html>
     <span id="count" style="color:#777;font-size:.85rem;"></span>
     <button class="icon-btn" onclick="goRandom()" title="随机推荐一本书">🎲</button>
     <button class="icon-btn" onclick="showUpload()" title="上传书籍">⬆ 上传</button>
+    <a class="icon-btn" href="/shelf" title="我的书架" id="btn-shelf" style="text-decoration:none;">🗂️</a>
     <button class="icon-btn" id="btn-user" onclick="toggleSidebar()" title="我的账号">👤</button>
   </div>
 </header>
@@ -1035,7 +1036,13 @@ async function loadContinueReading() {
   try {
     const r = await fetch('/api/user/' + UID + '/history?limit=6');
     const d = await r.json();
-    const books = (d.history || []).filter(b => (b.progress_pct || 0) < 0.95);
+    const allHist = d.history || [];
+    const books = allHist.filter(b => (b.progress_pct || 0) < 0.95);
+    // Update shelf badge
+    if (allHist.length) {
+      const shelf = document.getElementById('btn-shelf');
+      if (shelf) shelf.title = '我的书架（' + allHist.length + ' 本）';
+    }
     if (!books.length) return;
     document.getElementById('continue-section').style.display = 'block';
     const row = document.getElementById('continue-row');
@@ -1471,7 +1478,10 @@ BOOK_HTML = """<!doctype html>
   @media (max-width: 600px) { .top-grid { grid-template-columns: 1fr; } .cover { width: 40%; } }
 </style></head>
 <body>
-<header><a href="/">← 回到书库</a></header>
+<header>
+  <a href="/">← 书库</a>
+  <a href="/shelf" style="margin-left:auto;color:#555;text-decoration:none;font-size:.85rem;">🗂️ 我的书架</a>
+</header>
 <div class="wrap" id="root">加载中…</div>
 <script>
 const id = {{ id }};
@@ -2349,6 +2359,151 @@ document.addEventListener('keydown', e => {
 """
 
 
+SHELF_HTML = """<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的书架</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+         margin: 0; background: #f7f6f3; color: #222; }
+  header { padding: .75rem 1.5rem; background: #fff; border-bottom: 1px solid #e5e3dd;
+           display: flex; align-items: center; gap: 1rem; }
+  header a { color: #555; text-decoration: none; font-size: .9rem; }
+  header h1 { margin: 0; font-size: 1rem; font-weight: 600; }
+  .tabs { display: flex; gap: 0; margin-left: auto; }
+  .tab { padding: .35rem .8rem; font-size: .82rem; border: 1px solid #d0cdc4; cursor: pointer;
+         background: #fff; color: #555; }
+  .tab:first-child { border-radius: 6px 0 0 6px; }
+  .tab:last-child { border-radius: 0 6px 6px 0; border-left: 0; }
+  .tab.on { background: #2d6cdf; color: #fff; border-color: #2d6cdf; }
+  main { max-width: 960px; margin: 1.5rem auto; padding: 0 1.5rem; }
+  .summary { font-size: .82rem; color: #888; margin-bottom: 1.2rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.2rem; }
+  .card { background: #fff; border-radius: 8px; overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .card a.cover-wrap { display: block; }
+  .card img { width: 100%; aspect-ratio: 5/7; object-fit: cover; display: block; background: #eee; }
+  .card .info { padding: .5rem .7rem .7rem; }
+  .card .t { font-size: .82rem; font-weight: 500; line-height: 1.3; overflow: hidden;
+             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .card .a { font-size: .72rem; color: #777; margin-top: .2rem; white-space: nowrap;
+             overflow: hidden; text-overflow: ellipsis; }
+  .prog-bar { background: #e8e6df; height: 5px; border-radius: 3px; margin: .45rem 0 .2rem; }
+  .prog-fill { background: #2d6cdf; height: 100%; border-radius: 3px; max-width: 100%; }
+  .prog-fill.done { background: #4caf50; }
+  .card .pct { font-size: .72rem; color: #999; }
+  .card .date { font-size: .68rem; color: #bbb; margin-top: .1rem; }
+  .btns { display: flex; gap: .35rem; margin-top: .5rem; }
+  .btn { padding: .28rem .6rem; font-size: .75rem; border-radius: 4px; text-decoration: none;
+         background: #2d6cdf; color: #fff; border: 0; cursor: pointer; white-space: nowrap; }
+  .btn.sec { background: #eee; color: #444; }
+  .empty { text-align: center; color: #888; padding: 5rem 1rem; }
+  .empty a { color: #2d6cdf; }
+</style></head>
+<body>
+<header>
+  <a href="/">← 书库</a>
+  <h1>📚 我的书架</h1>
+  <div class="tabs">
+    <button class="tab on" onclick="setFilter('all')">全部</button>
+    <button class="tab" onclick="setFilter('reading')">阅读中</button>
+    <button class="tab" onclick="setFilter('done')">已读完</button>
+  </div>
+</header>
+<main>
+  <div class="summary" id="summary"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none;">
+    暂无阅读记录，去<a href="/">书库</a>选一本书开始阅读
+  </div>
+</main>
+<script>
+const UID = localStorage.getItem('books_uid');
+let allBooks = [];
+let filterMode = 'all';
+
+async function load() {
+  if (!UID) {
+    document.getElementById('empty').style.display = 'block';
+    document.getElementById('empty').innerHTML = '请先打开<a href="/">书库首页</a>激活账号';
+    return;
+  }
+  try {
+    const r = await fetch('/api/user/' + UID + '/history?limit=200');
+    const d = await r.json();
+    allBooks = d.history || [];
+    render();
+  } catch(e) {
+    document.getElementById('empty').style.display = 'block';
+    document.getElementById('empty').textContent = '加载失败，请刷新重试';
+  }
+}
+
+function setFilter(mode) {
+  filterMode = mode;
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('on', ['all','reading','done'][i]===mode));
+  render();
+}
+
+function render() {
+  const books = allBooks.filter(b => {
+    const pct = b.progress_pct || 0;
+    if (filterMode === 'reading') return pct < 0.95;
+    if (filterMode === 'done') return pct >= 0.95;
+    return true;
+  });
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  const summary = document.getElementById('summary');
+  const done = allBooks.filter(b => (b.progress_pct||0) >= 0.95).length;
+  const reading = allBooks.filter(b => (b.progress_pct||0) < 0.95 && (b.progress_pct||0) > 0).length;
+  summary.textContent = '共 ' + allBooks.length + ' 本 · 阅读中 ' + reading + ' · 已读完 ' + done;
+
+  if (!books.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    if (filterMode === 'reading') empty.innerHTML = '没有阅读中的书籍';
+    else if (filterMode === 'done') empty.innerHTML = '还没有读完的书籍';
+    else empty.innerHTML = '暂无阅读记录，去<a href="/">书库</a>选一本书开始阅读';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = '';
+  for (const b of books) {
+    const pct = b.progress_pct || 0;
+    const pctInt = Math.round(pct * 100);
+    const done = pct >= 0.95;
+    const lastDate = b.last_read_at ? new Date(b.last_read_at * 1000).toLocaleDateString('zh-CN') : '';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML =
+      '<a class="cover-wrap" href="/book/' + b.book_id + '">' +
+        '<img src="/cover/' + b.book_id + '" loading="lazy">' +
+      '</a>' +
+      '<div class="info">' +
+        '<div class="t">' + esc(b.title || '无题') + '</div>' +
+        '<div class="a">' + esc(b.author || '佚名') + '</div>' +
+        '<div class="prog-bar"><div class="prog-fill' + (done?' done':'') + '" style="width:' + pctInt + '%"></div></div>' +
+        '<div class="pct">' + (done ? '✓ 已读完' : pctInt + '%') + '</div>' +
+        '<div class="date">' + lastDate + '</div>' +
+        '<div class="btns">' +
+          '<a class="btn" href="/read/' + b.book_id + '">' + (done ? '重读' : '继续阅读') + '</a>' +
+          '<a class="btn sec" href="/book/' + b.book_id + '">详情</a>' +
+        '</div>' +
+      '</div>';
+    grid.appendChild(card);
+  }
+}
+
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+load();
+</script></body></html>
+"""
+
+
 # ── View routes ────────────────────────────────────────────────────────────────
 
 @app.route("/api/epub-proxy/<int:file_id>")
@@ -2384,6 +2539,11 @@ def epub_proxy(file_id: int):
 @app.route("/")
 def home():
     return HOME_HTML
+
+
+@app.route("/shelf")
+def shelf_page():
+    return SHELF_HTML
 
 
 @app.route("/book/<int:file_id>")
