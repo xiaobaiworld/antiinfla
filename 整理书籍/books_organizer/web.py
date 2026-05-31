@@ -869,28 +869,58 @@ HOME_HTML = """<!doctype html>
 <div id="sidebar-wrap" style="display:none;">
   <div class="overlay" onclick="toggleSidebar()"></div>
   <div class="sidebar">
-    <h2>📖 我的账号</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;">
+      <h2 style="margin:0;">📖 我的账号</h2>
+      <button onclick="toggleSidebar()" style="background:none;border:0;cursor:pointer;font-size:1.3rem;color:#aaa;line-height:1;">×</button>
+    </div>
+
+    <!-- 显示名 -->
+    <label>显示名</label>
+    <div style="display:flex;gap:.5rem;margin-bottom:.8rem;">
+      <input type="text" id="display-name" placeholder="未设置" maxlength="50" style="flex:1;">
+      <button class="sm-btn" onclick="saveName()">保存</button>
+    </div>
+
+    <!-- 设备 ID -->
     <label>设备 ID（点击复制）</label>
     <div class="uid" id="uid-display" onclick="copyUid()">—</div>
+
+    <!-- 最近阅读 -->
     <div style="margin-top:1rem;">
-      <label>显示名</label>
-      <input type="text" id="display-name" placeholder="未设置" maxlength="50">
-      <button class="sm-btn" style="margin-top:.5rem;" onclick="saveName()">保存</button>
+      <label>最近阅读</label>
+      <div id="sidebar-history" style="font-size:.82rem;color:#888;margin-top:.3rem;">加载中…</div>
     </div>
+
     <hr>
-    <div>
-      <label>合并账号（将另一设备的阅读数据合并到此账号）</label>
-      <input type="text" id="merge-id" placeholder="输入另一个设备 ID">
-      <button class="sm-btn" style="margin-top:.5rem;" onclick="mergeAccount()">合并</button>
+
+    <!-- 合并账号 -->
+    <label>合并另一台设备的账号</label>
+    <div style="font-size:.77rem;color:#aaa;margin:.2rem 0 .5rem;">
+      输入另一个设备 ID，先预览再确认合并
     </div>
+    <div style="display:flex;gap:.5rem;">
+      <input type="text" id="merge-id" placeholder="粘贴另一个设备 ID" style="flex:1;font-size:.82rem;">
+      <button class="sm-btn sec" onclick="previewMerge()">预览</button>
+    </div>
+    <!-- 预览区 -->
+    <div id="merge-preview" style="display:none;margin-top:.75rem;background:#f7f6f3;border-radius:6px;padding:.8rem;border:1px solid #e8e6df;">
+      <div id="merge-preview-content"></div>
+      <div style="margin-top:.7rem;display:flex;gap:.5rem;">
+        <button class="sm-btn" onclick="confirmMerge()">确认合并到当前账号</button>
+        <button class="sm-btn sec" onclick="cancelMerge()">取消</button>
+      </div>
+    </div>
+
     <hr>
+
+    <!-- 导出/导入 -->
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
       <button class="sm-btn sec" onclick="exportData()">导出数据</button>
       <label class="sm-btn sec" style="cursor:pointer;">
         导入数据 <input type="file" accept=".json" style="display:none;" onchange="importData(this)">
       </label>
     </div>
-    <div id="sidebar-msg" style="margin-top:.8rem;font-size:.82rem;color:#666;"></div>
+    <div id="sidebar-msg" style="margin-top:.8rem;font-size:.82rem;color:#555;min-height:1.2em;"></div>
   </div>
 </div>
 
@@ -1010,13 +1040,19 @@ async function loadContinueReading() {
 // ── User sidebar ─────────────────────────────────────────────────────────────
 function toggleSidebar() {
   const el = document.getElementById('sidebar-wrap');
-  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  if (opening) loadSidebarHistory();
 }
 function copyUid() {
   if (UID) navigator.clipboard.writeText(UID).then(() => {
-    document.getElementById('sidebar-msg').textContent = '已复制 ID';
-    setTimeout(() => document.getElementById('sidebar-msg').textContent = '', 2000);
+    setSidebarMsg('已复制 ID');
   });
+}
+function setSidebarMsg(msg) {
+  const el = document.getElementById('sidebar-msg');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 3000);
 }
 async function saveName() {
   if (!UID) return;
@@ -1026,10 +1062,70 @@ async function saveName() {
     body: JSON.stringify({name})
   });
   document.getElementById('btn-user').textContent = name ? ('👤 ' + name.slice(0,8)) : '👤';
-  document.getElementById('sidebar-msg').textContent = '已保存';
-  setTimeout(() => document.getElementById('sidebar-msg').textContent = '', 2000);
+  setSidebarMsg('显示名已保存');
 }
-async function mergeAccount() {
+
+// 当前用户最近阅读列表
+async function loadSidebarHistory() {
+  if (!UID) return;
+  const el = document.getElementById('sidebar-history');
+  try {
+    const r = await fetch('/api/user/' + UID + '/history?limit=8');
+    const d = await r.json();
+    const books = d.history || [];
+    if (!books.length) { el.textContent = '暂无阅读记录'; return; }
+    el.innerHTML = books.map(b => {
+      const pct = Math.round((b.progress_pct || 0) * 100);
+      return '<div style="padding:.3rem 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;gap:.5rem;">' +
+        '<a href="/book/' + b.book_id + '" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;color:#222;text-decoration:none;font-size:.82rem;">' +
+        escapeHtml(b.title || '无题') + '</a>' +
+        '<span style="color:#aaa;font-size:.75rem;flex-shrink:0;">' + pct + '%</span>' +
+        '</div>';
+    }).join('');
+  } catch(e) { el.textContent = '加载失败'; }
+}
+
+// 预览另一个账号（合并前确认）
+async function previewMerge() {
+  const otherId = document.getElementById('merge-id').value.trim();
+  if (!otherId) { setSidebarMsg('请先输入另一个设备 ID'); return; }
+  if (otherId === UID) { setSidebarMsg('不能合并自己'); return; }
+  const previewEl = document.getElementById('merge-preview');
+  const contentEl = document.getElementById('merge-preview-content');
+  contentEl.innerHTML = '<span style="color:#aaa;font-size:.82rem;">加载中…</span>';
+  previewEl.style.display = 'block';
+  try {
+    const [userR, histR] = await Promise.all([
+      fetch('/api/user/' + otherId),
+      fetch('/api/user/' + otherId + '/history?limit=6')
+    ]);
+    if (!userR.ok) {
+      contentEl.innerHTML = '<span style="color:#c44;">找不到该账号，请检查 ID 是否正确</span>';
+      return;
+    }
+    const user = await userR.json();
+    const hist = await histR.json();
+    const books = hist.history || [];
+    let html = '<div style="font-size:.85rem;font-weight:600;margin-bottom:.3rem;">' +
+      (user.name ? escapeHtml(user.name) : '匿名账号') + '</div>';
+    html += '<div style="font-size:.75rem;color:#aaa;margin-bottom:.5rem;">阅读了 ' + books.length + ' 本书</div>';
+    if (books.length) {
+      html += books.map(b => {
+        const pct = Math.round((b.progress_pct || 0) * 100);
+        return '<div style="font-size:.8rem;padding:.2rem 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">' +
+          '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">' + escapeHtml(b.title || '无题') + '</span>' +
+          '<span style="color:#aaa;margin-left:.5rem;flex-shrink:0;">' + pct + '%</span>' +
+          '</div>';
+      }).join('');
+    } else {
+      html += '<div style="font-size:.8rem;color:#aaa;">暂无阅读记录</div>';
+    }
+    contentEl.innerHTML = html;
+  } catch(e) {
+    contentEl.innerHTML = '<span style="color:#c44;">加载失败，请检查网络</span>';
+  }
+}
+async function confirmMerge() {
   if (!UID) return;
   const otherId = document.getElementById('merge-id').value.trim();
   if (!otherId) return;
@@ -1038,8 +1134,21 @@ async function mergeAccount() {
     body: JSON.stringify({other_id: otherId})
   });
   const d = await r.json();
-  document.getElementById('sidebar-msg').textContent = d.ok ? '合并成功，刷新页面生效' : (d.error || '合并失败');
+  if (d.ok) {
+    setSidebarMsg('✓ 合并成功，阅读记录已合并');
+    document.getElementById('merge-id').value = '';
+    cancelMerge();
+    loadSidebarHistory();
+    loadContinueReading();
+  } else {
+    setSidebarMsg(d.error || '合并失败');
+  }
 }
+function cancelMerge() {
+  document.getElementById('merge-preview').style.display = 'none';
+  document.getElementById('merge-preview-content').innerHTML = '';
+}
+
 async function exportData() {
   if (!UID) return;
   window.open('/api/user/' + UID + '/export');
@@ -1048,14 +1157,13 @@ async function importData(input) {
   if (!UID || !input.files[0]) return;
   const text = await input.files[0].text();
   let data;
-  try { data = JSON.parse(text); } catch { alert('文件格式错误'); return; }
+  try { data = JSON.parse(text); } catch { setSidebarMsg('文件格式错误'); return; }
   const r = await fetch('/api/user/' + UID + '/import', {
     method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify(data)
   });
   const d = await r.json();
-  document.getElementById('sidebar-msg').textContent =
-    d.ok ? '导入成功：历史' + d.imported.history + '，书签' + d.imported.bookmarks + '，笔记' + d.imported.notes : '导入失败';
+  setSidebarMsg(d.ok ? '导入成功：历史 ' + d.imported.history + ' 条' : '导入失败');
 }
 
 // ── Upload ────────────────────────────────────────────────────────────────────
