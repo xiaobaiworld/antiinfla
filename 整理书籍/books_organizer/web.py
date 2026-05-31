@@ -557,9 +557,10 @@ def api_bookmark_add(user_id: str):
     conn = get_user_db()
     uid = resolve_user(conn, user_id)
     conn.execute(
-        "INSERT INTO bookmarks(user_id,book_id,position,label,created_at) VALUES(?,?,?,?,?)",
+        "INSERT INTO bookmarks(user_id,book_id,position,label,color,created_at) VALUES(?,?,?,?,?,?)",
         (uid, book_id, (data.get("position") or "")[:500],
-         (data.get("label") or "")[:200], time.time())
+         (data.get("label") or "")[:200],
+         (data.get("color") or "orange")[:20], time.time())
     )
     conn.commit()
     bm_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
@@ -1753,15 +1754,15 @@ READER_EPUB_HTML = """<!doctype html>
   #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
-  #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
-  /* Notes panel */
-  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
-        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
-        box-shadow:-4px 0 20px rgba(0,0,0,.5); }
-  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
-           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
-  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
-  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  #save-indicator { font-size: .72rem; color: #666; }
+  /* Shared side panel */
+  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+             border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+             box-shadow:-4px 0 20px rgba(0,0,0,.5); }
+  .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+                   justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body, .bp-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot, .bp-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
   .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px;
         padding:.55rem; margin-bottom:.5rem; }
   .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
@@ -1771,6 +1772,22 @@ READER_EPUB_HTML = """<!doctype html>
              resize:vertical; font-family:inherit; }
   .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
               border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
+  /* Bookmark panel specifics */
+  .cp-wrap { display:flex; gap:.4rem; margin-bottom:.5rem; align-items:center; }
+  .cp-dot { width:22px; height:22px; border-radius:50%; cursor:pointer; display:inline-block;
+            outline:2px solid transparent; outline-offset:2px; flex-shrink:0; }
+  .bkm-in { width:100%; box-sizing:border-box; padding:.4rem; border:1px solid #ccc;
+            border-radius:5px; font-size:.82rem; margin:.3rem 0; font-family:inherit; }
+  .bkm-row { display:flex; align-items:center; gap:.45rem; padding:.4rem .2rem;
+             border-bottom:1px solid #f0ede8; }
+  .bk-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .bkm-info { flex:1; min-width:0; }
+  .bkm-lbl { font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bkm-pos { font-size:.7rem; color:#aaa; }
+  .bkm-go { background:none; border:0; color:#2d6cdf; cursor:pointer; font-size:.78rem;
+            padding:.1rem .3rem; flex-shrink:0; }
+  .bkm-x { background:none; border:0; color:#bbb; cursor:pointer; font-size:.9rem;
+           padding:.1rem .3rem; flex-shrink:0; }
 </style></head>
 <body>
 <header>
@@ -1780,6 +1797,7 @@ READER_EPUB_HTML = """<!doctype html>
   <button id="next">下一页</button>
   <span id="loc" style="color:#888;font-size:.85rem;"></span>
   <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
@@ -1792,6 +1810,27 @@ READER_EPUB_HTML = """<!doctype html>
   <div class="np-foot">
     <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记（自动记录当前位置）"></textarea>
     <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
+<!-- Bookmark panel -->
+<div class="bp" id="bp" style="display:none;">
+  <div class="bp-hd">🔖 书签
+    <button onclick="toggleBkm()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="bp-body">
+    <div class="bp-foot" style="border-top:none;border-bottom:1px solid #f0ede8;margin-bottom:.4rem;">
+      <div style="font-size:.75rem;color:#888;margin-bottom:.35rem;">选颜色</div>
+      <div class="cp-wrap" id="cp-wrap">
+        <span class="cp-dot" data-c="red"    style="background:#e74c3c;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="orange" style="background:#f39c12;outline-color:#333;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="green"  style="background:#27ae60;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="blue"   style="background:#3498db;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="purple" style="background:#9b59b6;" onclick="selColor(this)"></span>
+      </div>
+      <input class="bkm-in" id="bkm-in" placeholder="书签备注（可选，默认用位置）">
+      <button class="save-btn" style="width:100%;" onclick="addBkm()">添加书签到当前位置</button>
+    </div>
+    <div id="bp-list"><div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载中…</div></div>
   </div>
 </div>
 <script>
@@ -1888,6 +1927,74 @@ async function delNote(id) {
 function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
 
+// ── Bookmarks ─────────────────────────────────────────────────────────────────
+const CMAP = {red:'#e74c3c',orange:'#f39c12',green:'#27ae60',blue:'#3498db',purple:'#9b59b6'};
+let bkmColor = 'orange', bkmPositions = [], bkmOpen = false;
+function selColor(el) {
+  bkmColor = el.dataset.c;
+  document.querySelectorAll('.cp-dot').forEach(d => d.style.outlineColor = 'transparent');
+  el.style.outlineColor = '#333';
+}
+function toggleBkm() {
+  bkmOpen = !bkmOpen;
+  document.getElementById('bp').style.display = bkmOpen ? 'flex' : 'none';
+  if (bkmOpen) { if (notesOpen) toggleNotes(); loadBkm(); }
+}
+async function loadBkm() {
+  const el = document.getElementById('bp-list');
+  if (!UID) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>'; return; }
+  try {
+    const r = await fetch('/api/user/'+UID+'/bookmarks/'+BOOK_ID);
+    const d = await r.json();
+    const bkms = d.bookmarks || [];
+    bkmPositions = bkms.map(b => b.position||'');
+    if (!bkms.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无书签，在上方添加</div>'; return; }
+    el.innerHTML = bkms.map((b,i) => {
+      const col = CMAP[b.color]||CMAP.orange;
+      const isEpub = (b.position||'').startsWith('epubcfi');
+      const pos = isEpub ? '' : (b.position||'');
+      return '<div class="bkm-row">' +
+        '<span class="bk-dot" style="background:'+col+'"></span>' +
+        '<div class="bkm-info">' +
+          '<div class="bkm-lbl">'+en(b.label||'书签')+'</div>' +
+          (pos?'<div class="bkm-pos">'+en(pos)+'</div>':'') +
+        '</div>' +
+        '<button class="bkm-go" onclick="jumpBkm('+i+')">跳转</button>' +
+        '<button class="bkm-x" onclick="delBkm('+b.id+')">×</button>' +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载失败</div>'; }
+}
+function getCurrentBkmPos() {
+  if (!rendition) return '';
+  try { const l=rendition.currentLocation(); return l&&l.start?l.start.cfi:''; } catch(e){return '';}
+}
+function getCurrentBkmLabel() {
+  if (!rendition) return '';
+  try { const l=rendition.currentLocation(); return l&&l.start&&l.start.location?'位置 '+l.start.location:''; } catch(e){return '';}
+}
+async function addBkm() {
+  if (!UID) return;
+  let label = document.getElementById('bkm-in').value.trim();
+  const position = getCurrentBkmPos();
+  if (!label) label = getCurrentBkmLabel();
+  await fetch('/api/user/'+UID+'/bookmark', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({book_id:BOOK_ID, position, label, color:bkmColor})
+  });
+  document.getElementById('bkm-in').value='';
+  loadBkm();
+}
+async function delBkm(id) {
+  if (!UID) return;
+  await fetch('/api/user/'+UID+'/bookmark/'+id, {method:'DELETE'});
+  loadBkm();
+}
+function jumpBkm(idx) {
+  const pos = bkmPositions[idx];
+  if (pos && rendition) rendition.display(pos);
+}
+
 window.addEventListener('beforeunload', () => clearTimeout(saveTimer));
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
@@ -1938,14 +2045,14 @@ READER_TXT_HTML = """<!doctype html>
   #text.sz-md { font-size: 16px; }
   #text.sz-lg { font-size: 20px; }
   #save-indicator { font-size: .72rem; color: #666; }
-  /* Notes panel */
-  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
-        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
-        box-shadow:-4px 0 20px rgba(0,0,0,.3); }
-  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
-           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
-  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
-  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  /* Shared side panel */
+  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+             border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+             box-shadow:-4px 0 20px rgba(0,0,0,.3); }
+  .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+                   justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body, .bp-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot, .bp-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
   .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px;
         padding:.55rem; margin-bottom:.5rem; }
   .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
@@ -1954,6 +2061,19 @@ READER_TXT_HTML = """<!doctype html>
              border-radius:5px; font-size:.85rem; resize:vertical; font-family:inherit; }
   .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
               border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
+  .cp-wrap { display:flex; gap:.4rem; margin-bottom:.5rem; }
+  .cp-dot { width:22px; height:22px; border-radius:50%; cursor:pointer; display:inline-block;
+            outline:2px solid transparent; outline-offset:2px; flex-shrink:0; }
+  .bkm-in { width:100%; box-sizing:border-box; padding:.4rem; border:1px solid #ccc;
+            border-radius:5px; font-size:.82rem; margin:.3rem 0; font-family:inherit; }
+  .bkm-row { display:flex; align-items:center; gap:.45rem; padding:.4rem .2rem;
+             border-bottom:1px solid #f0ede8; }
+  .bk-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .bkm-info { flex:1; min-width:0; }
+  .bkm-lbl { font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bkm-pos { font-size:.7rem; color:#aaa; }
+  .bkm-go { background:none; border:0; color:#2d6cdf; cursor:pointer; font-size:.78rem; padding:.1rem .3rem; flex-shrink:0; }
+  .bkm-x  { background:none; border:0; color:#bbb; cursor:pointer; font-size:.9rem; padding:.1rem .3rem; flex-shrink:0; }
 </style></head>
 <body>
 <header>
@@ -1965,6 +2085,7 @@ READER_TXT_HTML = """<!doctype html>
   <button id="blg">大</button>
   <button id="btheme" style="margin-left:.3rem;">深色</button>
   <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator"></span>
 </header>
 <div id="content"><div id="text">加载中…</div></div>
@@ -1977,6 +2098,27 @@ READER_TXT_HTML = """<!doctype html>
   <div class="np-foot">
     <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记（自动记录当前阅读位置）"></textarea>
     <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
+<!-- Bookmark panel -->
+<div class="bp" id="bp" style="display:none;">
+  <div class="bp-hd">🔖 书签
+    <button onclick="toggleBkm()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="bp-body">
+    <div style="padding:.6rem;border-bottom:1px solid #f0ede8;margin-bottom:.4rem;">
+      <div style="font-size:.75rem;color:#888;margin-bottom:.35rem;">选颜色</div>
+      <div class="cp-wrap">
+        <span class="cp-dot" data-c="red"    style="background:#e74c3c;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="orange" style="background:#f39c12;outline-color:#333;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="green"  style="background:#27ae60;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="blue"   style="background:#3498db;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="purple" style="background:#9b59b6;" onclick="selColor(this)"></span>
+      </div>
+      <input class="bkm-in" id="bkm-in" placeholder="书签备注（可选）">
+      <button class="save-btn" style="width:100%;" onclick="addBkm()">添加书签到当前位置</button>
+    </div>
+    <div id="bp-list"></div>
   </div>
 </div>
 <script>
@@ -2086,6 +2228,68 @@ async function delNote(id) {
 }
 function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
+
+// ── Bookmarks ─────────────────────────────────────────────────────────────────
+const CMAP = {red:'#e74c3c',orange:'#f39c12',green:'#27ae60',blue:'#3498db',purple:'#9b59b6'};
+let bkmColor = 'orange', bkmPositions = [], bkmOpen = false;
+function selColor(el) {
+  bkmColor = el.dataset.c;
+  document.querySelectorAll('.cp-dot').forEach(d => d.style.outlineColor = 'transparent');
+  el.style.outlineColor = '#333';
+}
+function toggleBkm() {
+  bkmOpen = !bkmOpen;
+  document.getElementById('bp').style.display = bkmOpen ? 'flex' : 'none';
+  if (bkmOpen) { if (notesOpen) toggleNotes(); loadBkm(); }
+}
+async function loadBkm() {
+  const el = document.getElementById('bp-list');
+  if (!UID) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>'; return; }
+  try {
+    const r = await fetch('/api/user/'+UID+'/bookmarks/'+BOOK_ID);
+    const d = await r.json();
+    const bkms = d.bookmarks || [];
+    bkmPositions = bkms.map(b => b.position||'');
+    if (!bkms.length) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无书签，在上方添加</div>'; return; }
+    el.innerHTML = bkms.map((b,i) => {
+      const col = CMAP[b.color]||CMAP.orange;
+      return '<div class="bkm-row">' +
+        '<span class="bk-dot" style="background:'+col+'"></span>' +
+        '<div class="bkm-info">' +
+          '<div class="bkm-lbl">'+en(b.label||'书签')+'</div>' +
+          (b.position?'<div class="bkm-pos">'+en(b.position)+'</div>':'') +
+        '</div>' +
+        '<button class="bkm-go" onclick="jumpBkm('+i+')">跳转</button>' +
+        '<button class="bkm-x" onclick="delBkm('+b.id+')">×</button>' +
+      '</div>';
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载失败</div>'; }
+}
+function getCurrentBkmPos() {
+  const max = Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
+  return (contentEl.scrollTop / max * 100).toFixed(1) + '%';
+}
+async function addBkm() {
+  if (!UID) return;
+  const label = document.getElementById('bkm-in').value.trim() || getCurrentBkmPos();
+  await fetch('/api/user/'+UID+'/bookmark', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({book_id:BOOK_ID, position:getCurrentBkmPos(), label, color:bkmColor})
+  });
+  document.getElementById('bkm-in').value='';
+  loadBkm();
+}
+async function delBkm(id) {
+  if (!UID) return;
+  await fetch('/api/user/'+UID+'/bookmark/'+id, {method:'DELETE'});
+  loadBkm();
+}
+function jumpBkm(idx) {
+  const pos = bkmPositions[idx];
+  if (!pos) return;
+  const pct = parseFloat(pos) / 100;
+  contentEl.scrollTop = pct * Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
+}
 
 window.addEventListener('beforeunload', () => { clearTimeout(saveTimer); saveProgress(); });
 load();
@@ -2221,14 +2425,14 @@ READER_MOBI_HTML = """<!doctype html>
   #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
-  #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
-  .np { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
-        border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
-        box-shadow:-4px 0 20px rgba(0,0,0,.5); }
-  .np-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
-           justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
-  .np-body { flex:1; overflow-y:auto; padding:.6rem; }
-  .np-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
+  #save-indicator { font-size: .72rem; color: #666; }
+  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+             border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
+             box-shadow:-4px 0 20px rgba(0,0,0,.5); }
+  .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
+                   justify-content:space-between; align-items:center; flex-shrink:0; font-size:.9rem; }
+  .np-body, .bp-body { flex:1; overflow-y:auto; padding:.6rem; }
+  .np-foot, .bp-foot { padding:.65rem; border-top:1px solid #e8e6df; flex-shrink:0; }
   .ni { background:#fffdf5; border:1px solid #f0e8c0; border-radius:5px; padding:.55rem; margin-bottom:.5rem; }
   .ni .nt { font-size:.82rem; line-height:1.55; white-space:pre-wrap; }
   .ni .nm { font-size:.7rem; color:#aaa; margin-top:.3rem; }
@@ -2236,6 +2440,19 @@ READER_MOBI_HTML = """<!doctype html>
              border-radius:5px; font-size:.85rem; resize:vertical; font-family:inherit; }
   .save-btn { margin-top:.4rem; padding:.35rem .8rem; background:#2d6cdf; color:#fff;
               border:0; border-radius:4px; cursor:pointer; font-size:.85rem; }
+  .cp-wrap { display:flex; gap:.4rem; margin-bottom:.5rem; }
+  .cp-dot { width:22px; height:22px; border-radius:50%; cursor:pointer; display:inline-block;
+            outline:2px solid transparent; outline-offset:2px; flex-shrink:0; }
+  .bkm-in { width:100%; box-sizing:border-box; padding:.4rem; border:1px solid #ccc;
+            border-radius:5px; font-size:.82rem; margin:.3rem 0; font-family:inherit; }
+  .bkm-row { display:flex; align-items:center; gap:.45rem; padding:.4rem .2rem;
+             border-bottom:1px solid #f0ede8; }
+  .bk-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+  .bkm-info { flex:1; min-width:0; }
+  .bkm-lbl { font-size:.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bkm-pos { font-size:.7rem; color:#aaa; }
+  .bkm-go { background:none; border:0; color:#2d6cdf; cursor:pointer; font-size:.78rem; padding:.1rem .3rem; flex-shrink:0; }
+  .bkm-x  { background:none; border:0; color:#bbb; cursor:pointer; font-size:.9rem; padding:.1rem .3rem; flex-shrink:0; }
 </style></head>
 <body>
 <header>
@@ -2246,6 +2463,7 @@ READER_MOBI_HTML = """<!doctype html>
   <span id="converting">正在通过 calibre 转换…</span>
   <span id="loc" style="color:#888;font-size:.85rem;"></span>
   <button onclick="toggleNotes()" title="笔记" style="margin-left:auto;">📝</button>
+  <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
@@ -2257,6 +2475,26 @@ READER_MOBI_HTML = """<!doctype html>
   <div class="np-foot">
     <textarea class="nt-area" id="nt-input" placeholder="摘录或笔记（自动记录当前位置）"></textarea>
     <button class="save-btn" onclick="saveNote()">保存笔记</button>
+  </div>
+</div>
+<div class="bp" id="bp" style="display:none;">
+  <div class="bp-hd">🔖 书签
+    <button onclick="toggleBkm()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
+  </div>
+  <div class="bp-body">
+    <div style="padding:.6rem;border-bottom:1px solid #f0ede8;margin-bottom:.4rem;">
+      <div style="font-size:.75rem;color:#888;margin-bottom:.35rem;">选颜色</div>
+      <div class="cp-wrap">
+        <span class="cp-dot" data-c="red"    style="background:#e74c3c;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="orange" style="background:#f39c12;outline-color:#333;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="green"  style="background:#27ae60;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="blue"   style="background:#3498db;" onclick="selColor(this)"></span>
+        <span class="cp-dot" data-c="purple" style="background:#9b59b6;" onclick="selColor(this)"></span>
+      </div>
+      <input class="bkm-in" id="bkm-in" placeholder="书签备注（可选）">
+      <button class="save-btn" style="width:100%;" onclick="addBkm()">添加书签到当前位置</button>
+    </div>
+    <div id="bp-list"></div>
   </div>
 </div>
 <script>
@@ -2347,6 +2585,33 @@ async function delNote(id) {
 }
 function en(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fd(ts){return ts?new Date(ts*1000).toLocaleDateString('zh-CN'):'';}
+
+// ── Bookmarks ─────────────────────────────────────────────────────────────────
+const CMAP = {red:'#e74c3c',orange:'#f39c12',green:'#27ae60',blue:'#3498db',purple:'#9b59b6'};
+let bkmColor='orange', bkmPositions=[], bkmOpen=false;
+function selColor(el){bkmColor=el.dataset.c;document.querySelectorAll('.cp-dot').forEach(d=>d.style.outlineColor='transparent');el.style.outlineColor='#333';}
+function toggleBkm(){bkmOpen=!bkmOpen;document.getElementById('bp').style.display=bkmOpen?'flex':'none';if(bkmOpen){if(notesOpen)toggleNotes();loadBkm();}}
+async function loadBkm(){
+  const el=document.getElementById('bp-list');
+  if(!UID){el.innerHTML='<div style="color:#aaa;font-size:.82rem;padding:.3rem;">请先在首页激活账号</div>';return;}
+  try{
+    const r=await fetch('/api/user/'+UID+'/bookmarks/'+BOOK_ID);const d=await r.json();
+    const bkms=d.bookmarks||[];bkmPositions=bkms.map(b=>b.position||'');
+    if(!bkms.length){el.innerHTML='<div style="color:#aaa;font-size:.82rem;padding:.3rem;">暂无书签</div>';return;}
+    el.innerHTML=bkms.map((b,i)=>{const col=CMAP[b.color]||CMAP.orange;const isEpub=(b.position||'').startsWith('epubcfi');const pos=isEpub?'':(b.position||'');
+      return '<div class="bkm-row"><span class="bk-dot" style="background:'+col+'"></span><div class="bkm-info"><div class="bkm-lbl">'+en(b.label||'书签')+'</div>'+(pos?'<div class="bkm-pos">'+en(pos)+'</div>':'')+'</div><button class="bkm-go" onclick="jumpBkm('+i+')">跳转</button><button class="bkm-x" onclick="delBkm('+b.id+')">×</button></div>';
+    }).join('');
+  }catch(e){el.innerHTML='<div style="color:#aaa;font-size:.82rem;padding:.3rem;">加载失败</div>';}
+}
+function getCurrentBkmPos(){if(!rendition)return '';try{const l=rendition.currentLocation();return l&&l.start?l.start.cfi:'';}catch(e){return '';}}
+function getCurrentBkmLabel(){if(!rendition)return '';try{const l=rendition.currentLocation();return l&&l.start&&l.start.location?'位置 '+l.start.location:'';}catch(e){return '';}}
+async function addBkm(){
+  if(!UID)return;let label=document.getElementById('bkm-in').value.trim();const position=getCurrentBkmPos();if(!label)label=getCurrentBkmLabel();
+  await fetch('/api/user/'+UID+'/bookmark',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book_id:BOOK_ID,position,label,color:bkmColor})});
+  document.getElementById('bkm-in').value='';loadBkm();
+}
+async function delBkm(id){if(!UID)return;await fetch('/api/user/'+UID+'/bookmark/'+id,{method:'DELETE'});loadBkm();}
+function jumpBkm(idx){const pos=bkmPositions[idx];if(pos&&rendition)rendition.display(pos);}
 
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();

@@ -66,6 +66,11 @@ def get_user_db() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
     conn.commit()
+    # Migration: add color column to existing bookmarks tables
+    cols = {r[1] for r in conn.execute("PRAGMA table_info(bookmarks)")}
+    if "color" not in cols:
+        conn.execute("ALTER TABLE bookmarks ADD COLUMN color TEXT DEFAULT 'orange'")
+        conn.commit()
     return conn
 
 
