@@ -3,28 +3,42 @@
   python3 -m books_organizer web --port 8765
 
 特性：
-- 首页：封面网格，按分类/作者/书名筛选 + 搜索
-- 书籍详情：豆瓣简介、元数据、文件信息、"在浏览器打开"
-- 浏览器内阅读：EPUB 用 epub.js（CDN），PDF 用 pdf.js（CDN）
-- 仅本机/局域网，不做鉴权
+- 首页：封面网格，精选/筛选/搜索；"继续阅读"区（登录用户）
+- 书籍详情：评分、进度、相关书、简介
+- 在线阅读：EPUB / PDF / TXT / DOCX / MOBI / AZW3 全部支持，自动保存进度
+- 用户系统：localStorage UUID，匿名，可设置名字/合并账号/导出导入
+- 书籍上传：拖拽或文件选择，SHA256 去重
+- 相关书推荐：同二级分类 + LLM fine_tags Jaccard 相似度
 """
 from __future__ import annotations
 
 import datetime
+import hashlib
 import json
 import mimetypes
 import os
 import random
 import sqlite3
 import subprocess
+import threading
+import time
+import uuid as uuid_module
 from pathlib import Path
 
 from flask import Flask, Response, abort, jsonify, render_template_string, request, send_file
 
 from . import index_fields
-from .paths import BOOKS_ROOT as ROOT, DB_PATH, COVER_DIR, HAS_CALIBRE, CALIBRE_EBOOK_META
+from .paths import BOOKS_ROOT as ROOT, DB_PATH, COVER_DIR, HAS_CALIBRE, CALIBRE_EBOOK_META, UPLOAD_DIR
+from .user_db import get_user_db, resolve_user
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024  # 200 MB
+
+ALLOWED_UPLOAD_EXTS = {"epub", "pdf", "txt", "docx", "doc", "mobi", "azw3", "azw"}
+
+_related_cache: dict = {}
+_related_lock = threading.Lock()
+RELATED_CACHE_TTL = 300
 
 
 def get_db() -> sqlite3.Connection:
@@ -44,7 +58,6 @@ PLACEHOLDER_SVG = (
 
 @app.route("/cover/<int:file_id>")
 def cover(file_id: int):
-    # online > embedded > placeholder
     online = COVER_DIR / f"{file_id}.online.jpg"
     if online.exists():
         return send_file(online.resolve(), mimetype="image/jpeg")
@@ -67,9 +80,11 @@ def raw_file(file_id: int):
     mime, _ = mimetypes.guess_type(path.name)
     if not mime:
         mime = "application/octet-stream"
-    return send_file(path, mimetype=mime, as_attachment=False,
+    return send_file(path.resolve(), mimetype=mime, as_attachment=False,
                      download_name=path.name, conditional=True)
 
+
+# ── Books API ──────────────────────────────────────────────────────────────────
 
 @app.route("/api/books")
 def api_books():
@@ -145,16 +160,14 @@ def api_books():
 
 @app.route("/api/featured")
 def api_featured():
-    """每日精选：business 8本, literature 6本, humanities 6本, other 4本。
-    以当天日期为随机种子,同一天结果稳定,次日更换。"""
-    seed = datetime.date.today().isoformat()  # e.g. "2026-05-30"
+    """每日精选：business 8本, literature 6本, humanities 6本, other 4本。"""
+    seed = datetime.date.today().isoformat()
     rng = random.Random(seed)
 
     conn = get_db()
     primary_filter = "(m.cluster_role = 'primary' OR m.cluster_role IS NULL)"
     base_where = f"m.title IS NOT NULL AND m.title != '' AND {primary_filter}"
 
-    # 目标分布: category -> count
     distribution = [
         ("business", 8),
         ("literature", 6),
@@ -175,15 +188,11 @@ def api_featured():
             (cat, target_n * 3),
         ).fetchall()
         pool = [dict(r) for r in rows]
-        if len(pool) <= target_n:
-            chosen = pool
-        else:
-            chosen = rng.sample(pool, target_n)
+        chosen = pool if len(pool) <= target_n else rng.sample(pool, target_n)
         for b in chosen:
             used_ids.add(b["id"])
             selected.append(b)
 
-    # "other": 排除已选类别, 从剩余中选 other_count 本
     already_cats = tuple(c for c, _ in distribution)
     placeholders = ",".join("?" * len(already_cats))
     other_rows = conn.execute(
@@ -195,16 +204,10 @@ def api_featured():
         list(already_cats) + [other_count * 3],
     ).fetchall()
     other_pool = [dict(r) for r in other_rows if r["id"] not in used_ids]
-    if len(other_pool) <= other_count:
-        other_chosen = other_pool
-    else:
-        other_chosen = rng.sample(other_pool, other_count)
+    other_chosen = other_pool if len(other_pool) <= other_count else rng.sample(other_pool, other_count)
     selected.extend(other_chosen)
-
-    # 最终打乱顺序
     rng.shuffle(selected)
 
-    # 去掉 pub_year(前端不需要)
     for b in selected:
         b.pop("pub_year", None)
 
@@ -264,7 +267,6 @@ def api_facets():
          for k, v in tree.items()],
         key=lambda x: -x["n"],
     )
-
     decades_rows = conn.execute(
         f"SELECT (m.pub_year / 10) * 10 AS decade, COUNT(*) n FROM metadata m "
         f"WHERE m.pub_year IS NOT NULL AND {primary_filter} "
@@ -296,7 +298,6 @@ def api_book(file_id: int):
         if sum_path.exists():
             data["summary"] = sum_path.read_text(encoding="utf-8")
 
-    # cluster 其他版本
     variants = []
     if data.get("cluster_key"):
         for r in conn.execute(
@@ -311,6 +312,457 @@ def api_book(file_id: int):
     return jsonify(data)
 
 
+@app.route("/api/book/<int:file_id>/related")
+def api_related(file_id: int):
+    with _related_lock:
+        cached = _related_cache.get(file_id)
+        if cached and (time.time() - cached["ts"] < RELATED_CACHE_TTL):
+            return jsonify(cached["data"])
+
+    conn = get_db()
+    row = conn.execute(
+        "SELECT m.category2, m.fine_tags FROM metadata m WHERE m.file_id=?",
+        (file_id,)
+    ).fetchone()
+    if not row:
+        return jsonify({"related": []})
+
+    related: list[dict] = []
+    seen_ids: set[int] = {file_id}
+
+    if row["category2"]:
+        rows = conn.execute(
+            """SELECT f.id, f.ext, m.title, m.author, m.confidence
+               FROM files f JOIN metadata m ON m.file_id=f.id
+               WHERE m.category2=? AND f.id!=? AND m.title IS NOT NULL AND m.title!=''
+               AND (m.cluster_role='primary' OR m.cluster_role IS NULL)
+               ORDER BY m.confidence DESC LIMIT 20""",
+            (row["category2"], file_id)
+        ).fetchall()
+        for r in rows:
+            if r["id"] not in seen_ids:
+                related.append({
+                    "id": r["id"], "title": r["title"],
+                    "author": r["author"], "ext": r["ext"],
+                })
+                seen_ids.add(r["id"])
+
+    if row["fine_tags"]:
+        try:
+            my_tags = set(json.loads(row["fine_tags"]))
+        except (ValueError, TypeError):
+            my_tags = set()
+        if my_tags:
+            tag_rows = conn.execute(
+                """SELECT f.id, f.ext, m.title, m.author, m.fine_tags
+                   FROM files f JOIN metadata m ON m.file_id=f.id
+                   WHERE m.fine_tags IS NOT NULL AND f.id!=?
+                   AND m.title IS NOT NULL AND m.title!=''
+                   AND (m.cluster_role='primary' OR m.cluster_role IS NULL)
+                   LIMIT 2000""",
+                (file_id,)
+            ).fetchall()
+            scored = []
+            for r in tag_rows:
+                try:
+                    other_tags = set(json.loads(r["fine_tags"]))
+                    inter = my_tags & other_tags
+                    union = my_tags | other_tags
+                    j = len(inter) / len(union) if union else 0
+                    if j > 0:
+                        scored.append((j, dict(r)))
+                except (ValueError, TypeError):
+                    pass
+            scored.sort(key=lambda x: -x[0])
+            for _, r in scored[:15]:
+                if r["id"] not in seen_ids:
+                    related.append({
+                        "id": r["id"], "title": r["title"],
+                        "author": r["author"], "ext": r["ext"],
+                    })
+                    seen_ids.add(r["id"])
+
+    result = {"related": related[:10]}
+    with _related_lock:
+        _related_cache[file_id] = {"ts": time.time(), "data": result}
+
+    return jsonify(result)
+
+
+# ── User API ───────────────────────────────────────────────────────────────────
+
+@app.route("/api/user/init", methods=["POST"])
+def api_user_init():
+    data = request.get_json(silent=True) or {}
+    user_id = (data.get("id") or "").strip() or str(uuid_module.uuid4())
+    now = time.time()
+    conn = get_user_db()
+    existing = conn.execute("SELECT id FROM users WHERE id=?", (user_id,)).fetchone()
+    if existing:
+        conn.execute("UPDATE users SET last_seen=? WHERE id=?", (now, user_id))
+        conn.commit()
+        return jsonify({"id": user_id, "created": False})
+    conn.execute(
+        "INSERT INTO users(id,name,created_at,last_seen) VALUES(?,?,?,?)",
+        (user_id, None, now, now)
+    )
+    conn.commit()
+    return jsonify({"id": user_id, "created": True})
+
+
+@app.route("/api/user/<user_id>")
+def api_user_get(user_id: str):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    row = conn.execute(
+        "SELECT id, name, created_at, last_seen FROM users WHERE id=?", (uid,)
+    ).fetchone()
+    if not row:
+        abort(404)
+    conn.execute("UPDATE users SET last_seen=? WHERE id=?", (time.time(), uid))
+    conn.commit()
+    return jsonify(dict(row))
+
+
+@app.route("/api/user/<user_id>/name", methods=["PUT"])
+def api_user_name(user_id: str):
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()[:100]
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    conn.execute("UPDATE users SET name=? WHERE id=?", (name or None, uid))
+    conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/user/<user_id>/merge", methods=["POST"])
+def api_user_merge(user_id: str):
+    """Absorb other_id into user_id."""
+    data = request.get_json(silent=True) or {}
+    other_id = (data.get("other_id") or "").strip()
+    if not other_id or other_id == user_id:
+        return jsonify({"error": "invalid other_id"}), 400
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    oid = resolve_user(conn, other_id)
+    if uid == oid:
+        return jsonify({"ok": True, "note": "already same user"})
+    now = time.time()
+    for table, col in [("reading_history", "user_id"), ("bookmarks", "user_id"),
+                       ("notes", "user_id"), ("ratings", "user_id")]:
+        conn.execute(f"UPDATE OR IGNORE {table} SET {col}=? WHERE {col}=?", (uid, oid))
+        conn.execute(f"DELETE FROM {table} WHERE {col}=?", (oid,))
+    conn.execute(
+        "INSERT OR REPLACE INTO user_aliases(alias_id,primary_id,merged_at) VALUES(?,?,?)",
+        (oid, uid, now)
+    )
+    conn.execute("UPDATE users SET merged_into=? WHERE id=?", (uid, oid))
+    conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/user/<user_id>/history", methods=["POST"])
+def api_history_post(user_id: str):
+    data = request.get_json(silent=True) or {}
+    book_id = data.get("book_id")
+    if not book_id:
+        return jsonify({"error": "book_id required"}), 400
+    progress = max(0.0, min(1.0, float(data.get("progress_pct", 0))))
+    position = (data.get("last_position") or "")[:500]
+    delta = int(data.get("delta_sec", 0))
+    now = time.time()
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    ex = conn.execute(
+        "SELECT id, total_time_sec FROM reading_history WHERE user_id=? AND book_id=?",
+        (uid, book_id)
+    ).fetchone()
+    if ex:
+        conn.execute(
+            "UPDATE reading_history SET last_read_at=?,progress_pct=?,last_position=?,total_time_sec=? WHERE id=?",
+            (now, progress, position, (ex["total_time_sec"] or 0) + delta, ex["id"])
+        )
+    else:
+        conn.execute(
+            "INSERT INTO reading_history(user_id,book_id,started_at,last_read_at,progress_pct,last_position,total_time_sec) VALUES(?,?,?,?,?,?,?)",
+            (uid, book_id, now, now, progress, position, delta)
+        )
+    conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/user/<user_id>/history")
+def api_history_get(user_id: str):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    limit = min(50, int(request.args.get("limit", 20)))
+    rows = conn.execute(
+        "SELECT book_id, progress_pct, last_read_at, last_position "
+        "FROM reading_history WHERE user_id=? ORDER BY last_read_at DESC LIMIT ?",
+        (uid, limit)
+    ).fetchall()
+    bconn = get_db()
+    result = []
+    for r in rows:
+        br = bconn.execute(
+            "SELECT f.id, f.ext, m.title, m.author FROM files f JOIN metadata m ON m.file_id=f.id WHERE f.id=?",
+            (r["book_id"],)
+        ).fetchone()
+        if br:
+            result.append({
+                "book_id": r["book_id"], "title": br["title"],
+                "author": br["author"], "ext": br["ext"],
+                "progress_pct": r["progress_pct"],
+                "last_read_at": r["last_read_at"],
+                "last_position": r["last_position"],
+            })
+    return jsonify({"history": result})
+
+
+@app.route("/api/user/<user_id>/history/<int:book_id>")
+def api_history_book(user_id: str, book_id: int):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    row = conn.execute(
+        "SELECT progress_pct, last_position, last_read_at, total_time_sec "
+        "FROM reading_history WHERE user_id=? AND book_id=?",
+        (uid, book_id)
+    ).fetchone()
+    if not row:
+        return jsonify(None)
+    return jsonify(dict(row))
+
+
+@app.route("/api/user/<user_id>/bookmark", methods=["POST"])
+def api_bookmark_add(user_id: str):
+    data = request.get_json(silent=True) or {}
+    book_id = data.get("book_id")
+    if not book_id:
+        return jsonify({"error": "book_id required"}), 400
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    conn.execute(
+        "INSERT INTO bookmarks(user_id,book_id,position,label,created_at) VALUES(?,?,?,?,?)",
+        (uid, book_id, (data.get("position") or "")[:500],
+         (data.get("label") or "")[:200], time.time())
+    )
+    conn.commit()
+    bm_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+    return jsonify({"id": bm_id})
+
+
+@app.route("/api/user/<user_id>/bookmarks/<int:book_id>")
+def api_bookmarks_get(user_id: str, book_id: int):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    rows = conn.execute(
+        "SELECT id, position, label, created_at FROM bookmarks "
+        "WHERE user_id=? AND book_id=? ORDER BY created_at",
+        (uid, book_id)
+    ).fetchall()
+    return jsonify({"bookmarks": [dict(r) for r in rows]})
+
+
+@app.route("/api/user/<user_id>/bookmark/<int:bm_id>", methods=["DELETE"])
+def api_bookmark_delete(user_id: str, bm_id: int):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    conn.execute("DELETE FROM bookmarks WHERE id=? AND user_id=?", (bm_id, uid))
+    conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/user/<user_id>/note", methods=["POST"])
+def api_note_add(user_id: str):
+    data = request.get_json(silent=True) or {}
+    book_id = data.get("book_id")
+    if not book_id:
+        return jsonify({"error": "book_id required"}), 400
+    now = time.time()
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    note_id = data.get("id")
+    if note_id:
+        conn.execute(
+            "UPDATE notes SET text=?, updated_at=? WHERE id=? AND user_id=?",
+            ((data.get("text") or "")[:10000], now, note_id, uid)
+        )
+        conn.commit()
+        return jsonify({"id": note_id})
+    conn.execute(
+        "INSERT INTO notes(user_id,book_id,position,text,created_at,updated_at) VALUES(?,?,?,?,?,?)",
+        (uid, book_id, (data.get("position") or "")[:500],
+         (data.get("text") or "")[:10000], now, now)
+    )
+    conn.commit()
+    note_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+    return jsonify({"id": note_id})
+
+
+@app.route("/api/user/<user_id>/notes/<int:book_id>")
+def api_notes_get(user_id: str, book_id: int):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    rows = conn.execute(
+        "SELECT id, position, text, created_at, updated_at FROM notes "
+        "WHERE user_id=? AND book_id=? ORDER BY created_at",
+        (uid, book_id)
+    ).fetchall()
+    return jsonify({"notes": [dict(r) for r in rows]})
+
+
+@app.route("/api/user/<user_id>/note/<int:note_id>", methods=["DELETE"])
+def api_note_delete(user_id: str, note_id: int):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    conn.execute("DELETE FROM notes WHERE id=? AND user_id=?", (note_id, uid))
+    conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/user/<user_id>/rating", methods=["POST"])
+def api_rating_post(user_id: str):
+    data = request.get_json(silent=True) or {}
+    book_id = data.get("book_id")
+    rating = data.get("rating")
+    if not book_id or rating is None:
+        return jsonify({"error": "book_id and rating required"}), 400
+    rating = max(1, min(5, int(rating)))
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    conn.execute(
+        "INSERT OR REPLACE INTO ratings(user_id,book_id,rating,review,created_at) VALUES(?,?,?,?,?)",
+        (uid, book_id, rating, (data.get("review") or "")[:2000], time.time())
+    )
+    conn.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/user/<user_id>/export")
+def api_user_export(user_id: str):
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    user = conn.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
+    export_data = {
+        "exported_at": time.time(),
+        "user": dict(user) if user else {},
+        "history": [dict(r) for r in conn.execute(
+            "SELECT * FROM reading_history WHERE user_id=?", (uid,))],
+        "bookmarks": [dict(r) for r in conn.execute(
+            "SELECT * FROM bookmarks WHERE user_id=?", (uid,))],
+        "notes": [dict(r) for r in conn.execute(
+            "SELECT * FROM notes WHERE user_id=?", (uid,))],
+        "ratings": [dict(r) for r in conn.execute(
+            "SELECT * FROM ratings WHERE user_id=?", (uid,))],
+    }
+    return Response(
+        json.dumps(export_data, ensure_ascii=False, indent=2),
+        mimetype="application/json",
+        headers={"Content-Disposition": f"attachment; filename=books_{uid[:8]}.json"},
+    )
+
+
+@app.route("/api/user/<user_id>/import", methods=["POST"])
+def api_user_import(user_id: str):
+    data = request.get_json(silent=True) or {}
+    conn = get_user_db()
+    uid = resolve_user(conn, user_id)
+    now = time.time()
+    imported = {"history": 0, "bookmarks": 0, "notes": 0, "ratings": 0}
+    for h in (data.get("history") or []):
+        try:
+            conn.execute(
+                "INSERT OR IGNORE INTO reading_history(user_id,book_id,started_at,last_read_at,progress_pct,last_position,total_time_sec) VALUES(?,?,?,?,?,?,?)",
+                (uid, h["book_id"], h.get("started_at", now), h.get("last_read_at", now),
+                 h.get("progress_pct", 0), h.get("last_position", ""), h.get("total_time_sec", 0))
+            )
+            imported["history"] += 1
+        except Exception:
+            pass
+    for b in (data.get("bookmarks") or []):
+        try:
+            conn.execute(
+                "INSERT INTO bookmarks(user_id,book_id,position,label,created_at) VALUES(?,?,?,?,?)",
+                (uid, b["book_id"], b.get("position",""), b.get("label",""), b.get("created_at", now))
+            )
+            imported["bookmarks"] += 1
+        except Exception:
+            pass
+    for n in (data.get("notes") or []):
+        try:
+            conn.execute(
+                "INSERT INTO notes(user_id,book_id,position,text,created_at,updated_at) VALUES(?,?,?,?,?,?)",
+                (uid, n["book_id"], n.get("position",""), n.get("text",""),
+                 n.get("created_at", now), n.get("updated_at", now))
+            )
+            imported["notes"] += 1
+        except Exception:
+            pass
+    for r in (data.get("ratings") or []):
+        try:
+            conn.execute(
+                "INSERT OR REPLACE INTO ratings(user_id,book_id,rating,review,created_at) VALUES(?,?,?,?,?)",
+                (uid, r["book_id"], r.get("rating", 3), r.get("review",""), r.get("created_at", now))
+            )
+            imported["ratings"] += 1
+        except Exception:
+            pass
+    conn.commit()
+    return jsonify({"ok": True, "imported": imported})
+
+
+# ── Upload API ─────────────────────────────────────────────────────────────────
+
+@app.route("/api/upload", methods=["POST"])
+def api_upload():
+    if "file" not in request.files:
+        return jsonify({"error": "no file"}), 400
+    f = request.files["file"]
+    original_name = Path(f.filename or "unknown").name
+    ext = original_name.rsplit(".", 1)[-1].lower() if "." in original_name else ""
+    if ext not in ALLOWED_UPLOAD_EXTS:
+        return jsonify({"error": f"unsupported format: {ext}"}), 400
+
+    data = f.read()
+    sha256 = hashlib.sha256(data).hexdigest()
+
+    conn = get_db()
+    existing = conn.execute("SELECT id FROM files WHERE sha1=?", (sha256,)).fetchone()
+    if existing:
+        return jsonify({"status": "duplicate", "book_id": existing["id"]})
+
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    safe_chars = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._- ")
+    safe_name = sha256[:8] + "_" + "".join(
+        c if c in safe_chars else "_" for c in original_name
+    )
+    dest = UPLOAD_DIR / safe_name
+    dest.write_bytes(data)
+
+    now = time.time()
+    # rel_path relative to ROOT so scan/serve work uniformly
+    try:
+        rel_path = str(dest.resolve().relative_to(ROOT.resolve()))
+    except ValueError:
+        rel_path = str(dest.resolve())
+    title = original_name.rsplit(".", 1)[0] if "." in original_name else original_name
+
+    conn.execute(
+        "INSERT INTO files(rel_path,name,ext,size,mtime,fingerprint,sha1,kind,scanned_at) VALUES(?,?,?,?,?,?,?,?,?)",
+        (rel_path, original_name, ext, len(data), now, sha256[:16], sha256, "book", now)
+    )
+    file_id = conn.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+    conn.execute(
+        "INSERT INTO metadata(file_id,title,source,confidence,extracted_at,cluster_role) VALUES(?,?,?,?,?,?)",
+        (file_id, title, "upload", 0.5, now, "primary")
+    )
+    conn.commit()
+
+    return jsonify({"status": "ok", "book_id": file_id})
+
+
+# ── HTML Templates ─────────────────────────────────────────────────────────────
+
 HOME_HTML = """<!doctype html>
 <html lang="zh-CN"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -318,23 +770,38 @@ HOME_HTML = """<!doctype html>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
          margin: 0; background: #f7f6f3; color: #222; }
-  header { padding: 1rem 1.5rem; background: #fff; border-bottom: 1px solid #e5e3dd;
-           display: flex; gap: 1rem; align-items: center; position: sticky; top: 0; z-index: 10; }
-  header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+  header { padding: .75rem 1.5rem; background: #fff; border-bottom: 1px solid #e5e3dd;
+           display: flex; gap: .75rem; align-items: center; position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 1.1rem; font-weight: 600; flex-shrink: 0; }
   header input, header select { padding: .4rem .6rem; border: 1px solid #d0cdc4;
            border-radius: 6px; background: #fff; font-size: .9rem; }
-  header input[type="search"] { width: 220px; }
+  header input[type="search"] { width: 200px; }
+  .hdr-right { margin-left: auto; display: flex; gap: .5rem; align-items: center; }
+  .icon-btn { padding: .4rem .7rem; border: 1px solid #d0cdc4; border-radius: 6px;
+              background: #fff; cursor: pointer; font-size: .9rem; line-height: 1; }
+  .icon-btn:hover { background: #f0ede8; }
   main { padding: 1.5rem; }
+  .section-label { color: #a09070; font-size: .8rem; margin-bottom: .6rem; font-weight: 500; }
+  .continue-row { display: flex; gap: .9rem; overflow-x: auto; padding-bottom: .8rem; margin-bottom: 1.5rem; }
+  .continue-row::-webkit-scrollbar { height: 4px; }
+  .continue-row::-webkit-scrollbar-thumb { background: #d0cdc4; border-radius: 2px; }
+  .continue-card { flex-shrink: 0; width: 120px; text-decoration: none; color: inherit; }
+  .continue-card img { width: 120px; height: 168px; object-fit: cover; border-radius: 4px;
+                       box-shadow: 0 1px 4px rgba(0,0,0,.1); display: block; background: #eee; }
+  .prog-bar { background: #e8e6df; height: 4px; border-radius: 2px; margin: .35rem 0 .2rem; }
+  .prog-fill { background: #2d6cdf; height: 100%; border-radius: 2px; max-width: 100%; }
+  .continue-card .ct { font-size: .75rem; line-height: 1.3; overflow: hidden;
+                       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .continue-card .cp { font-size: .68rem; color: #999; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
           gap: 1.2rem; }
-  .card { background: #fff; border-radius: 8px; overflow: hidden;
-          box-shadow: 0 1px 3px rgba(0,0,0,.06); transition: transform .15s; cursor: pointer; }
+  .card { background: #fff; border-radius: 8px; overflow: hidden; text-decoration: none; color: inherit;
+          box-shadow: 0 1px 3px rgba(0,0,0,.06); transition: transform .15s; cursor: pointer; display: block; }
   .card:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,.08); }
   .card .cov { aspect-ratio: 5/7; background: #eee; width: 100%; object-fit: cover; display: block; }
   .card .meta { padding: .5rem .7rem .7rem; }
   .card .t { font-size: .85rem; font-weight: 500; line-height: 1.3;
-             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-             overflow: hidden; }
+             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .card .a { font-size: .75rem; color: #777; margin-top: .25rem;
              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .card .ext { font-size: .65rem; color: #999; text-transform: uppercase; margin-top: .2rem; }
@@ -344,6 +811,33 @@ HOME_HTML = """<!doctype html>
                   border-radius: 4px; cursor: pointer; }
   .pager button:disabled { opacity: .4; cursor: not-allowed; }
   .empty { text-align: center; color: #888; padding: 4rem; }
+  /* User sidebar */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 100; }
+  .sidebar { position: fixed; top: 0; right: 0; bottom: 0; width: 300px; background: #fff;
+             z-index: 101; padding: 1.5rem; overflow-y: auto;
+             box-shadow: -3px 0 12px rgba(0,0,0,.12); }
+  .sidebar h2 { margin: 0 0 1.2rem; font-size: 1rem; }
+  .sidebar label { display: block; font-size: .8rem; color: #666; margin-bottom: .25rem; }
+  .sidebar input[type=text] { width: 100%; box-sizing: border-box; padding: .4rem .6rem;
+                              border: 1px solid #d0cdc4; border-radius: 6px; font-size: .9rem; }
+  .sidebar hr { border: none; border-top: 1px solid #eee; margin: 1rem 0; }
+  .sidebar .sm-btn { display: inline-block; padding: .4rem .9rem; border-radius: 6px;
+                     background: #2d6cdf; color: #fff; border: 0; cursor: pointer; font-size: .85rem; }
+  .sidebar .sm-btn.sec { background: #eee; color: #333; }
+  .sidebar .uid { font-family: monospace; font-size: .75rem; color: #888; word-break: break-all;
+                  background: #f5f5f5; padding: .3rem .5rem; border-radius: 4px; cursor: pointer; }
+  /* Upload modal */
+  .modal-wrap { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200;
+                display: flex; align-items: center; justify-content: center; }
+  .modal-box { background: #fff; border-radius: 10px; padding: 2rem; width: min(90vw, 480px); }
+  .modal-box h2 { margin: 0 0 1rem; font-size: 1rem; }
+  .drop-zone { border: 2px dashed #d0cdc4; border-radius: 8px; padding: 2.5rem 1rem;
+               text-align: center; color: #888; cursor: pointer; transition: .15s; }
+  .drop-zone.dragover { border-color: #2d6cdf; background: #f0f5ff; color: #2d6cdf; }
+  .progress-wrap { margin-top: 1rem; display: none; }
+  .upload-bar { background: #e8e6df; height: 6px; border-radius: 3px; }
+  .upload-fill { background: #2d6cdf; height: 100%; border-radius: 3px; width: 0; transition: width .3s; }
+  .upload-status { font-size: .85rem; color: #555; margin-top: .5rem; }
 </style></head>
 <body>
 <header>
@@ -364,10 +858,78 @@ HOME_HTML = """<!doctype html>
     <option value="id">按入库</option>
     <option value="confidence">按置信度</option>
   </select>
-  <span id="count" style="margin-left:auto; color:#777; font-size:.85rem;"></span>
+  <div class="hdr-right">
+    <span id="count" style="color:#777;font-size:.85rem;"></span>
+    <button class="icon-btn" onclick="showUpload()" title="上传书籍">⬆ 上传</button>
+    <button class="icon-btn" id="btn-user" onclick="toggleSidebar()" title="我的账号">👤</button>
+  </div>
 </header>
+
+<!-- User sidebar -->
+<div id="sidebar-wrap" style="display:none;">
+  <div class="overlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar">
+    <h2>📖 我的账号</h2>
+    <label>设备 ID（点击复制）</label>
+    <div class="uid" id="uid-display" onclick="copyUid()">—</div>
+    <div style="margin-top:1rem;">
+      <label>显示名</label>
+      <input type="text" id="display-name" placeholder="未设置" maxlength="50">
+      <button class="sm-btn" style="margin-top:.5rem;" onclick="saveName()">保存</button>
+    </div>
+    <hr>
+    <div>
+      <label>合并账号（将另一设备的阅读数据合并到此账号）</label>
+      <input type="text" id="merge-id" placeholder="输入另一个设备 ID">
+      <button class="sm-btn" style="margin-top:.5rem;" onclick="mergeAccount()">合并</button>
+    </div>
+    <hr>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <button class="sm-btn sec" onclick="exportData()">导出数据</button>
+      <label class="sm-btn sec" style="cursor:pointer;">
+        导入数据 <input type="file" accept=".json" style="display:none;" onchange="importData(this)">
+      </label>
+    </div>
+    <div id="sidebar-msg" style="margin-top:.8rem;font-size:.82rem;color:#666;"></div>
+  </div>
+</div>
+
+<!-- Upload modal -->
+<div id="upload-modal" style="display:none;">
+  <div class="modal-wrap">
+    <div class="modal-box">
+      <h2>⬆ 上传书籍</h2>
+      <div class="drop-zone" id="drop-zone"
+           ondragover="event.preventDefault();this.classList.add('dragover')"
+           ondragleave="this.classList.remove('dragover')"
+           ondrop="handleDrop(event)">
+        <div>拖拽文件到此处，或</div>
+        <label style="color:#2d6cdf;cursor:pointer;margin-top:.5rem;display:inline-block;">
+          选择文件
+          <input type="file" id="file-input" accept=".epub,.pdf,.txt,.docx,.doc,.mobi,.azw3,.azw"
+                 style="display:none;" onchange="uploadFile(this.files[0])">
+        </label>
+        <div style="font-size:.78rem;color:#aaa;margin-top:.5rem;">
+          支持 EPUB / PDF / TXT / DOCX / MOBI / AZW3，最大 200 MB
+        </div>
+      </div>
+      <div class="progress-wrap" id="upload-progress">
+        <div class="upload-bar"><div class="upload-fill" id="upload-fill"></div></div>
+        <div class="upload-status" id="upload-status">准备上传…</div>
+      </div>
+      <div style="margin-top:1rem;text-align:right;">
+        <button class="icon-btn" onclick="closeUpload()">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <main>
-  <div id="featured-hint" style="padding:.4rem 0 .8rem; color:#a09070; font-size:.8rem;">今日精选 · 每日更新</div>
+  <div id="continue-section" style="display:none;">
+    <div class="section-label">继续阅读</div>
+    <div class="continue-row" id="continue-row"></div>
+  </div>
+  <div id="featured-hint" style="padding:.2rem 0 .6rem; color:#a09070; font-size:.8rem;">今日精选 · 每日更新</div>
   <div class="grid" id="grid"></div>
   <div class="pager">
     <button id="prev">上一页</button>
@@ -377,7 +939,8 @@ HOME_HTML = """<!doctype html>
 </main>
 <script>
 let page = 1, perPage = 40, total = 0;
-let featuredMode = true;  // true = 首页精选模式, false = 正常浏览模式
+let featuredMode = true;
+let UID = null;
 
 const CATEGORY_LABEL = {
   tech: '科技工程', business: '商业管理', humanities: '人文社科',
@@ -385,6 +948,165 @@ const CATEGORY_LABEL = {
   reference: '工具书', other: '其他',
 };
 let CATEGORY_TREE = [];
+
+// ── User init ────────────────────────────────────────────────────────────────
+async function initUser() {
+  UID = localStorage.getItem('books_uid');
+  if (!UID) {
+    try {
+      const r = await fetch('/api/user/init', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'
+      });
+      const d = await r.json();
+      UID = d.id;
+      localStorage.setItem('books_uid', UID);
+    } catch(e) { return; }
+  } else {
+    fetch('/api/user/init', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({id: UID})
+    }).catch(() => {});
+  }
+  loadUserInfo();
+  loadContinueReading();
+}
+
+async function loadUserInfo() {
+  if (!UID) return;
+  try {
+    const r = await fetch('/api/user/' + UID);
+    if (!r.ok) return;
+    const d = await r.json();
+    document.getElementById('uid-display').textContent = UID;
+    document.getElementById('display-name').value = d.name || '';
+    document.getElementById('btn-user').textContent = d.name ? ('👤 ' + d.name.slice(0,8)) : '👤';
+  } catch(e) {}
+}
+
+async function loadContinueReading() {
+  if (!UID) return;
+  try {
+    const r = await fetch('/api/user/' + UID + '/history?limit=6');
+    const d = await r.json();
+    const books = (d.history || []).filter(b => (b.progress_pct || 0) < 0.95);
+    if (!books.length) return;
+    document.getElementById('continue-section').style.display = 'block';
+    const row = document.getElementById('continue-row');
+    row.innerHTML = '';
+    for (const b of books) {
+      const pct = Math.round((b.progress_pct || 0) * 100);
+      const a = document.createElement('a');
+      a.className = 'continue-card';
+      a.href = '/book/' + b.book_id;
+      a.innerHTML = '<img src="/cover/' + b.book_id + '" loading="lazy">' +
+        '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="ct">' + escapeHtml(b.title || '无题') + '</div>' +
+        '<div class="cp">' + pct + '%</div>';
+      row.appendChild(a);
+    }
+  } catch(e) {}
+}
+
+// ── User sidebar ─────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const el = document.getElementById('sidebar-wrap');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function copyUid() {
+  if (UID) navigator.clipboard.writeText(UID).then(() => {
+    document.getElementById('sidebar-msg').textContent = '已复制 ID';
+    setTimeout(() => document.getElementById('sidebar-msg').textContent = '', 2000);
+  });
+}
+async function saveName() {
+  if (!UID) return;
+  const name = document.getElementById('display-name').value.trim();
+  await fetch('/api/user/' + UID + '/name', {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({name})
+  });
+  document.getElementById('btn-user').textContent = name ? ('👤 ' + name.slice(0,8)) : '👤';
+  document.getElementById('sidebar-msg').textContent = '已保存';
+  setTimeout(() => document.getElementById('sidebar-msg').textContent = '', 2000);
+}
+async function mergeAccount() {
+  if (!UID) return;
+  const otherId = document.getElementById('merge-id').value.trim();
+  if (!otherId) return;
+  const r = await fetch('/api/user/' + UID + '/merge', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({other_id: otherId})
+  });
+  const d = await r.json();
+  document.getElementById('sidebar-msg').textContent = d.ok ? '合并成功，刷新页面生效' : (d.error || '合并失败');
+}
+async function exportData() {
+  if (!UID) return;
+  window.open('/api/user/' + UID + '/export');
+}
+async function importData(input) {
+  if (!UID || !input.files[0]) return;
+  const text = await input.files[0].text();
+  let data;
+  try { data = JSON.parse(text); } catch { alert('文件格式错误'); return; }
+  const r = await fetch('/api/user/' + UID + '/import', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  const d = await r.json();
+  document.getElementById('sidebar-msg').textContent =
+    d.ok ? '导入成功：历史' + d.imported.history + '，书签' + d.imported.bookmarks + '，笔记' + d.imported.notes : '导入失败';
+}
+
+// ── Upload ────────────────────────────────────────────────────────────────────
+function showUpload() { document.getElementById('upload-modal').style.display = 'block'; }
+function closeUpload() {
+  document.getElementById('upload-modal').style.display = 'none';
+  document.getElementById('upload-progress').style.display = 'none';
+  document.getElementById('upload-fill').style.width = '0';
+  document.getElementById('upload-status').textContent = '准备上传…';
+  document.getElementById('drop-zone').classList.remove('dragover');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) uploadFile(file);
+}
+async function uploadFile(file) {
+  if (!file) return;
+  const prog = document.getElementById('upload-progress');
+  const fill = document.getElementById('upload-fill');
+  const status = document.getElementById('upload-status');
+  prog.style.display = 'block';
+  fill.style.width = '10%';
+  status.textContent = '上传中：' + file.name;
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  try {
+    fill.style.width = '40%';
+    const r = await fetch('/api/upload', {method: 'POST', body: fd});
+    fill.style.width = '100%';
+    const d = await r.json();
+    if (d.status === 'ok') {
+      status.textContent = '上传成功！' + (d.book_id ? '' : '');
+      if (d.book_id) {
+        setTimeout(() => { closeUpload(); window.location.href = '/book/' + d.book_id; }, 800);
+      }
+    } else if (d.status === 'duplicate') {
+      status.textContent = '该书已存在于书库';
+      if (d.book_id) setTimeout(() => { closeUpload(); window.location.href = '/book/' + d.book_id; }, 1000);
+    } else {
+      status.textContent = '上传失败：' + (d.error || '未知错误');
+    }
+  } catch(e) {
+    status.textContent = '上传失败：网络错误';
+  }
+}
+
+// ── Facets & browse ───────────────────────────────────────────────────────────
 async function loadFacets() {
   const r = await fetch('/api/facets');
   const d = await r.json();
@@ -398,7 +1120,7 @@ async function loadFacets() {
   for (const c of CATEGORY_TREE) {
     const o = document.createElement('option');
     o.value = c.key;
-    o.textContent = `${CATEGORY_LABEL[c.key] || c.key} (${c.n})`;
+    o.textContent = (CATEGORY_LABEL[c.key] || c.key) + ' (' + c.n + ')';
     csel.appendChild(o);
   }
   const asel = document.getElementById('author');
@@ -409,10 +1131,11 @@ async function loadFacets() {
   const dsel = document.getElementById('decade');
   for (const dec of (d.decades || [])) {
     const o = document.createElement('option');
-    o.value = dec.key; o.textContent = `${dec.key}s (${dec.n})`;
+    o.value = dec.key; o.textContent = dec.key + 's (' + dec.n + ')';
     dsel.appendChild(o);
   }
 }
+
 function updateCategory2(selectedL1) {
   const sel = document.getElementById('category2');
   sel.innerHTML = '<option value="">— 二级分类 —</option>';
@@ -424,7 +1147,7 @@ function updateCategory2(selectedL1) {
   sel.disabled = false;
   for (const s of node.subs) {
     const o = document.createElement('option');
-    o.value = s.key; o.textContent = `${s.key} (${s.n})`;
+    o.value = s.key; o.textContent = s.key + ' (' + s.n + ')';
     sel.appendChild(o);
   }
 }
@@ -438,7 +1161,7 @@ function updateSubject(selectedL1, selectedL2) {
   sel.disabled = false;
   for (const sj of c2.subjects) {
     const o = document.createElement('option');
-    o.value = sj.key; o.textContent = `${sj.key} (${sj.n})`;
+    o.value = sj.key; o.textContent = sj.key + ' (' + sj.n + ')';
     sel.appendChild(o);
   }
 }
@@ -453,16 +1176,14 @@ function enterBrowseMode() {
 async function load() {
   let d;
   if (featuredMode) {
-    // 首屏:加载每日精选
     const r = await fetch('/api/featured');
     d = await r.json();
     total = d.total;
-    document.getElementById('count').textContent = `今日精选 ${total} 本`;
+    document.getElementById('count').textContent = '今日精选 ' + total + ' 本';
     document.getElementById('pageinfo').textContent = '';
     document.getElementById('prev').disabled = true;
     document.getElementById('next').disabled = true;
   } else {
-    // 用户触发了筛选/搜索:走正常浏览逻辑
     const params = new URLSearchParams({
       page, per_page: perPage,
       q: document.getElementById('q').value.trim(),
@@ -477,9 +1198,9 @@ async function load() {
     const r = await fetch('/api/books?' + params);
     d = await r.json();
     total = d.total;
-    document.getElementById('count').textContent = `共 ${total} 本`;
+    document.getElementById('count').textContent = '共 ' + total + ' 本';
     document.getElementById('pageinfo').textContent =
-      `第 ${page} / ${Math.max(1, Math.ceil(total / perPage))} 页`;
+      '第 ' + page + ' / ' + Math.max(1, Math.ceil(total / perPage)) + ' 页';
     document.getElementById('prev').disabled = page <= 1;
     document.getElementById('next').disabled = page * perPage >= total;
   }
@@ -492,14 +1213,14 @@ async function load() {
   for (const b of d.books) {
     const a = document.createElement('a');
     a.className = 'card';
-    a.href = `/book/${b.id}`;
-    a.innerHTML = `
-      <img class="cov" src="/cover/${b.id}" loading="lazy">
-      <div class="meta">
-        <div class="t">${escapeHtml(b.title || '无题')}</div>
-        <div class="a">${escapeHtml(b.author || '佚名')}</div>
-        <div class="ext">${(b.ext || '').toUpperCase()}</div>
-      </div>`;
+    a.href = '/book/' + b.id;
+    a.innerHTML =
+      '<img class="cov" src="/cover/' + b.id + '" loading="lazy">' +
+      '<div class="meta">' +
+        '<div class="t">' + escapeHtml(b.title || '无题') + '</div>' +
+        '<div class="a">' + escapeHtml(b.author || '佚名') + '</div>' +
+        '<div class="ext">' + (b.ext || '').toUpperCase() + '</div>' +
+      '</div>';
     grid.appendChild(a);
   }
 }
@@ -511,8 +1232,7 @@ function escapeHtml(s) {
 
 document.getElementById('q').addEventListener('input', debounce(() => { enterBrowseMode(); page=1; load(); }, 250));
 document.getElementById('category').addEventListener('change', (e) => {
-  updateCategory2(e.target.value);
-  enterBrowseMode(); page=1; load();
+  updateCategory2(e.target.value); enterBrowseMode(); page=1; load();
 });
 document.getElementById('category2').addEventListener('change', (e) => {
   updateSubject(document.getElementById('category').value, e.target.value);
@@ -531,6 +1251,7 @@ function debounce(fn, ms) {
 }
 
 loadFacets().then(load);
+initUser();
 </script></body></html>
 """
 
@@ -542,82 +1263,321 @@ BOOK_HTML = """<!doctype html>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
          margin: 0; background: #f7f6f3; color: #222; }
-  header { padding: .75rem 1.5rem; background: #fff; border-bottom: 1px solid #e5e3dd; }
+  header { padding: .75rem 1.5rem; background: #fff; border-bottom: 1px solid #e5e3dd;
+           display: flex; align-items: center; gap: 1rem; }
   header a { color: #555; text-decoration: none; }
-  .wrap { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem;
-          display: grid; grid-template-columns: 200px 1fr; gap: 2rem; }
+  .wrap { max-width: 860px; margin: 2rem auto; padding: 0 1.5rem; }
+  .top-grid { display: grid; grid-template-columns: 200px 1fr; gap: 2rem; }
   .cover { width: 200px; aspect-ratio: 5/7; object-fit: cover; border-radius: 4px;
            box-shadow: 0 2px 6px rgba(0,0,0,.1); background: #eee; }
-  .meta h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
-  .meta .author { color: #555; margin-bottom: 1rem; }
-  .meta dl { margin: 1rem 0; }
+  .meta h1 { margin: 0 0 .5rem; font-size: 1.4rem; }
+  .meta .author { color: #555; margin-bottom: .75rem; }
+  .meta dl { margin: .5rem 0; }
   .meta dt { color: #888; font-size: .8rem; margin-top: .5rem; }
-  .meta dd { margin: 0; }
+  .meta dd { margin: 0; font-size: .95rem; }
   .meta .summary { margin-top: 1.5rem; line-height: 1.7; color: #333;
-                   white-space: pre-wrap; word-break: break-word; }
-  .actions { margin-top: 1.5rem; display: flex; gap: .75rem; flex-wrap: wrap; }
-  .btn { padding: .55rem 1rem; border-radius: 6px; text-decoration: none;
-         background: #2d6cdf; color: #fff; font-size: .9rem; }
+                   white-space: pre-wrap; word-break: break-word; font-size: .9rem; }
+  .actions { margin-top: 1.2rem; display: flex; gap: .7rem; flex-wrap: wrap; }
+  .btn { padding: .5rem 1rem; border-radius: 6px; text-decoration: none;
+         background: #2d6cdf; color: #fff; font-size: .9rem; border: 0; cursor: pointer; }
   .btn.sec { background: #eee; color: #333; }
   .tag { display: inline-block; background: #eee9d8; color: #6b5a1e; padding: .15rem .55rem;
          border-radius: 12px; font-size: .75rem; margin: .15rem .15rem 0 0; }
-  @media (max-width: 600px) { .wrap { grid-template-columns: 1fr; } .cover { width: 50%; } }
+  /* Progress */
+  .prog-section { margin: 1.5rem 0; }
+  .prog-bar { background: #e8e6df; height: 6px; border-radius: 3px; margin: .4rem 0; }
+  .prog-fill { background: #2d6cdf; height: 100%; border-radius: 3px; }
+  /* Rating */
+  .rating-section { margin: 1.5rem 0; }
+  .stars { display: flex; gap: .2rem; }
+  .star { font-size: 1.5rem; cursor: pointer; color: #d0cdc4; transition: color .1s; user-select: none; }
+  .star.on { color: #f4b942; }
+  .star:hover, .star.hover { color: #f4b942; }
+  /* Sections */
+  .section { margin: 2rem 0; }
+  .section h3 { font-size: .95rem; color: #555; margin: 0 0 .75rem; font-weight: 600;
+                border-bottom: 1px solid #e5e3dd; padding-bottom: .4rem; }
+  /* Related books */
+  .related-row { display: flex; gap: .9rem; overflow-x: auto; padding-bottom: .5rem; }
+  .related-row::-webkit-scrollbar { height: 4px; }
+  .related-row::-webkit-scrollbar-thumb { background: #d0cdc4; border-radius: 2px; }
+  .rel-card { flex-shrink: 0; width: 110px; text-decoration: none; color: inherit; }
+  .rel-card img { width: 110px; height: 154px; object-fit: cover; border-radius: 4px;
+                  box-shadow: 0 1px 3px rgba(0,0,0,.1); display: block; background: #eee; }
+  .rel-card .rt { font-size: .72rem; margin-top: .3rem; line-height: 1.3; overflow: hidden;
+                  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  /* Variants */
+  .variant-list { list-style: none; padding: 0; margin: .5rem 0; }
+  .variant-list li { padding: .4rem 0; border-bottom: 1px solid #eee; }
+  /* Notes */
+  .note-item { background: #fffdf5; border: 1px solid #f0e8c0; border-radius: 6px;
+               padding: .7rem; margin: .4rem 0; }
+  .note-item .nt { font-size: .88rem; line-height: 1.6; white-space: pre-wrap; }
+  .note-item .na { font-size: .72rem; color: #aaa; margin-top: .3rem; }
+  /* Bookmarks */
+  .bm-item { display: flex; justify-content: space-between; align-items: center;
+             padding: .4rem 0; border-bottom: 1px solid #f0ede8; font-size: .85rem; }
+  .bm-del { background: none; border: 0; color: #aaa; cursor: pointer; font-size: 1rem; }
+  /* Note input */
+  .note-input { width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid #d0cdc4;
+                border-radius: 6px; font-size: .9rem; resize: vertical; min-height: 80px;
+                font-family: inherit; }
+  @media (max-width: 600px) { .top-grid { grid-template-columns: 1fr; } .cover { width: 40%; } }
 </style></head>
 <body>
 <header><a href="/">← 回到书库</a></header>
 <div class="wrap" id="root">加载中…</div>
 <script>
 const id = {{ id }};
+let UID = localStorage.getItem('books_uid');
+
+async function ensureUser() {
+  if (!UID) {
+    try {
+      const r = await fetch('/api/user/init', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
+      });
+      const d = await r.json();
+      UID = d.id;
+      localStorage.setItem('books_uid', UID);
+    } catch(e) {}
+  }
+}
+
 async function load() {
+  await ensureUser();
   const r = await fetch('/api/book/' + id);
   if (!r.ok) { document.getElementById('root').innerHTML = '<p>未找到</p>'; return; }
   const b = await r.json();
   document.title = b.title || '无题';
-  const tags = b.tags ? (() => { try { return JSON.parse(b.tags); } catch { return []; } })() : [];
-  const subjects = b.subjects ? (() => { try { return JSON.parse(b.subjects); } catch { return []; } })() : [];
+
+  const tags = tryParse(b.tags);
+  const subjects = tryParse(b.subjects);
   const ext = (b.ext || '').toLowerCase();
-  const canRead = ext === 'epub' || ext === 'pdf' || ext === 'txt' || ext === 'docx' || ext === 'doc' || ext === 'mobi' || ext === 'azw3' || ext === 'azw';
+  const canRead = ['epub','pdf','txt','docx','doc','mobi','azw3','azw'].includes(ext);
   const CAT_LABEL = {tech:'科技工程',business:'商业管理',humanities:'人文社科',literature:'文学艺术',practical:'生活实用',education:'教育学习',reference:'工具书',other:'其他'};
   const catLine = b.category
-    ? `${esc(CAT_LABEL[b.category] || b.category)}${b.category2 ? ' · ' + esc(b.category2) : ''}`
+    ? esc(CAT_LABEL[b.category] || b.category) + (b.category2 ? ' · ' + esc(b.category2) : '')
     : '';
-  document.getElementById('root').innerHTML = `
-    <img class="cover" src="/cover/${id}">
-    <div class="meta">
-      <h1>${esc(b.title || '无题')}</h1>
-      <div class="author">${esc(b.author || '佚名')}</div>
-      ${catLine ? `<div style="margin:.4rem 0;color:#6b5a1e;font-size:.85rem;">${catLine}</div>` : ''}
-      <div>${subjects.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</div>
-      <div class="actions">
-        ${canRead ? `<a class="btn" href="/read/${id}">📖 在线阅读</a>` : ''}
-        <a class="btn sec" href="/file/${id}" download>⬇ 下载</a>
-      </div>
-      <dl>
-        ${b.publisher ? `<dt>出版社</dt><dd>${esc(b.publisher)}</dd>` : ''}
-        ${b.pubdate ? `<dt>出版日期</dt><dd>${esc(b.pubdate)}</dd>` : ''}
-        ${b.isbn ? `<dt>ISBN</dt><dd>${esc(b.isbn)}</dd>` : ''}
-        <dt>格式</dt><dd>${esc((b.ext || '').toUpperCase())} · ${fmtSize(b.size || 0)}</dd>
-        <dt>路径</dt><dd style="font-size:.8rem;color:#888;">${esc(b.rel_path)}</dd>
-        <dt>识别置信度</dt><dd>${(b.confidence * 100).toFixed(0)}%</dd>
-      </dl>
-      ${b.variants && b.variants.length > 0 ? `
-        <h3 style="margin-top:1.5rem;font-size:.95rem;color:#666;">其他版本 / 格式（${b.variants.length}）</h3>
-        <ul style="list-style:none;padding:0;margin:.5rem 0;">
-          ${b.variants.map(v => `
-            <li style="padding:.4rem 0;border-bottom:1px solid #eee;">
-              <a href="/book/${v.id}" style="color:#2d6cdf;text-decoration:none;">
-                ${(v.ext || '').toUpperCase()}
-              </a>
-              ${v.publisher ? ' · ' + esc(v.publisher) : ''}
-              ${v.pubdate ? ' · ' + esc(v.pubdate) : ''}
-              <span style="color:#888;font-size:.8rem;">· ${fmtSize(v.size || 0)}</span>
-            </li>`).join('')}
-        </ul>` : ''}
-      ${b.summary ? `<div class="summary">${esc(b.summary)}</div>` : ''}
-    </div>`;
+
+  const root = document.getElementById('root');
+  root.innerHTML = '<div class="top-grid">' +
+    '<img class="cover" src="/cover/' + id + '">' +
+    '<div class="meta">' +
+      '<h1>' + esc(b.title || '无题') + '</h1>' +
+      '<div class="author">' + esc(b.author || '佚名') + '</div>' +
+      (catLine ? '<div style="margin:.3rem 0;color:#6b5a1e;font-size:.85rem;">' + catLine + '</div>' : '') +
+      '<div>' + subjects.map(t => '<span class="tag">' + esc(t) + '</span>').join('') + '</div>' +
+      '<div class="actions" id="actions">' +
+        (canRead ? '<a class="btn" href="/read/' + id + '" id="read-btn">📖 在线阅读</a>' : '') +
+        '<a class="btn sec" href="/file/' + id + '" download>⬇ 下载</a>' +
+      '</div>' +
+      '<div id="prog-section"></div>' +
+      '<dl>' +
+        (b.publisher ? '<dt>出版社</dt><dd>' + esc(b.publisher) + '</dd>' : '') +
+        (b.pubdate ? '<dt>出版日期</dt><dd>' + esc(b.pubdate) + '</dd>' : '') +
+        (b.isbn ? '<dt>ISBN</dt><dd>' + esc(b.isbn) + '</dd>' : '') +
+        '<dt>格式</dt><dd>' + esc((b.ext||'').toUpperCase()) + ' · ' + fmtSize(b.size||0) + '</dd>' +
+        '<dt>识别置信度</dt><dd>' + ((b.confidence||0)*100).toFixed(0) + '%</dd>' +
+      '</dl>' +
+      (b.variants && b.variants.length ? renderVariants(b.variants) : '') +
+      (b.summary ? '<div class="summary">' + esc(b.summary) + '</div>' : '') +
+    '</div>' +
+  '</div>' +
+  '<div id="rating-section"></div>' +
+  '<div id="related-section"></div>' +
+  '<div id="notes-section"></div>' +
+  '<div id="bookmarks-section"></div>';
+
+  // Load user data and related books in parallel
+  loadUserData(id, canRead);
+  loadRelated(id);
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function fmtSize(n){const u=['B','KB','MB','GB'];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return n.toFixed(1)+u[i];}
+
+function tryParse(s) {
+  if (!s) return [];
+  try { return JSON.parse(s); } catch { return []; }
+}
+function renderVariants(vs) {
+  return '<h3 style="margin-top:1.2rem;font-size:.9rem;color:#666;">其他版本（' + vs.length + '）</h3>' +
+    '<ul class="variant-list">' +
+    vs.map(v =>
+      '<li><a href="/book/' + v.id + '" style="color:#2d6cdf;text-decoration:none;">' +
+      (v.ext||'').toUpperCase() + '</a>' +
+      (v.publisher ? ' · ' + esc(v.publisher) : '') +
+      (v.pubdate ? ' · ' + esc(v.pubdate) : '') +
+      ' <span style="color:#888;font-size:.8rem;">· ' + fmtSize(v.size||0) + '</span></li>'
+    ).join('') + '</ul>';
+}
+
+async function loadUserData(bookId, canRead) {
+  if (!UID) return;
+  try {
+    const r = await fetch('/api/user/' + UID + '/history/' + bookId);
+    const h = await r.json();
+    if (h && h.progress_pct > 0) {
+      const pct = Math.round(h.progress_pct * 100);
+      document.getElementById('prog-section').innerHTML =
+        '<div style="margin-top:1rem;">' +
+        '<div style="font-size:.8rem;color:#888;margin-bottom:.3rem;">阅读进度</div>' +
+        '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%"></div></div>' +
+        '<div style="font-size:.78rem;color:#777;">' + pct + '%' +
+        (h.last_read_at ? ' · 上次阅读：' + fmtDate(h.last_read_at) : '') + '</div>' +
+        '</div>';
+      if (canRead) {
+        const btn = document.getElementById('read-btn');
+        if (btn) btn.textContent = '📖 继续阅读 (' + pct + '%)';
+      }
+    }
+  } catch(e) {}
+
+  // Rating
+  try {
+    const rv = await fetch('/api/user/' + UID + '/history/' + bookId);
+    // Just show the rating UI regardless
+    renderRating(bookId, 0);
+  } catch(e) { renderRating(bookId, 0); }
+
+  // Notes
+  loadNotes(bookId);
+  loadBookmarks(bookId);
+}
+
+let currentRating = 0;
+function renderRating(bookId, myRating) {
+  currentRating = myRating;
+  const el = document.getElementById('rating-section');
+  el.innerHTML = '<div class="section">' +
+    '<h3>我的评分</h3>' +
+    '<div class="stars" id="stars">' +
+    [1,2,3,4,5].map(i =>
+      '<span class="star' + (i <= myRating ? ' on' : '') + '" data-v="' + i + '" ' +
+      'onmouseenter="hoverStar(' + i + ')" onmouseleave="unhoverStar()" onclick="rateStar(' + bookId + ',' + i + ')">' +
+      '★</span>'
+    ).join('') +
+    '</div></div>';
+}
+
+function hoverStar(v) {
+  document.querySelectorAll('.star').forEach((s,i) => {
+    s.classList.toggle('hover', i < v);
+  });
+}
+function unhoverStar() {
+  document.querySelectorAll('.star').forEach((s,i) => {
+    s.classList.toggle('hover', false);
+    s.classList.toggle('on', i < currentRating);
+  });
+}
+async function rateStar(bookId, rating) {
+  if (!UID) return;
+  currentRating = rating;
+  document.querySelectorAll('.star').forEach((s,i) => {
+    s.classList.toggle('on', i < rating);
+  });
+  await fetch('/api/user/' + UID + '/rating', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({book_id: bookId, rating})
+  });
+}
+
+async function loadNotes(bookId) {
+  if (!UID) return;
+  const el = document.getElementById('notes-section');
+  try {
+    const r = await fetch('/api/user/' + UID + '/notes/' + bookId);
+    const d = await r.json();
+    const notes = d.notes || [];
+    el.innerHTML = '<div class="section">' +
+      '<h3>我的笔记</h3>' +
+      notes.map(n =>
+        '<div class="note-item">' +
+          '<div class="nt">' + esc(n.text) + '</div>' +
+          '<div class="na">' + fmtDate(n.updated_at || n.created_at) +
+          ' <button onclick="deleteNote(' + bookId + ',' + n.id + ')" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:.8rem;">删除</button></div>' +
+        '</div>'
+      ).join('') +
+      '<textarea class="note-input" id="note-input" placeholder="添加笔记…"></textarea>' +
+      '<button class="btn sec" style="margin-top:.5rem;" onclick="addNote(' + bookId + ')">保存笔记</button>' +
+    '</div>';
+  } catch(e) {}
+}
+
+async function addNote(bookId) {
+  if (!UID) return;
+  const text = document.getElementById('note-input').value.trim();
+  if (!text) return;
+  await fetch('/api/user/' + UID + '/note', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({book_id: bookId, text})
+  });
+  loadNotes(bookId);
+}
+
+async function deleteNote(bookId, noteId) {
+  if (!UID) return;
+  await fetch('/api/user/' + UID + '/note/' + noteId, {method:'DELETE'});
+  loadNotes(bookId);
+}
+
+async function loadBookmarks(bookId) {
+  if (!UID) return;
+  const el = document.getElementById('bookmarks-section');
+  try {
+    const r = await fetch('/api/user/' + UID + '/bookmarks/' + bookId);
+    const d = await r.json();
+    const bms = d.bookmarks || [];
+    if (!bms.length) { el.innerHTML = ''; return; }
+    el.innerHTML = '<div class="section"><h3>书签（' + bms.length + '）</h3>' +
+      bms.map(bm =>
+        '<div class="bm-item">' +
+          '<span>' + esc(bm.label || bm.position || '书签') + '</span>' +
+          '<button class="bm-del" onclick="deleteBm(' + bookId + ',' + bm.id + ')">×</button>' +
+        '</div>'
+      ).join('') +
+    '</div>';
+  } catch(e) {}
+}
+
+async function deleteBm(bookId, bmId) {
+  if (!UID) return;
+  await fetch('/api/user/' + UID + '/bookmark/' + bmId, {method:'DELETE'});
+  loadBookmarks(bookId);
+}
+
+async function loadRelated(bookId) {
+  const el = document.getElementById('related-section');
+  try {
+    const r = await fetch('/api/book/' + bookId + '/related');
+    const d = await r.json();
+    const books = d.related || [];
+    if (!books.length) { el.innerHTML = ''; return; }
+    el.innerHTML = '<div class="section"><h3>相关书籍</h3>' +
+      '<div class="related-row">' +
+      books.map(b =>
+        '<a class="rel-card" href="/book/' + b.id + '">' +
+          '<img src="/cover/' + b.id + '" loading="lazy">' +
+          '<div class="rt">' + esc(b.title || '无题') + '</div>' +
+        '</a>'
+      ).join('') +
+      '</div></div>';
+  } catch(e) {}
+}
+
+function esc(s) {
+  return String(s||'').replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtSize(n) {
+  const u=['B','KB','MB','GB']; let i=0;
+  while(n>=1024&&i<u.length-1){n/=1024;i++;}
+  return n.toFixed(1)+u[i];
+}
+function fmtDate(ts) {
+  if (!ts) return '';
+  return new Date(ts*1000).toLocaleDateString('zh-CN');
+}
+
 load();
 </script></body></html>
 """
@@ -632,34 +1592,80 @@ READER_EPUB_HTML = """<!doctype html>
   body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
          display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
   header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: 1rem;
-           align-items: center; border-bottom: 1px solid #333; }
+           align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
   header a { color: #aaa; text-decoration: none; }
   #viewer { flex: 1; background: #fff; color: #222; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
+  #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
 </style></head>
 <body>
 <header>
   <a href="/book/{{ id }}">← 详情</a>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
-  <span id="loc" style="margin-left:auto;color:#888;font-size:.85rem;"></span>
+  <span id="loc" style="color:#888;font-size:.85rem;"></span>
+  <span id="save-indicator"></span>
 </header>
 <div id="viewer"></div>
 <script>
+const BOOK_ID = {{ id }};
+const UID = localStorage.getItem('books_uid');
 let rendition;
+let saveTimer = null;
+
 async function init() {
   const resp = await fetch('/file/{{ id }}');
   if (!resp.ok) { document.getElementById('viewer').textContent = '文件加载失败'; return; }
   const buffer = await resp.arrayBuffer();
   const book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
-  rendition.display();
+
+  // Restore position if available
+  let startCfi = null;
+  if (UID) {
+    try {
+      const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
+      const h = await r.json();
+      if (h && h.last_position && h.last_position.startsWith('epubcfi')) {
+        startCfi = h.last_position;
+      }
+    } catch(e) {}
+  }
+  rendition.display(startCfi || undefined);
+
   rendition.on('relocated', loc => {
+    const pct = loc.start.percentage || 0;
+    const cfi = loc.start.cfi || '';
     document.getElementById('loc').textContent =
-      loc.start.location ? `位置 ${loc.start.location}` : '';
+      loc.start.location ? '位置 ' + loc.start.location : '';
+    scheduleSave(cfi, pct);
   });
 }
+
+function scheduleSave(cfi, pct) {
+  if (!UID) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
+}
+
+async function saveProgress(cfi, pct) {
+  if (!UID) return;
+  try {
+    await fetch('/api/user/' + UID + '/history', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({book_id: BOOK_ID, progress_pct: pct, last_position: cfi})
+    });
+    const ind = document.getElementById('save-indicator');
+    ind.textContent = '已保存';
+    setTimeout(() => ind.textContent = '', 2000);
+  } catch(e) {}
+}
+
+window.addEventListener('beforeunload', () => {
+  clearTimeout(saveTimer);
+});
+
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
@@ -708,6 +1714,7 @@ READER_TXT_HTML = """<!doctype html>
   #text.sz-sm { font-size: 13px; }
   #text.sz-md { font-size: 16px; }
   #text.sz-lg { font-size: 20px; }
+  #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
 </style></head>
 <body>
 <header>
@@ -716,13 +1723,20 @@ READER_TXT_HTML = """<!doctype html>
   <button id="bsm">小</button>
   <button id="bmd" class="active">中</button>
   <button id="blg">大</button>
-  <button id="btheme" style="margin-left:auto;">深色</button>
+  <button id="btheme" style="margin-left:.5rem;">深色</button>
+  <span id="save-indicator"></span>
 </header>
 <div id="content"><div id="text">加载中…</div></div>
 <script>
+const BOOK_ID = {{ id }};
+const UID = localStorage.getItem('books_uid');
 const textEl = document.getElementById('text');
+const contentEl = document.getElementById('content');
 const body = document.body;
 let dark = false;
+let saveTimer = null;
+let totalLen = 0;
+
 document.getElementById('btheme').onclick = function() {
   dark = !dark;
   body.classList.toggle('dark', dark);
@@ -730,27 +1744,57 @@ document.getElementById('btheme').onclick = function() {
 };
 function setSz(sz) {
   textEl.className = 'sz-' + sz;
-  ['sm','md','lg'].forEach(s => document.getElementById('b'+s).classList.toggle('active', s === sz));
+  ['sm','md','lg'].forEach(s => document.getElementById('b'+s).classList.toggle('active', s===sz));
 }
 document.getElementById('bsm').onclick = () => setSz('sm');
 document.getElementById('bmd').onclick = () => setSz('md');
 document.getElementById('blg').onclick = () => setSz('lg');
+
 async function load() {
   const resp = await fetch('/file/{{ id }}');
   if (!resp.ok) { textEl.textContent = '文件加载失败'; return; }
   const buf = await resp.arrayBuffer();
   let text;
-  try {
-    text = new TextDecoder('utf-8', { fatal: true }).decode(buf);
-  } catch {
-    try {
-      text = new TextDecoder('gbk', { fatal: true }).decode(buf);
-    } catch {
-      text = new TextDecoder('latin-1').decode(buf);
-    }
-  }
+  try { text = new TextDecoder('utf-8', {fatal:true}).decode(buf); }
+  catch { try { text = new TextDecoder('gbk', {fatal:true}).decode(buf); }
+          catch { text = new TextDecoder('latin-1').decode(buf); } }
   textEl.textContent = text;
+  totalLen = text.length;
+
+  // Restore scroll position
+  if (UID) {
+    try {
+      const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
+      const h = await r.json();
+      if (h && h.progress_pct > 0) {
+        const scrollTo = h.progress_pct * (contentEl.scrollHeight - contentEl.clientHeight);
+        contentEl.scrollTop = scrollTo;
+      }
+    } catch(e) {}
+  }
 }
+
+contentEl.addEventListener('scroll', () => {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveProgress, 5000);
+});
+
+async function saveProgress() {
+  if (!UID) return;
+  const maxScroll = Math.max(1, contentEl.scrollHeight - contentEl.clientHeight);
+  const pct = Math.min(1, contentEl.scrollTop / maxScroll);
+  try {
+    await fetch('/api/user/' + UID + '/history', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({book_id: BOOK_ID, progress_pct: pct, last_position: String(Math.round(pct*totalLen))})
+    });
+    const ind = document.getElementById('save-indicator');
+    ind.textContent = '已保存';
+    setTimeout(() => ind.textContent = '', 2000);
+  } catch(e) {}
+}
+
+window.addEventListener('beforeunload', () => { clearTimeout(saveTimer); saveProgress(); });
 load();
 </script></body></html>
 """
@@ -788,9 +1832,9 @@ async function load() {
     const resp = await fetch('/file/{{ id }}');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const buf = await resp.arrayBuffer();
-    const result = await mammoth.convertToHtml({ arrayBuffer: buf });
+    const result = await mammoth.convertToHtml({arrayBuffer: buf});
     docEl.innerHTML = result.value || '<p class="err">文档内容为空</p>';
-  } catch (e) {
+  } catch(e) {
     docEl.innerHTML = '<p class="err">文档转换失败：' + e.message + '</p>';
   }
 }
@@ -814,6 +1858,7 @@ READER_MOBI_HTML = """<!doctype html>
   #viewer { flex: 1; background: #fff; color: #222; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
+  #save-indicator { font-size: .72rem; color: #666; margin-left: auto; }
 </style></head>
 <body>
 <header>
@@ -821,11 +1866,16 @@ READER_MOBI_HTML = """<!doctype html>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
   <span id="converting">正在通过 calibre 转换…</span>
-  <span id="loc" style="margin-left:auto;color:#888;font-size:.85rem;"></span>
+  <span id="loc" style="color:#888;font-size:.85rem;"></span>
+  <span id="save-indicator"></span>
 </header>
 <div id="viewer"></div>
 <script>
+const BOOK_ID = {{ id }};
+const UID = localStorage.getItem('books_uid');
 let rendition;
+let saveTimer = null;
+
 async function init() {
   const resp = await fetch('/api/epub-proxy/{{ id }}');
   document.getElementById('converting').style.display = 'none';
@@ -835,13 +1885,41 @@ async function init() {
   }
   const buffer = await resp.arrayBuffer();
   const book = ePub(buffer);
-  rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
-  rendition.display();
+  rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
+
+  let startCfi = null;
+  if (UID) {
+    try {
+      const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
+      const h = await r.json();
+      if (h && h.last_position && h.last_position.startsWith('epubcfi')) startCfi = h.last_position;
+    } catch(e) {}
+  }
+  rendition.display(startCfi || undefined);
+
   rendition.on('relocated', loc => {
+    const pct = loc.start.percentage || 0;
+    const cfi = loc.start.cfi || '';
     document.getElementById('loc').textContent =
-      loc.start.location ? `位置 ${loc.start.location}` : '';
+      loc.start.location ? '位置 ' + loc.start.location : '';
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
   });
 }
+
+async function saveProgress(cfi, pct) {
+  if (!UID) return;
+  try {
+    await fetch('/api/user/' + UID + '/history', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({book_id: BOOK_ID, progress_pct: pct, last_position: cfi})
+    });
+    const ind = document.getElementById('save-indicator');
+    ind.textContent = '已保存';
+    setTimeout(() => ind.textContent = '', 2000);
+  } catch(e) {}
+}
+
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
@@ -852,6 +1930,8 @@ document.addEventListener('keydown', e => {
 </script></body></html>
 """
 
+
+# ── View routes ────────────────────────────────────────────────────────────────
 
 @app.route("/api/epub-proxy/<int:file_id>")
 def epub_proxy(file_id: int):
@@ -874,8 +1954,7 @@ def epub_proxy(file_id: int):
     try:
         result = subprocess.run(
             [ebook_convert, str(src_path), str(cache_path), "--output-profile=default"],
-            timeout=120,
-            capture_output=True,
+            timeout=120, capture_output=True,
         )
         if result.returncode != 0 or not cache_path.exists():
             return jsonify({"error": "conversion failed"}), 503
@@ -919,9 +1998,12 @@ def read_page(file_id: int):
 
 
 def run(host: str = "0.0.0.0", port: int = 8765):
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     try:
         index_fields.ensure_columns(conn)
     finally:
         conn.close()
+    # Initialize user DB schema
+    get_user_db().close()
     app.run(host=host, port=port, debug=False, threaded=True)

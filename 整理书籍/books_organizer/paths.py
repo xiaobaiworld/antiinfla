@@ -20,6 +20,8 @@ DB_PATH = _env_path("BOOKS_DB", BOOKS_DATA_DIR / "books.db")
 COVER_DIR = _env_path("BOOKS_COVERS", BOOKS_DATA_DIR / "covers")
 LOG_FILE = _env_path("BOOKS_LOG", BOOKS_DATA_DIR / "pipeline.log")
 ORGANIZED_DIR = _env_path("BOOKS_ORGANIZED", BOOKS_ROOT / "_整理后")
+USER_DB_PATH = _env_path("BOOKS_USER_DB", BOOKS_DATA_DIR / "user_data.db")
+UPLOAD_DIR = _env_path("BOOKS_UPLOAD_DIR", BOOKS_ROOT / "_上传")
 
 CALIBRE_EBOOK_META = os.environ.get(
     "CALIBRE_EBOOK_META",
