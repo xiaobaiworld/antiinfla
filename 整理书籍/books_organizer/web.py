@@ -1755,12 +1755,24 @@ READER_EPUB_HTML = """<!doctype html>
   header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .8rem;
            align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
   header a { color: #aaa; text-decoration: none; }
-  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
+  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; margin-right: 28px; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
   #save-indicator { font-size: .72rem; color: #666; }
+  /* Seek bar */
+  #seek-wrap { position:fixed; right:0; top:52px; bottom:0; width:28px;
+               background:#1a1a1a; border-left:1px solid #333;
+               display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  #seek-bar { position:absolute; left:50%; top:50%;
+              transform:translate(-50%,-50%) rotate(-90deg);
+              width:calc(100vh - 72px); height:6px;
+              -webkit-appearance:none; appearance:none; background:#444;
+              border-radius:3px; outline:none; cursor:pointer; accent-color:#2d6cdf; }
+  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px;
+    border-radius:50%; background:#2d6cdf; cursor:grab; }
+  #seek-bar::-webkit-slider-runnable-track { border-radius:3px; }
   /* Shared side panel */
-  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+  .np, .bp { position:fixed; right:28px; top:0; bottom:0; width:290px; background:#fff; color:#222;
              border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
              box-shadow:-4px 0 20px rgba(0,0,0,.5); }
   .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
@@ -1816,6 +1828,10 @@ READER_EPUB_HTML = """<!doctype html>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<!-- Seek bar -->
+<div id="seek-wrap">
+  <input type="range" id="seek-bar" min="0" max="100" value="0">
+</div>
 <!-- TOC panel -->
 <div class="tp" id="tp" style="display:none;">
   <div class="tp-hd">☰ 目录
@@ -1862,6 +1878,8 @@ let rendition, book;
 let saveTimer = null;
 let notesOpen = false;
 let tocItems = [], tocOpen = false;
+let totalLocs = 0;
+const seekBar = document.getElementById('seek-bar');
 
 async function init() {
   const resp = await fetch('/file/{{ id }}');
@@ -1869,7 +1887,10 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
-  book.ready.then(() => book.locations.generate(1024));
+  book.ready.then(() => book.locations.generate(1024).then(() => {
+    totalLocs = book.locations.total();
+    seekBar.max = totalLocs;
+  }));
 
   let startCfi = null;
   if (UID) {
@@ -1884,8 +1905,18 @@ async function init() {
   rendition.on('relocated', loc => {
     const pct = loc.start.percentage || 0;
     const cfi = loc.start.cfi || '';
-    document.getElementById('loc').textContent =
-      loc.start.location ? '位置 ' + loc.start.location : '';
+    const locEl = document.getElementById('loc');
+    if (totalLocs > 0 && loc.start.location) {
+      locEl.textContent = loc.start.location + ' / ' + totalLocs + ' 页';
+      seekBar.value = loc.start.location;
+    } else if (loc.start.displayed) {
+      const d = loc.start.displayed;
+      locEl.textContent = d.page + ' / ' + d.total + ' 页';
+      seekBar.value = Math.round(pct * 100);
+    } else {
+      locEl.textContent = loc.start.location ? '位置 ' + loc.start.location : '';
+      seekBar.value = Math.round(pct * 100);
+    }
     scheduleSave(cfi, pct);
   });
 
@@ -2059,6 +2090,12 @@ function jumpBkm(idx) {
 }
 
 window.addEventListener('beforeunload', () => clearTimeout(saveTimer));
+seekBar.addEventListener('change', () => {
+  if (!book || !totalLocs) return;
+  const pct = seekBar.value / seekBar.max;
+  const cfi = book.locations.cfiFromPercentage(pct);
+  if (cfi && rendition) rendition.display(cfi);
+});
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
@@ -2585,11 +2622,22 @@ READER_MOBI_HTML = """<!doctype html>
            align-items: center; border-bottom: 1px solid #333; }
   header a { color: #aaa; text-decoration: none; }
   #converting { font-size: .78rem; color: #888; }
-  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
+  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; margin-right: 28px; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
   #save-indicator { font-size: .72rem; color: #666; }
-  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
+  #seek-wrap { position:fixed; right:0; top:52px; bottom:0; width:28px;
+               background:#1a1a1a; border-left:1px solid #333;
+               display:flex; align-items:center; justify-content:center; overflow:hidden; }
+  #seek-bar { position:absolute; left:50%; top:50%;
+              transform:translate(-50%,-50%) rotate(-90deg);
+              width:calc(100vh - 72px); height:6px;
+              -webkit-appearance:none; appearance:none; background:#444;
+              border-radius:3px; outline:none; cursor:pointer; accent-color:#2d6cdf; }
+  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px;
+    border-radius:50%; background:#2d6cdf; cursor:grab; }
+  #seek-bar::-webkit-slider-runnable-track { border-radius:3px; }
+  .np, .bp { position:fixed; right:28px; top:0; bottom:0; width:290px; background:#fff; color:#222;
              border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
              box-shadow:-4px 0 20px rgba(0,0,0,.5); }
   .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
@@ -2640,6 +2688,7 @@ READER_MOBI_HTML = """<!doctype html>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<div id="seek-wrap"><input type="range" id="seek-bar" min="0" max="100" value="0"></div>
 <div class="tp" id="tp" style="display:none;">
   <div class="tp-hd">☰ 目录
     <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
@@ -2683,6 +2732,8 @@ let rendition, book;
 let saveTimer = null;
 let notesOpen = false;
 let tocItems = [], tocOpen = false;
+let totalLocs = 0;
+const seekBar = document.getElementById('seek-bar');
 
 async function init() {
   const resp = await fetch('/api/epub-proxy/{{ id }}');
@@ -2694,7 +2745,10 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
-  book.ready.then(() => book.locations.generate(1024));
+  book.ready.then(() => book.locations.generate(1024).then(() => {
+    totalLocs = book.locations.total();
+    seekBar.max = totalLocs;
+  }));
   let startCfi = null;
   if (UID) {
     try {
@@ -2707,7 +2761,18 @@ async function init() {
   rendition.on('relocated', loc => {
     const pct = loc.start.percentage || 0;
     const cfi = loc.start.cfi || '';
-    document.getElementById('loc').textContent = loc.start.location ? '位置 ' + loc.start.location : '';
+    const locEl = document.getElementById('loc');
+    if (totalLocs > 0 && loc.start.location) {
+      locEl.textContent = loc.start.location + ' / ' + totalLocs + ' 页';
+      seekBar.value = loc.start.location;
+    } else if (loc.start.displayed) {
+      const d = loc.start.displayed;
+      locEl.textContent = d.page + ' / ' + d.total + ' 页';
+      seekBar.value = Math.round(pct * 100);
+    } else {
+      locEl.textContent = loc.start.location ? '位置 ' + loc.start.location : '';
+      seekBar.value = Math.round(pct * 100);
+    }
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
   });
@@ -2833,6 +2898,12 @@ async function addBkm(){
 async function delBkm(id){if(!UID)return;await fetch('/api/user/'+UID+'/bookmark/'+id,{method:'DELETE'});loadBkm();}
 function jumpBkm(idx){const pos=bkmPositions[idx];if(pos&&rendition)rendition.display(pos);}
 
+seekBar.addEventListener('change', () => {
+  if (!book || !totalLocs) return;
+  const pct = seekBar.value / seekBar.max;
+  const cfi = book.locations.cfiFromPercentage(pct);
+  if (cfi && rendition) rendition.display(cfi);
+});
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
