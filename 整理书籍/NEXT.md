@@ -1,10 +1,10 @@
 # 整理书籍 — 进度与接续清单
 
-> 最近更新：2026-05-31，commit `8378a41`（web-0.8.5）
+> 最近更新：2026-05-31，commit `3ad30f7`（web-0.8.6）
 
 ## 一句话现状
 
-NAS 运行 `web-0.8.5`（http://192.168.1.44:8766/），书库 39751 本，功能完整。
+NAS 运行 `web-0.8.6`（http://192.168.1.44:8766/），书库 39751 本，功能完整。
 
 ---
 
@@ -20,6 +20,7 @@ NAS 运行 `web-0.8.5`（http://192.168.1.44:8766/），书库 39751 本，功�
 | web-0.8.3 | 阅读器内 📝 笔记面板（EPUB/TXT/DOCX/MOBI） |
 | web-0.8.4 | `/shelf` 我的书架页（进度全览、筛选阅读中/已读完） |
 | web-0.8.5 | 阅读器内 🔖 彩色书签面板（EPUB/TXT/MOBI），可跳转 |
+| web-0.8.6 | 详情页书签彩色圆点 + 阅读器 ☰ 目录面板（EPUB/MOBI 真实目录，TXT 章节扫描，DOCX 标题扫描） |
 
 ---
 
@@ -30,7 +31,7 @@ NAS 运行 `web-0.8.5`（http://192.168.1.44:8766/），书库 39751 本，功�
 | SSH | `ssh nas`（`bai@192.168.1.44:10022`，密钥 `~/.ssh/id_ed25519`） |
 | 机器 | 绿联 DX4600，Linux x86_64，Docker 26.1.0 |
 | compose 项目 | `/volume1/docker/books_organizer/src/`（项目名 `src`） |
-| 当前容器 | `books_web` = `books_organizer:web-0.8.5`，端口 8766 |
+| 当前容器 | `books_web` = `books_organizer:web-0.8.6`，端口 8766 |
 | 数据 | `src/data/books.db`（114M，39751 本） |
 | 用户数据 | `src/data/user_data.db`（自动创建） |
 | 上传目录 | `src/data/uploads/`（容器内 `/data/uploads`） |
@@ -102,8 +103,15 @@ ssh nas 'cd /volume1/docker/books_organizer/src && \
 |---|---|
 | 🏠 | 返回首页 |
 | ← 详情 | 返回书籍详情页 |
+| ☰ | 目录面板（左侧滑出，280px） |
 | 📝 | 笔记面板（右侧滑出，290px） |
 | 🔖 | 书签面板（右侧滑出，与笔记互斥） |
+
+**☰ 目录面板**
+- EPUB / MOBI：读取 epub.js `book.navigation.toc`；若无目录则从 spine 取前 30 章作为假目录
+- TXT：扫描"第X章"等模式；无匹配时显示 0% / 10% … 90% 进度快跳
+- DOCX：mammoth 转 HTML 后扫描 h1/h2/h3，点击 scrollIntoView 跳转
+- 点击章节条目自动关闭面板并跳转；PDF 暂不支持
 
 **📝 笔记面板**
 - 显示已有笔记列表（可删除）
@@ -205,9 +213,9 @@ POST /api/user/:id/import             导入（合并模式）
      books_organizer:latest python -m books_organizer llm-tag --concurrency 4'
    ```
 
-2. **书签在书籍详情页显示颜色** — 目前详情页书签列表无颜色，可加彩色圆点
+2. ~~**书签在书籍详情页显示颜色**~~ — ✅ 已完成（web-0.8.6）
 
-3. **评分聚合** — 书籍详情页显示"所有用户平均分 N★"（需聚合 ratings 表）
+3. **评分聚合 + 用户统计** — 改版思路待定（之前设计需调整）
 
 ### 优先级低
 
