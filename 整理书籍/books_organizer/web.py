@@ -647,18 +647,25 @@ READER_EPUB_HTML = """<!doctype html>
 </header>
 <div id="viewer"></div>
 <script>
-const book = ePub('/file/{{ id }}');
-const rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
-rendition.display();
-document.getElementById('prev').onclick = () => rendition.prev();
-document.getElementById('next').onclick = () => rendition.next();
+let rendition;
+async function init() {
+  const resp = await fetch('/file/{{ id }}');
+  if (!resp.ok) { document.getElementById('viewer').textContent = '文件加载失败'; return; }
+  const buffer = await resp.arrayBuffer();
+  const book = ePub(buffer);
+  rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
+  rendition.display();
+  rendition.on('relocated', loc => {
+    document.getElementById('loc').textContent =
+      loc.start.location ? `位置 ${loc.start.location}` : '';
+  });
+}
+init();
+document.getElementById('prev').onclick = () => rendition && rendition.prev();
+document.getElementById('next').onclick = () => rendition && rendition.next();
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight') rendition.next();
-  if (e.key === 'ArrowLeft') rendition.prev();
-});
-rendition.on('relocated', loc => {
-  document.getElementById('loc').textContent =
-    loc.start.location ? `位置 ${loc.start.location}` : '';
+  if (e.key === 'ArrowRight' && rendition) rendition.next();
+  if (e.key === 'ArrowLeft' && rendition) rendition.prev();
 });
 </script></body></html>
 """
