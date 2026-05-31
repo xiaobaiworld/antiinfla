@@ -13,14 +13,16 @@ from __future__ import annotations
 import datetime
 import json
 import mimetypes
+import os
 import random
 import sqlite3
+import subprocess
 from pathlib import Path
 
 from flask import Flask, Response, abort, jsonify, render_template_string, request, send_file
 
 from . import index_fields
-from .paths import BOOKS_ROOT as ROOT, DB_PATH, COVER_DIR
+from .paths import BOOKS_ROOT as ROOT, DB_PATH, COVER_DIR, HAS_CALIBRE, CALIBRE_EBOOK_META
 
 app = Flask(__name__)
 
@@ -574,7 +576,7 @@ async function load() {
   const tags = b.tags ? (() => { try { return JSON.parse(b.tags); } catch { return []; } })() : [];
   const subjects = b.subjects ? (() => { try { return JSON.parse(b.subjects); } catch { return []; } })() : [];
   const ext = (b.ext || '').toLowerCase();
-  const canRead = ext === 'epub' || ext === 'pdf';
+  const canRead = ext === 'epub' || ext === 'pdf' || ext === 'txt' || ext === 'docx' || ext === 'doc' || ext === 'mobi' || ext === 'azw3' || ext === 'azw';
   const CAT_LABEL = {tech:'科技工程',business:'商业管理',humanities:'人文社科',literature:'文学艺术',practical:'生活实用',education:'教育学习',reference:'工具书',other:'其他'};
   const catLine = b.category
     ? `${esc(CAT_LABEL[b.category] || b.category)}${b.category2 ? ' · ' + esc(b.category2) : ''}`
@@ -645,25 +647,18 @@ READER_EPUB_HTML = """<!doctype html>
 </header>
 <div id="viewer"></div>
 <script>
-let rendition;
-async function init() {
-  const resp = await fetch('/file/{{ id }}');
-  if (!resp.ok) { document.getElementById('viewer').textContent = '文件加载失败'; return; }
-  const buffer = await resp.arrayBuffer();
-  const book = ePub(buffer);
-  rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
-  rendition.display();
-  rendition.on('relocated', loc => {
-    document.getElementById('loc').textContent =
-      loc.start.location ? `位置 ${loc.start.location}` : '';
-  });
-}
-init();
-document.getElementById('prev').onclick = () => rendition && rendition.prev();
-document.getElementById('next').onclick = () => rendition && rendition.next();
+const book = ePub('/file/{{ id }}');
+const rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
+rendition.display();
+document.getElementById('prev').onclick = () => rendition.prev();
+document.getElementById('next').onclick = () => rendition.next();
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' && rendition) rendition.next();
-  if (e.key === 'ArrowLeft' && rendition) rendition.prev();
+  if (e.key === 'ArrowRight') rendition.next();
+  if (e.key === 'ArrowLeft') rendition.prev();
+});
+rendition.on('relocated', loc => {
+  document.getElementById('loc').textContent =
+    loc.start.location ? `位置 ${loc.start.location}` : '';
 });
 </script></body></html>
 """
@@ -684,6 +679,202 @@ READER_PDF_HTML = """<!doctype html>
 <iframe src="/file/{{ id }}#view=FitH"></iframe>
 </body></html>
 """
+
+
+READER_TXT_HTML = """<!doctype html>
+<html><head><meta charset="utf-8">
+<title>阅读 TXT</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f5f5f5; color: #222; height: 100vh;
+         display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
+  body.dark { background: #2a2a2a; color: #ddd; }
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .6rem;
+           align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
+  header a { color: #aaa; text-decoration: none; }
+  button { padding: .35rem .7rem; background: #444; color: #ddd; border: 0;
+           border-radius: 4px; cursor: pointer; font-size: .85rem; }
+  button.active { background: #666; }
+  #content { flex: 1; overflow-y: auto; padding: 2rem 1rem; }
+  #text { max-width: 800px; margin: 0 auto; white-space: pre-wrap; line-height: 1.8;
+          word-break: break-word; font-size: 16px; }
+  #text.sz-sm { font-size: 13px; }
+  #text.sz-md { font-size: 16px; }
+  #text.sz-lg { font-size: 20px; }
+</style></head>
+<body>
+<header>
+  <a href="/book/{{ id }}">← 详情</a>
+  <span style="margin-left:.5rem;color:#888;font-size:.8rem;">字号</span>
+  <button id="bsm">小</button>
+  <button id="bmd" class="active">中</button>
+  <button id="blg">大</button>
+  <button id="btheme" style="margin-left:auto;">深色</button>
+</header>
+<div id="content"><div id="text">加载中…</div></div>
+<script>
+const textEl = document.getElementById('text');
+const body = document.body;
+let dark = false;
+document.getElementById('btheme').onclick = function() {
+  dark = !dark;
+  body.classList.toggle('dark', dark);
+  this.textContent = dark ? '浅色' : '深色';
+};
+function setSz(sz) {
+  textEl.className = 'sz-' + sz;
+  ['sm','md','lg'].forEach(s => document.getElementById('b'+s).classList.toggle('active', s === sz));
+}
+document.getElementById('bsm').onclick = () => setSz('sm');
+document.getElementById('bmd').onclick = () => setSz('md');
+document.getElementById('blg').onclick = () => setSz('lg');
+async function load() {
+  const resp = await fetch('/file/{{ id }}');
+  if (!resp.ok) { textEl.textContent = '文件加载失败'; return; }
+  const buf = await resp.arrayBuffer();
+  let text;
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(buf);
+  } catch {
+    try {
+      text = new TextDecoder('gbk', { fatal: true }).decode(buf);
+    } catch {
+      text = new TextDecoder('latin-1').decode(buf);
+    }
+  }
+  textEl.textContent = text;
+}
+load();
+</script></body></html>
+"""
+
+
+READER_DOCX_HTML = """<!doctype html>
+<html><head><meta charset="utf-8">
+<title>阅读 DOCX</title>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
+         display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: 1rem;
+           align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
+  header a { color: #aaa; text-decoration: none; }
+  #content { flex: 1; overflow-y: auto; padding: 2rem 1rem; background: #f5f5f5; }
+  #doc { max-width: 900px; margin: 0 auto; background: #fff; padding: 2.5rem 3rem;
+         border-radius: 4px; color: #222; font-size: 15px; line-height: 1.8; }
+  #doc h1, #doc h2, #doc h3 { margin-top: 1.5em; }
+  #doc p { margin: .6em 0; }
+  #doc table { border-collapse: collapse; width: 100%; }
+  #doc td, #doc th { border: 1px solid #ccc; padding: .4rem .6rem; }
+  .err { color: #c44; text-align: center; padding: 3rem; font-size: 1rem; }
+</style></head>
+<body>
+<header>
+  <a href="/book/{{ id }}">← 详情</a>
+</header>
+<div id="content"><div id="doc">加载中…</div></div>
+<script>
+async function load() {
+  const docEl = document.getElementById('doc');
+  try {
+    const resp = await fetch('/file/{{ id }}');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const buf = await resp.arrayBuffer();
+    const result = await mammoth.convertToHtml({ arrayBuffer: buf });
+    docEl.innerHTML = result.value || '<p class="err">文档内容为空</p>';
+  } catch (e) {
+    docEl.innerHTML = '<p class="err">文档转换失败：' + e.message + '</p>';
+  }
+}
+load();
+</script></body></html>
+"""
+
+
+READER_MOBI_HTML = """<!doctype html>
+<html><head><meta charset="utf-8">
+<title>阅读</title>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+<style>
+  body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
+         display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: 1rem;
+           align-items: center; border-bottom: 1px solid #333; }
+  header a { color: #aaa; text-decoration: none; }
+  #converting { font-size: .78rem; color: #888; margin-left: .5rem; }
+  #viewer { flex: 1; background: #fff; color: #222; }
+  button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
+           border-radius: 4px; cursor: pointer; }
+</style></head>
+<body>
+<header>
+  <a href="/book/{{ id }}">← 详情</a>
+  <button id="prev">上一页</button>
+  <button id="next">下一页</button>
+  <span id="converting">正在通过 calibre 转换…</span>
+  <span id="loc" style="margin-left:auto;color:#888;font-size:.85rem;"></span>
+</header>
+<div id="viewer"></div>
+<script>
+let rendition;
+async function init() {
+  const resp = await fetch('/api/epub-proxy/{{ id }}');
+  document.getElementById('converting').style.display = 'none';
+  if (!resp.ok) {
+    document.getElementById('viewer').textContent = '转换失败，请确认服务端已安装 calibre。';
+    return;
+  }
+  const buffer = await resp.arrayBuffer();
+  const book = ePub(buffer);
+  rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
+  rendition.display();
+  rendition.on('relocated', loc => {
+    document.getElementById('loc').textContent =
+      loc.start.location ? `位置 ${loc.start.location}` : '';
+  });
+}
+init();
+document.getElementById('prev').onclick = () => rendition && rendition.prev();
+document.getElementById('next').onclick = () => rendition && rendition.next();
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' && rendition) rendition.next();
+  if (e.key === 'ArrowLeft' && rendition) rendition.prev();
+});
+</script></body></html>
+"""
+
+
+@app.route("/api/epub-proxy/<int:file_id>")
+def epub_proxy(file_id: int):
+    if not HAS_CALIBRE:
+        return jsonify({"error": "calibre not available"}), 501
+    conn = get_db()
+    row = conn.execute("SELECT rel_path, ext FROM files WHERE id = ?", (file_id,)).fetchone()
+    if not row:
+        abort(404)
+    ext = row["ext"].lower()
+    if ext not in ("mobi", "azw3", "azw"):
+        abort(400)
+    cache_path = COVER_DIR / f"{file_id}.converted.epub"
+    if cache_path.exists():
+        return send_file(cache_path.resolve(), mimetype="application/epub+zip")
+    src_path = ROOT / row["rel_path"]
+    if not src_path.exists():
+        abort(404)
+    ebook_convert = os.path.join(os.path.dirname(CALIBRE_EBOOK_META), "ebook-convert")
+    try:
+        result = subprocess.run(
+            [ebook_convert, str(src_path), str(cache_path), "--output-profile=default"],
+            timeout=120,
+            capture_output=True,
+        )
+        if result.returncode != 0 or not cache_path.exists():
+            return jsonify({"error": "conversion failed"}), 503
+    except Exception:
+        return jsonify({"error": "conversion failed"}), 503
+    return send_file(cache_path.resolve(), mimetype="application/epub+zip")
 
 
 @app.route("/")
@@ -711,6 +902,12 @@ def read_page(file_id: int):
         return render_template_string(READER_EPUB_HTML, id=file_id)
     if ext == "pdf":
         return render_template_string(READER_PDF_HTML, id=file_id)
+    if ext == "txt":
+        return render_template_string(READER_TXT_HTML, id=file_id)
+    if ext in ("docx", "doc"):
+        return render_template_string(READER_DOCX_HTML, id=file_id)
+    if ext in ("mobi", "azw3", "azw"):
+        return render_template_string(READER_MOBI_HTML, id=file_id)
     abort(404)
 
 
