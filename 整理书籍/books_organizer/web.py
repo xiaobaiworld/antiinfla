@@ -158,10 +158,25 @@ def api_books():
     })
 
 
+@app.route("/api/random")
+def api_random():
+    conn = get_db()
+    row = conn.execute(
+        "SELECT f.id FROM files f JOIN metadata m ON m.file_id=f.id "
+        "WHERE m.title IS NOT NULL AND m.title!='' "
+        "AND (m.cluster_role='primary' OR m.cluster_role IS NULL) "
+        "ORDER BY RANDOM() LIMIT 1"
+    ).fetchone()
+    if not row:
+        abort(404)
+    return jsonify({"id": row["id"]})
+
+
 @app.route("/api/featured")
 def api_featured():
-    """每日精选：business 8本, literature 6本, humanities 6本, other 4本。"""
-    seed = datetime.date.today().isoformat()
+    """每日精选：business 8本, literature 6本, humanities 6本, other 4本。
+    seed 参数可覆盖日期种子，用于"换一批"功能。"""
+    seed = request.args.get("seed") or datetime.date.today().isoformat()
     rng = random.Random(seed)
 
     conn = get_db()
@@ -860,6 +875,7 @@ HOME_HTML = """<!doctype html>
   </select>
   <div class="hdr-right">
     <span id="count" style="color:#777;font-size:.85rem;"></span>
+    <button class="icon-btn" onclick="goRandom()" title="随机推荐一本书">🎲</button>
     <button class="icon-btn" onclick="showUpload()" title="上传书籍">⬆ 上传</button>
     <button class="icon-btn" id="btn-user" onclick="toggleSidebar()" title="我的账号">👤</button>
   </div>
@@ -970,6 +986,7 @@ HOME_HTML = """<!doctype html>
 <script>
 let page = 1, perPage = 40, total = 0;
 let featuredMode = true;
+let featuredSeed = null;  // null = 今日日期种子
 let UID = null;
 
 const CATEGORY_LABEL = {
@@ -1214,6 +1231,15 @@ async function uploadFile(file) {
   }
 }
 
+// ── Random book ──────────────────────────────────────────────────────────────
+async function goRandom() {
+  try {
+    const r = await fetch('/api/random');
+    const d = await r.json();
+    if (d.id) window.location.href = '/book/' + d.id;
+  } catch(e) {}
+}
+
 // ── Facets & browse ───────────────────────────────────────────────────────────
 async function loadFacets() {
   const r = await fetch('/api/facets');
@@ -1284,14 +1310,18 @@ function enterBrowseMode() {
 async function load() {
   let d;
   if (featuredMode) {
-    const r = await fetch('/api/featured');
+    const url = featuredSeed ? '/api/featured?seed=' + encodeURIComponent(featuredSeed) : '/api/featured';
+    const r = await fetch(url);
     d = await r.json();
     total = d.total;
-    document.getElementById('count').textContent = '今日精选 ' + total + ' 本';
+    const label = featuredSeed ? '换一批精选 ' + total + ' 本' : '今日精选 ' + total + ' 本';
+    document.getElementById('count').textContent = label;
     document.getElementById('pageinfo').textContent = '';
     document.getElementById('prev').disabled = true;
-    document.getElementById('next').disabled = true;
+    document.getElementById('next').disabled = false;
+    document.getElementById('next').textContent = '换一批 →';
   } else {
+    document.getElementById('next').textContent = '下一页';
     const params = new URLSearchParams({
       page, per_page: perPage,
       q: document.getElementById('q').value.trim(),
@@ -1352,7 +1382,15 @@ document.getElementById('decade').addEventListener('change', () => { enterBrowse
 document.getElementById('ext').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
 document.getElementById('sort').addEventListener('change', () => { enterBrowseMode(); page=1; load(); });
 document.getElementById('prev').addEventListener('click', () => { page=Math.max(1,page-1); load(); });
-document.getElementById('next').addEventListener('click', () => { page+=1; load(); });
+document.getElementById('next').addEventListener('click', () => {
+  if (featuredMode) {
+    // 换一批：用新随机种子重新拉精选
+    featuredSeed = Date.now().toString(36) + Math.random().toString(36).slice(2);
+    load();
+  } else {
+    page += 1; load();
+  }
+});
 
 function debounce(fn, ms) {
   let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
@@ -1709,6 +1747,7 @@ READER_EPUB_HTML = """<!doctype html>
 </style></head>
 <body>
 <header>
+  <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
@@ -1796,7 +1835,7 @@ READER_PDF_HTML = """<!doctype html>
   header a { color: #aaa; text-decoration: none; }
 </style></head>
 <body style="display:flex;flex-direction:column;height:100vh;">
-<header><a href="/book/{{ id }}">← 详情</a></header>
+<header><a href="/">🏠</a> <a href="/book/{{ id }}">← 详情</a></header>
 <iframe src="/file/{{ id }}#view=FitH"></iframe>
 </body></html>
 """
@@ -1826,6 +1865,7 @@ READER_TXT_HTML = """<!doctype html>
 </style></head>
 <body>
 <header>
+  <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
   <span style="margin-left:.5rem;color:#888;font-size:.8rem;">字号</span>
   <button id="bsm">小</button>
@@ -1930,6 +1970,7 @@ READER_DOCX_HTML = """<!doctype html>
 </style></head>
 <body>
 <header>
+  <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
 </header>
 <div id="content"><div id="doc">加载中…</div></div>
@@ -1970,6 +2011,7 @@ READER_MOBI_HTML = """<!doctype html>
 </style></head>
 <body>
 <header>
+  <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
