@@ -1755,24 +1755,22 @@ READER_EPUB_HTML = """<!doctype html>
   header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .8rem;
            align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
   header a { color: #aaa; text-decoration: none; }
-  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; margin-right: 28px; }
+  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
+  .hdr-btn { padding: .4rem .8rem; background: #444; color: #ddd !important;
+             border-radius: 4px; text-decoration: none !important; }
   #save-indicator { font-size: .72rem; color: #666; }
-  /* Seek bar */
-  #seek-wrap { position:fixed; right:0; top:52px; bottom:0; width:28px;
-               background:#1a1a1a; border-left:1px solid #333;
-               display:flex; align-items:center; justify-content:center; overflow:hidden; }
-  #seek-bar { position:absolute; left:50%; top:50%;
-              transform:translate(-50%,-50%) rotate(-90deg);
-              width:calc(100vh - 72px); height:6px;
-              -webkit-appearance:none; appearance:none; background:#444;
+  /* Seek bar (inline in header) */
+  #seek-inline { flex:1; display:flex; align-items:center; gap:.5rem; min-width:80px; }
+  #seek-bar { flex:1; height:6px; -webkit-appearance:none; appearance:none; background:#555;
               border-radius:3px; outline:none; cursor:pointer; accent-color:#2d6cdf; }
-  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px;
+  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px;
     border-radius:50%; background:#2d6cdf; cursor:grab; }
   #seek-bar::-webkit-slider-runnable-track { border-radius:3px; }
+  #loc { font-size:.78rem; color:#888; white-space:nowrap; flex-shrink:0; }
   /* Shared side panel */
-  .np, .bp { position:fixed; right:28px; top:0; bottom:0; width:290px; background:#fff; color:#222;
+  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
              border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
              box-shadow:-4px 0 20px rgba(0,0,0,.5); }
   .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
@@ -1818,20 +1816,19 @@ READER_EPUB_HTML = """<!doctype html>
 <body>
 <header>
   <a href="/">🏠</a>
-  <a href="/book/{{ id }}">← 详情</a>
+  <a href="/book/{{ id }}" class="hdr-btn">详情</a>
+  <button onclick="toggleToc()">目录</button>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
-  <span id="loc" style="color:#888;font-size:.85rem;"></span>
-  <button onclick="toggleToc()" title="目录" style="margin-left:auto;">☰</button>
+  <div id="seek-inline">
+    <input type="range" id="seek-bar" min="0" max="100" value="0">
+    <span id="loc"></span>
+  </div>
   <button onclick="toggleNotes()" title="笔记">📝</button>
   <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
-<!-- Seek bar -->
-<div id="seek-wrap">
-  <input type="range" id="seek-bar" min="0" max="100" value="0">
-</div>
 <!-- TOC panel -->
 <div class="tp" id="tp" style="display:none;">
   <div class="tp-hd">☰ 目录
@@ -2622,22 +2619,21 @@ READER_MOBI_HTML = """<!doctype html>
            align-items: center; border-bottom: 1px solid #333; }
   header a { color: #aaa; text-decoration: none; }
   #converting { font-size: .78rem; color: #888; }
-  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; margin-right: 28px; }
+  #viewer { flex: 1; background: #fff; color: #222; overflow: hidden; }
   button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
            border-radius: 4px; cursor: pointer; }
+  .hdr-btn { padding: .4rem .8rem; background: #444; color: #ddd !important;
+             border-radius: 4px; text-decoration: none !important; }
   #save-indicator { font-size: .72rem; color: #666; }
-  #seek-wrap { position:fixed; right:0; top:52px; bottom:0; width:28px;
-               background:#1a1a1a; border-left:1px solid #333;
-               display:flex; align-items:center; justify-content:center; overflow:hidden; }
-  #seek-bar { position:absolute; left:50%; top:50%;
-              transform:translate(-50%,-50%) rotate(-90deg);
-              width:calc(100vh - 72px); height:6px;
-              -webkit-appearance:none; appearance:none; background:#444;
+  /* Seek bar (inline in header) */
+  #seek-inline { flex:1; display:flex; align-items:center; gap:.5rem; min-width:80px; }
+  #seek-bar { flex:1; height:6px; -webkit-appearance:none; appearance:none; background:#555;
               border-radius:3px; outline:none; cursor:pointer; accent-color:#2d6cdf; }
-  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px;
+  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px;
     border-radius:50%; background:#2d6cdf; cursor:grab; }
   #seek-bar::-webkit-slider-runnable-track { border-radius:3px; }
-  .np, .bp { position:fixed; right:28px; top:0; bottom:0; width:290px; background:#fff; color:#222;
+  #loc { font-size:.78rem; color:#888; white-space:nowrap; flex-shrink:0; }
+  .np, .bp { position:fixed; right:0; top:0; bottom:0; width:290px; background:#fff; color:#222;
              border-left:2px solid #333; z-index:50; display:flex; flex-direction:column;
              box-shadow:-4px 0 20px rgba(0,0,0,.5); }
   .np-hd, .bp-hd { padding:.65rem 1rem; background:#1f1f1f; color:#ddd; display:flex;
@@ -2677,18 +2673,20 @@ READER_MOBI_HTML = """<!doctype html>
 <body>
 <header>
   <a href="/">🏠</a>
-  <a href="/book/{{ id }}">← 详情</a>
+  <a href="/book/{{ id }}" class="hdr-btn">详情</a>
+  <button onclick="toggleToc()">目录</button>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
   <span id="converting">正在通过 calibre 转换…</span>
-  <span id="loc" style="color:#888;font-size:.85rem;"></span>
-  <button onclick="toggleToc()" title="目录" style="margin-left:auto;">☰</button>
+  <div id="seek-inline">
+    <input type="range" id="seek-bar" min="0" max="100" value="0">
+    <span id="loc"></span>
+  </div>
   <button onclick="toggleNotes()" title="笔记">📝</button>
   <button onclick="toggleBkm()" title="书签">🔖</button>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
-<div id="seek-wrap"><input type="range" id="seek-bar" min="0" max="100" value="0"></div>
 <div class="tp" id="tp" style="display:none;">
   <div class="tp-hd">☰ 目录
     <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
