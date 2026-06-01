@@ -1843,11 +1843,15 @@ READER_EPUB_HTML = """<!doctype html>
   .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
              border-bottom:1px solid #f0ede8; line-height:1.4; }
   .tc-item:hover { background:#f5f3ee; }
+  #btm-bar { display:none; position:fixed; bottom:0; left:0; right:0;
+             background:#1c1c1c; border-top:1px solid #333; padding:.4rem .8rem;
+             align-items:center; z-index:4; }
   @media(max-width:540px){
     header { gap:.4rem; padding:.4rem .6rem; }
     button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
-    #seek-inline { min-width:0; }
-    #loc { display:none; }
+    header #seek-inline { display:none; }
+    #btm-bar { display:flex; }
+    #viewer { margin-bottom:46px; }
   }
 </style></head>
 <body>
@@ -1866,6 +1870,7 @@ READER_EPUB_HTML = """<!doctype html>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<div id="btm-bar"></div>
 <!-- TOC panel -->
 <div class="tp" id="tp" style="display:none;">
   <div class="tp-hd">☰ 目录
@@ -1921,6 +1926,7 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
+  rendition.hooks.content.register(addSwipe);
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
@@ -2124,12 +2130,30 @@ function jumpBkm(idx) {
 }
 
 window.addEventListener('beforeunload', () => clearTimeout(saveTimer));
+let _sx = 0, _sy = 0;
+function addSwipe(contents) {
+  const doc = contents.document;
+  doc.addEventListener('touchstart', e => { _sx = e.touches[0].clientX; _sy = e.touches[0].clientY; }, {passive:true});
+  doc.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _sx;
+    const dy = e.changedTouches[0].clientY - _sy;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      if (dx < 0) rendition && rendition.next();
+      else rendition && rendition.prev();
+    }
+  }, {passive:true});
+}
 seekBar.addEventListener('change', () => {
   if (!book || !totalLocs) return;
   const pct = seekBar.value / seekBar.max;
   const cfi = book.locations.cfiFromPercentage(pct);
   if (cfi && rendition) rendition.display(cfi);
 });
+if (window.innerWidth <= 540) {
+  const btm = document.getElementById('btm-bar');
+  const si = document.getElementById('seek-inline');
+  if (btm && si) btm.appendChild(si);
+}
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
@@ -2720,12 +2744,16 @@ READER_MOBI_HTML = """<!doctype html>
   .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
              border-bottom:1px solid #f0ede8; line-height:1.4; }
   .tc-item:hover { background:#f5f3ee; }
+  #btm-bar { display:none; position:fixed; bottom:0; left:0; right:0;
+             background:#1c1c1c; border-top:1px solid #333; padding:.4rem .8rem;
+             align-items:center; z-index:4; }
   @media(max-width:540px){
     header { gap:.4rem; padding:.4rem .6rem; }
     button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
-    #seek-inline { min-width:0; }
-    #loc { display:none; }
+    header #seek-inline { display:none; }
     #converting { display:none; }
+    #btm-bar { display:flex; }
+    #viewer { margin-bottom:46px; }
   }
 </style></head>
 <body>
@@ -2745,6 +2773,7 @@ READER_MOBI_HTML = """<!doctype html>
   <span id="save-indicator" style="font-size:.72rem;color:#666;"></span>
 </header>
 <div id="viewer"></div>
+<div id="btm-bar"></div>
 <div class="tp" id="tp" style="display:none;">
   <div class="tp-hd">☰ 目录
     <button onclick="toggleToc()" style="background:none;border:0;color:#aaa;cursor:pointer;font-size:1.2rem;line-height:1;">×</button>
@@ -2801,6 +2830,7 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
+  rendition.hooks.content.register(addSwipe);
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
@@ -2954,12 +2984,30 @@ async function addBkm(){
 async function delBkm(id){if(!UID)return;await fetch('/api/user/'+UID+'/bookmark/'+id,{method:'DELETE'});loadBkm();}
 function jumpBkm(idx){const pos=bkmPositions[idx];if(pos&&rendition)rendition.display(pos);}
 
+let _sx = 0, _sy = 0;
+function addSwipe(contents) {
+  const doc = contents.document;
+  doc.addEventListener('touchstart', e => { _sx = e.touches[0].clientX; _sy = e.touches[0].clientY; }, {passive:true});
+  doc.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - _sx;
+    const dy = e.changedTouches[0].clientY - _sy;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      if (dx < 0) rendition && rendition.next();
+      else rendition && rendition.prev();
+    }
+  }, {passive:true});
+}
 seekBar.addEventListener('change', () => {
   if (!book || !totalLocs) return;
   const pct = seekBar.value / seekBar.max;
   const cfi = book.locations.cfiFromPercentage(pct);
   if (cfi && rendition) rendition.display(cfi);
 });
+if (window.innerWidth <= 540) {
+  const btm = document.getElementById('btm-bar');
+  const si = document.getElementById('seek-inline');
+  if (btm && si) btm.appendChild(si);
+}
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
 document.getElementById('next').onclick = () => rendition && rendition.next();
