@@ -1852,6 +1852,8 @@ READER_EPUB_HTML = """<!doctype html>
     header #seek-inline { display:none; }
     #btm-bar { display:flex; }
     #viewer { margin-bottom:46px; }
+    #seek-bar { touch-action:none; }
+    #seek-bar::-webkit-slider-thumb { width:22px; height:22px; }
   }
 </style></head>
 <body>
@@ -1926,7 +1928,6 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
-  rendition.hooks.content.register(addSwipe);
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
@@ -2130,19 +2131,6 @@ function jumpBkm(idx) {
 }
 
 window.addEventListener('beforeunload', () => clearTimeout(saveTimer));
-let _sx = 0, _sy = 0;
-function addSwipe(contents) {
-  const doc = contents.document;
-  doc.addEventListener('touchstart', e => { _sx = e.touches[0].clientX; _sy = e.touches[0].clientY; }, {passive:true});
-  doc.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - _sx;
-    const dy = e.changedTouches[0].clientY - _sy;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-      if (dx < 0) rendition && rendition.next();
-      else rendition && rendition.prev();
-    }
-  }, {passive:true});
-}
 seekBar.addEventListener('change', () => {
   if (!book || !totalLocs) return;
   const pct = seekBar.value / seekBar.max;
@@ -2153,6 +2141,23 @@ if (window.innerWidth <= 540) {
   const btm = document.getElementById('btm-bar');
   const si = document.getElementById('seek-inline');
   if (btm && si) btm.appendChild(si);
+}
+if ('ontouchstart' in window) {
+  const hd = document.querySelector('header');
+  const ov = document.createElement('div');
+  const bh = window.innerWidth <= 540 ? 46 : 0;
+  ov.style.cssText = 'position:fixed;left:0;right:0;top:' + (hd ? hd.offsetHeight : 52) + 'px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(ov);
+  let tx = 0, ty = 0, moved = false;
+  ov.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; }, {passive:true});
+  ov.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tx)+Math.abs(e.touches[0].clientY-ty) > 8) moved = true; }, {passive:true});
+  ov.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    const adx = Math.abs(dx), ady = Math.abs(dy);
+    if (adx > 40 && adx > ady) { if (dx < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
+    else if (ady > 40 && ady > adx) { if (dy < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
+    else if (!moved) { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
+  }, {passive:true});
 }
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
@@ -2754,6 +2759,8 @@ READER_MOBI_HTML = """<!doctype html>
     #converting { display:none; }
     #btm-bar { display:flex; }
     #viewer { margin-bottom:46px; }
+    #seek-bar { touch-action:none; }
+    #seek-bar::-webkit-slider-thumb { width:22px; height:22px; }
   }
 </style></head>
 <body>
@@ -2830,7 +2837,6 @@ async function init() {
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
-  rendition.hooks.content.register(addSwipe);
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
@@ -2984,19 +2990,6 @@ async function addBkm(){
 async function delBkm(id){if(!UID)return;await fetch('/api/user/'+UID+'/bookmark/'+id,{method:'DELETE'});loadBkm();}
 function jumpBkm(idx){const pos=bkmPositions[idx];if(pos&&rendition)rendition.display(pos);}
 
-let _sx = 0, _sy = 0;
-function addSwipe(contents) {
-  const doc = contents.document;
-  doc.addEventListener('touchstart', e => { _sx = e.touches[0].clientX; _sy = e.touches[0].clientY; }, {passive:true});
-  doc.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - _sx;
-    const dy = e.changedTouches[0].clientY - _sy;
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-      if (dx < 0) rendition && rendition.next();
-      else rendition && rendition.prev();
-    }
-  }, {passive:true});
-}
 seekBar.addEventListener('change', () => {
   if (!book || !totalLocs) return;
   const pct = seekBar.value / seekBar.max;
@@ -3007,6 +3000,23 @@ if (window.innerWidth <= 540) {
   const btm = document.getElementById('btm-bar');
   const si = document.getElementById('seek-inline');
   if (btm && si) btm.appendChild(si);
+}
+if ('ontouchstart' in window) {
+  const hd = document.querySelector('header');
+  const ov = document.createElement('div');
+  const bh = window.innerWidth <= 540 ? 46 : 0;
+  ov.style.cssText = 'position:fixed;left:0;right:0;top:' + (hd ? hd.offsetHeight : 52) + 'px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(ov);
+  let tx = 0, ty = 0, moved = false;
+  ov.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; }, {passive:true});
+  ov.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tx)+Math.abs(e.touches[0].clientY-ty) > 8) moved = true; }, {passive:true});
+  ov.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+    const adx = Math.abs(dx), ady = Math.abs(dy);
+    if (adx > 40 && adx > ady) { if (dx < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
+    else if (ady > 40 && ady > adx) { if (dy < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
+    else if (!moved) { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
+  }, {passive:true});
 }
 init();
 document.getElementById('prev').onclick = () => rendition && rendition.prev();
