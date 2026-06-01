@@ -1933,6 +1933,10 @@ async function init() {
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
+    const curLoc = rendition.currentLocation();
+    if (curLoc && curLoc.start) {
+      seekBar.value = curLoc.start.location || Math.round((curLoc.start.percentage||0) * totalLocs);
+    }
   }));
 
   let startCfi = null;
@@ -2132,10 +2136,9 @@ function jumpBkm(idx) {
 
 window.addEventListener('beforeunload', () => clearTimeout(saveTimer));
 seekBar.addEventListener('change', () => {
-  if (!book || !totalLocs) return;
-  const pct = seekBar.value / seekBar.max;
-  const cfi = book.locations.cfiFromPercentage(pct);
-  if (cfi && rendition) rendition.display(cfi);
+  if (!book || !rendition) return;
+  const pct = totalLocs > 0 ? seekBar.value / seekBar.max : seekBar.value / 100;
+  try { const cfi = book.locations.cfiFromPercentage(pct); if (cfi) rendition.display(cfi); } catch(e) {}
 });
 if (window.innerWidth <= 540) {
   const btm = document.getElementById('btm-bar');
@@ -2144,35 +2147,34 @@ if (window.innerWidth <= 540) {
 }
 if ('ontouchstart' in window) {
   const hd = document.querySelector('header');
-  const bb = document.getElementById('btm-bar');
-  const vi = document.getElementById('viewer');
   const ov = document.createElement('div');
   const bh = window.innerWidth <= 540 ? 46 : 0;
-  ov.style.cssText = 'position:fixed;left:0;right:0;top:' + (hd ? hd.offsetHeight : 52) + 'px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
+  ov.style.cssText = 'position:fixed;left:0;right:0;top:0px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(ov);
-  function toggleHdr() {
-    const hide = !hd.classList.contains('hidden');
-    hd.classList.toggle('hidden');
-    ov.style.top = hide ? '0px' : hd.offsetHeight + 'px';
+  let hdrTimer = null;
+  function showHdr() {
+    if (!hd) return;
+    hd.classList.remove('hidden');
+    ov.style.top = hd.offsetHeight + 'px';
+    clearTimeout(hdrTimer);
+    hdrTimer = setTimeout(hideHdr, 3000);
   }
-  function toggleBtm() {
-    const hide = bb && !bb.classList.contains('hidden');
-    if (bb) bb.classList.toggle('hidden');
-    if (vi) vi.style.marginBottom = hide ? '0' : bh + 'px';
-    ov.style.bottom = hide ? '0px' : bh + 'px';
+  function hideHdr() {
+    if (!hd) return;
+    hd.classList.add('hidden');
+    ov.style.top = '0px';
   }
+  hdrTimer = setTimeout(hideHdr, 2000);
   let tx = 0, ty = 0, moved = false;
   ov.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; }, {passive:true});
   ov.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tx)+Math.abs(e.touches[0].clientY-ty) > 8) moved = true; }, {passive:true});
   ov.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
     const adx = Math.abs(dx), ady = Math.abs(dy);
-    const cy = e.changedTouches[0].clientY;
     if (adx > 40 && adx > ady) { if (dx < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
     else if (ady > 40 && ady > adx) { if (dy < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
     else if (!moved) {
-      if (cy < 50) toggleHdr();
-      else if (cy > window.innerHeight - 50) toggleBtm();
+      if (hd && hd.classList.contains('hidden')) showHdr();
       else { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
     }
   }, {passive:true});
@@ -2860,6 +2862,10 @@ async function init() {
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
+    const curLoc = rendition.currentLocation();
+    if (curLoc && curLoc.start) {
+      seekBar.value = curLoc.start.location || Math.round((curLoc.start.percentage||0) * totalLocs);
+    }
   }));
   let startCfi = null;
   if (UID) {
@@ -3009,10 +3015,9 @@ async function delBkm(id){if(!UID)return;await fetch('/api/user/'+UID+'/bookmark
 function jumpBkm(idx){const pos=bkmPositions[idx];if(pos&&rendition)rendition.display(pos);}
 
 seekBar.addEventListener('change', () => {
-  if (!book || !totalLocs) return;
-  const pct = seekBar.value / seekBar.max;
-  const cfi = book.locations.cfiFromPercentage(pct);
-  if (cfi && rendition) rendition.display(cfi);
+  if (!book || !rendition) return;
+  const pct = totalLocs > 0 ? seekBar.value / seekBar.max : seekBar.value / 100;
+  try { const cfi = book.locations.cfiFromPercentage(pct); if (cfi) rendition.display(cfi); } catch(e) {}
 });
 if (window.innerWidth <= 540) {
   const btm = document.getElementById('btm-bar');
@@ -3021,35 +3026,34 @@ if (window.innerWidth <= 540) {
 }
 if ('ontouchstart' in window) {
   const hd = document.querySelector('header');
-  const bb = document.getElementById('btm-bar');
-  const vi = document.getElementById('viewer');
   const ov = document.createElement('div');
   const bh = window.innerWidth <= 540 ? 46 : 0;
-  ov.style.cssText = 'position:fixed;left:0;right:0;top:' + (hd ? hd.offsetHeight : 52) + 'px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
+  ov.style.cssText = 'position:fixed;left:0;right:0;top:0px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(ov);
-  function toggleHdr() {
-    const hide = !hd.classList.contains('hidden');
-    hd.classList.toggle('hidden');
-    ov.style.top = hide ? '0px' : hd.offsetHeight + 'px';
+  let hdrTimer = null;
+  function showHdr() {
+    if (!hd) return;
+    hd.classList.remove('hidden');
+    ov.style.top = hd.offsetHeight + 'px';
+    clearTimeout(hdrTimer);
+    hdrTimer = setTimeout(hideHdr, 3000);
   }
-  function toggleBtm() {
-    const hide = bb && !bb.classList.contains('hidden');
-    if (bb) bb.classList.toggle('hidden');
-    if (vi) vi.style.marginBottom = hide ? '0' : bh + 'px';
-    ov.style.bottom = hide ? '0px' : bh + 'px';
+  function hideHdr() {
+    if (!hd) return;
+    hd.classList.add('hidden');
+    ov.style.top = '0px';
   }
+  hdrTimer = setTimeout(hideHdr, 2000);
   let tx = 0, ty = 0, moved = false;
   ov.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; }, {passive:true});
   ov.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tx)+Math.abs(e.touches[0].clientY-ty) > 8) moved = true; }, {passive:true});
   ov.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
     const adx = Math.abs(dx), ady = Math.abs(dy);
-    const cy = e.changedTouches[0].clientY;
     if (adx > 40 && adx > ady) { if (dx < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
     else if (ady > 40 && ady > adx) { if (dy < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
     else if (!moved) {
-      if (cy < 50) toggleHdr();
-      else if (cy > window.innerHeight - 50) toggleBtm();
+      if (hd && hd.classList.contains('hidden')) showHdr();
       else { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
     }
   }, {passive:true});
