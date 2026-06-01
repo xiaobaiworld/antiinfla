@@ -130,7 +130,7 @@
   ];
 
   const zhFoods = [
-    { name: "杏仁", slug: "almond", tag: "坚果", aliases: "almond nut 杏仁 坚果 零食 加餐 维生素e 镁 健康脂肪" },
+    { name: "巴旦木", slug: "almond", tag: "坚果", aliases: "almond nut 巴旦木 杏仁 坚果 零食 加餐 维生素e 镁 健康脂肪" },
     { name: "牛油果", slug: "avocado", tag: "水果", aliases: "avocado fruit 牛油果 鳄梨 水果 健康脂肪 沙拉 吐司 午餐" },
     { name: "牛油果油", slug: "avocado-oil", tag: "健康脂肪", aliases: "avocado oil healthy fat 牛油果油 鳄梨油 健康脂肪 烹饪 高温 炒菜 烤菜" },
     { name: "罗勒", slug: "basil", tag: "香草", aliases: "basil herb 罗勒 香草 香草类 番茄 沙拉 调味 青酱" },
@@ -201,7 +201,7 @@
     { name: "抗炎水果", slug: "fruits", tag: "分类", aliases: "fruits 水果 浆果 蓝莓 草莓 樱桃 石榴 番茄 抗氧化 花青素 维生素c" },
     { name: "抗炎蔬菜", slug: "vegetables", tag: "分类", aliases: "vegetables 蔬菜 绿叶菜 西兰花 羽衣甘蓝 菠菜 番茄 红薯 纤维" },
     { name: "抗炎香料和香草", slug: "spices-herbs", tag: "分类", aliases: "spices herbs 香料 香草 姜黄 生姜 大蒜 肉桂 罗勒 迷迭香 调味 烹饪" },
-    { name: "抗炎坚果和种子", slug: "nuts-seeds", tag: "分类", aliases: "nuts seeds 坚果 种子 杏仁 核桃 奇亚籽 亚麻籽 omega-3 欧米伽3 零食" },
+    { name: "抗炎坚果和种子", slug: "nuts-seeds", tag: "分类", aliases: "nuts seeds 坚果 种子 巴旦木 杏仁 核桃 奇亚籽 亚麻籽 omega-3 欧米伽3 零食" },
     { name: "抗炎全谷物和豆类", slug: "legumes-whole-grains", tag: "分类", aliases: "whole grains legumes 全谷物 豆类 燕麦 藜麦 扁豆 鹰嘴豆 纤维 蛋白质 早餐 碗餐 汤" },
     { name: "抗炎健康脂肪", slug: "healthy-fats", tag: "分类", aliases: "healthy fats 健康脂肪 橄榄油 牛油果 牛油果油 核桃 omega-3 欧米伽3 烹饪 沙拉" },
     { name: "抗炎鱼类和海鲜", slug: "fish-seafood", tag: "分类", aliases: "fish seafood 鱼类 海鲜 三文鱼 沙丁鱼 omega-3 欧米伽3 epa dha 蛋白质 晚餐" },
