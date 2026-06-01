@@ -23,6 +23,10 @@ def ensure_columns(conn: sqlite3.Connection) -> None:
     if "pub_year" not in cols:
         conn.execute("ALTER TABLE metadata ADD COLUMN pub_year INTEGER")
         conn.execute("CREATE INDEX IF NOT EXISTS idx_meta_pub_year ON metadata(pub_year)")
+    # files table: source_id for multi-source support
+    fcols = {r[1] for r in conn.execute("PRAGMA table_info(files)")}
+    if "source_id" not in fcols:
+        conn.execute("ALTER TABLE files ADD COLUMN source_id INTEGER")
     conn.commit()
 
 

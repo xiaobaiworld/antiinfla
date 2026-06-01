@@ -71,18 +71,24 @@ def scan(
     verbose: bool = True,
     compute_fingerprint: bool = False,
     extra_skip: set[str] | None = None,
+    source_id: int | None = None,
 ) -> dict:
     """扫盘入库。返回统计字典。
 
     默认不算指纹（SMB 上每个文件 64KB 头读太慢）。指纹在去重阶段按需算。
+    source_id: 若指定，只加载/更新该书源的记录。
     """
     stats = {"seen": 0, "new": 0, "unchanged": 0, "updated": 0, "errors": 0}
     now = time.time()
     cur = conn.cursor()
 
     existing: dict[str, tuple[int, float]] = {}
-    for row in cur.execute("SELECT rel_path, size, mtime FROM files"):
-        existing[row["rel_path"]] = (row["size"], row["mtime"])
+    if source_id is not None:
+        for row in cur.execute("SELECT rel_path, size, mtime FROM files WHERE source_id=?", (source_id,)):
+            existing[row["rel_path"]] = (row["size"], row["mtime"])
+    else:
+        for row in cur.execute("SELECT rel_path, size, mtime FROM files WHERE source_id IS NULL"):
+            existing[row["rel_path"]] = (row["size"], row["mtime"])
 
     pending = 0
     t0 = time.time()
@@ -108,8 +114,8 @@ def scan(
 
             cur.execute(
                 """
-                INSERT INTO files (rel_path, name, ext, size, mtime, fingerprint, kind, scanned_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO files (rel_path, name, ext, size, mtime, fingerprint, kind, scanned_at, source_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(rel_path) DO UPDATE SET
                     name=excluded.name,
                     ext=excluded.ext,
@@ -117,9 +123,10 @@ def scan(
                     mtime=excluded.mtime,
                     fingerprint=excluded.fingerprint,
                     kind=excluded.kind,
-                    scanned_at=excluded.scanned_at
+                    scanned_at=excluded.scanned_at,
+                    source_id=COALESCE(excluded.source_id, files.source_id)
                 """,
-                (rel, name, ext, size, mtime, fp, kind, now),
+                (rel, name, ext, size, mtime, fp, kind, now, source_id),
             )
             if prev is None:
                 stats["new"] += 1

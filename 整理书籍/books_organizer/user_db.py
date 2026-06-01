@@ -7,6 +7,14 @@ import time
 from .paths import USER_DB_PATH
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS book_sources (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  name         TEXT NOT NULL,
+  path         TEXT NOT NULL UNIQUE,
+  added_at     INTEGER,
+  last_scan_at INTEGER,
+  book_count   INTEGER DEFAULT 0
+);
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   name TEXT,

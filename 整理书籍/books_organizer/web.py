@@ -28,11 +28,13 @@ from pathlib import Path
 from flask import Flask, Response, abort, jsonify, render_template_string, request, send_file
 
 from . import index_fields
+from .admin import admin_bp, ensure_default_source, get_source_path, invalidate_source_cache  # noqa: F401
 from .paths import BOOKS_ROOT as ROOT, DB_PATH, COVER_DIR, HAS_CALIBRE, CALIBRE_EBOOK_META, UPLOAD_DIR
 from .user_db import get_user_db, resolve_user
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024  # 200 MB
+app.register_blueprint(admin_bp)
 
 ALLOWED_UPLOAD_EXTS = {"epub", "pdf", "txt", "docx", "doc", "mobi", "azw3", "azw"}
 
@@ -68,13 +70,20 @@ def cover(file_id: int):
     return Response(PLACEHOLDER_SVG, mimetype="image/svg+xml")
 
 
+def _resolve_book_path(rel_path: str, source_id) -> Path:
+    if source_id is None:
+        return ROOT / rel_path
+    p = get_source_path(source_id)
+    return (p / rel_path) if p else (ROOT / rel_path)
+
+
 @app.route("/file/<int:file_id>")
 def raw_file(file_id: int):
     conn = get_db()
-    row = conn.execute("SELECT rel_path, ext FROM files WHERE id = ?", (file_id,)).fetchone()
+    row = conn.execute("SELECT rel_path, ext, source_id FROM files WHERE id = ?", (file_id,)).fetchone()
     if not row:
         abort(404)
-    path = ROOT / row["rel_path"]
+    path = _resolve_book_path(row["rel_path"], row["source_id"])
     if not path.exists():
         abort(404)
     mime, _ = mimetypes.guess_type(path.name)
@@ -854,6 +863,20 @@ HOME_HTML = """<!doctype html>
   .upload-bar { background: #e8e6df; height: 6px; border-radius: 3px; }
   .upload-fill { background: #2d6cdf; height: 100%; border-radius: 3px; width: 0; transition: width .3s; }
   .upload-status { font-size: .85rem; color: #555; margin-top: .5rem; }
+  @media(max-width:640px){
+    header { padding:.6rem .8rem; gap:.5rem; }
+    header h1 { font-size:.95rem; }
+    header input[type="search"] { width:100%; flex:1 1 140px; }
+    header select { font-size:.82rem; padding:.32rem .4rem; max-width:110px; }
+    .hdr-right { margin-left:0; flex:0 0 auto; }
+    #count { display:none; }
+    main { padding:.9rem; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap:.8rem; }
+    .sidebar { width:min(90vw, 300px); }
+  }
+  @media(max-width:420px){
+    #subject, #decade, #ext { display:none; }
+  }
 </style></head>
 <body>
 <header>
@@ -879,6 +902,7 @@ HOME_HTML = """<!doctype html>
     <button class="icon-btn" onclick="goRandom()" title="随机推荐一本书">🎲</button>
     <button class="icon-btn" onclick="showUpload()" title="上传书籍">⬆ 上传</button>
     <a class="icon-btn" href="/shelf" title="我的书架" id="btn-shelf" style="text-decoration:none;">🗂️</a>
+    <a class="icon-btn" href="/admin" title="管理后台" style="text-decoration:none;">⚙️</a>
     <button class="icon-btn" id="btn-user" onclick="toggleSidebar()" title="我的账号">👤</button>
   </div>
 </header>
@@ -1477,7 +1501,13 @@ BOOK_HTML = """<!doctype html>
   .note-input { width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid #d0cdc4;
                 border-radius: 6px; font-size: .9rem; resize: vertical; min-height: 80px;
                 font-family: inherit; }
-  @media (max-width: 600px) { .top-grid { grid-template-columns: 1fr; } .cover { width: 40%; } }
+  @media(max-width:600px){
+    .wrap { padding:0 .8rem; margin:1rem auto; }
+    .top-grid { grid-template-columns:1fr; }
+    .cover { width:50%; max-width:160px; }
+    .meta h1 { font-size:1.1rem; }
+    header { padding:.6rem 1rem; }
+  }
 </style></head>
 <body>
 <header>
@@ -1745,7 +1775,8 @@ load();
 
 
 READER_EPUB_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>阅读</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
@@ -1812,6 +1843,12 @@ READER_EPUB_HTML = """<!doctype html>
   .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
              border-bottom:1px solid #f0ede8; line-height:1.4; }
   .tc-item:hover { background:#f5f3ee; }
+  @media(max-width:540px){
+    header { gap:.4rem; padding:.4rem .6rem; }
+    button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
+    #seek-inline { min-width:0; }
+    #loc { display:none; }
+  }
 </style></head>
 <body>
 <header>
@@ -2105,7 +2142,8 @@ document.addEventListener('keydown', e => {
 
 
 READER_PDF_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>阅读 PDF</title>
 <style>
   body, html { margin: 0; height: 100%; }
@@ -2122,7 +2160,8 @@ READER_PDF_HTML = """<!doctype html>
 
 
 READER_TXT_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>阅读 TXT</title>
 <style>
   * { box-sizing: border-box; }
@@ -2180,12 +2219,17 @@ READER_TXT_HTML = """<!doctype html>
   .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
              border-bottom:1px solid #f0ede8; line-height:1.4; }
   .tc-item:hover { background:#f5f3ee; }
+  @media(max-width:540px){
+    header { gap:.3rem; padding:.4rem .6rem; }
+    button { padding:.28rem .5rem; font-size:.75rem; }
+    .sz-label { display:none; }
+  }
 </style></head>
 <body>
 <header>
   <a href="/">🏠</a>
   <a href="/book/{{ id }}">← 详情</a>
-  <span style="margin-left:.5rem;color:#888;font-size:.8rem;">字号</span>
+  <span class="sz-label" style="margin-left:.5rem;color:#888;font-size:.8rem;">字号</span>
   <button id="bsm">小</button>
   <button id="bmd" class="active">中</button>
   <button id="blg">大</button>
@@ -2449,7 +2493,8 @@ load();
 
 
 READER_DOCX_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>阅读 DOCX</title>
 <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
 <style>
@@ -2492,6 +2537,11 @@ READER_DOCX_HTML = """<!doctype html>
   .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
              border-bottom:1px solid #f0ede8; line-height:1.4; }
   .tc-item:hover { background:#f5f3ee; }
+  @media(max-width:540px){
+    header { gap:.4rem; padding:.4rem .6rem; }
+    button { padding:.3rem .5rem; font-size:.78rem; }
+    #doc { padding:.8rem; font-size:.9rem; }
+  }
 </style></head>
 <body>
 <header>
@@ -2608,7 +2658,8 @@ load();
 
 
 READER_MOBI_HTML = """<!doctype html>
-<html><head><meta charset="utf-8">
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>阅读</title>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
@@ -2669,6 +2720,13 @@ READER_MOBI_HTML = """<!doctype html>
   .tc-item { padding:.45rem .7rem; cursor:pointer; font-size:.82rem;
              border-bottom:1px solid #f0ede8; line-height:1.4; }
   .tc-item:hover { background:#f5f3ee; }
+  @media(max-width:540px){
+    header { gap:.4rem; padding:.4rem .6rem; }
+    button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
+    #seek-inline { min-width:0; }
+    #loc { display:none; }
+    #converting { display:none; }
+  }
 </style></head>
 <body>
 <header>
@@ -2953,6 +3011,13 @@ SHELF_HTML = """<!doctype html>
   .btn.sec { background: #eee; color: #444; }
   .empty { text-align: center; color: #888; padding: 5rem 1rem; }
   .empty a { color: #2d6cdf; }
+  @media(max-width:600px){
+    header { padding:.6rem .9rem; gap:.6rem; flex-wrap:wrap; }
+    header h1 { font-size:.9rem; }
+    .tabs { margin-left:0; }
+    main { padding:0 .8rem; margin:1rem auto; }
+    .grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:.8rem; }
+  }
 </style></head>
 <body>
 <header>
@@ -3065,7 +3130,7 @@ def epub_proxy(file_id: int):
     if not HAS_CALIBRE:
         return jsonify({"error": "calibre not available"}), 501
     conn = get_db()
-    row = conn.execute("SELECT rel_path, ext FROM files WHERE id = ?", (file_id,)).fetchone()
+    row = conn.execute("SELECT rel_path, ext, source_id FROM files WHERE id = ?", (file_id,)).fetchone()
     if not row:
         abort(404)
     ext = row["ext"].lower()
@@ -3074,7 +3139,7 @@ def epub_proxy(file_id: int):
     cache_path = COVER_DIR / f"{file_id}.converted.epub"
     if cache_path.exists():
         return send_file(cache_path.resolve(), mimetype="application/epub+zip")
-    src_path = ROOT / row["rel_path"]
+    src_path = _resolve_book_path(row["rel_path"], row["source_id"])
     if not src_path.exists():
         abort(404)
     ebook_convert = os.path.join(os.path.dirname(CALIBRE_EBOOK_META), "ebook-convert")
@@ -3136,6 +3201,6 @@ def run(host: str = "0.0.0.0", port: int = 8765):
         index_fields.ensure_columns(conn)
     finally:
         conn.close()
-    # Initialize user DB schema
     get_user_db().close()
+    ensure_default_source()
     app.run(host=host, port=port, debug=False, threaded=True)
