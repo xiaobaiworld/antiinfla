@@ -1846,6 +1846,8 @@ READER_EPUB_HTML = """<!doctype html>
   #btm-bar { display:none; position:fixed; bottom:0; left:0; right:0;
              background:#1c1c1c; border-top:1px solid #333; padding:.4rem .8rem;
              align-items:center; z-index:4; }
+  header.hidden { display:none !important; }
+  #btm-bar.hidden { display:none !important; }
   @media(max-width:540px){
     header { gap:.4rem; padding:.4rem .6rem; }
     button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
@@ -1944,21 +1946,19 @@ async function init() {
   rendition.display(startCfi || undefined);
 
   rendition.on('relocated', loc => {
-    const pct = loc.start.percentage || 0;
     const cfi = loc.start.cfi || '';
     const locEl = document.getElementById('loc');
+    let bookPct = 0;
     if (totalLocs > 0 && loc.start.location) {
+      bookPct = loc.start.location / totalLocs;
       locEl.textContent = loc.start.location + ' / ' + totalLocs + ' 页';
       seekBar.value = loc.start.location;
-    } else if (loc.start.displayed) {
-      const d = loc.start.displayed;
-      locEl.textContent = d.page + ' / ' + d.total + ' 页';
-      seekBar.value = Math.round(pct * 100);
     } else {
-      locEl.textContent = loc.start.location ? '位置 ' + loc.start.location : '';
-      seekBar.value = Math.round(pct * 100);
+      bookPct = loc.start.percentage || 0;
+      locEl.textContent = bookPct > 0 ? Math.round(bookPct * 100) + '%' : '';
+      seekBar.value = Math.round(bookPct * 100);
     }
-    scheduleSave(cfi, pct);
+    scheduleSave(cfi, bookPct);
   });
 
   book.loaded.navigation.then(nav => {
@@ -2144,19 +2144,37 @@ if (window.innerWidth <= 540) {
 }
 if ('ontouchstart' in window) {
   const hd = document.querySelector('header');
+  const bb = document.getElementById('btm-bar');
+  const vi = document.getElementById('viewer');
   const ov = document.createElement('div');
   const bh = window.innerWidth <= 540 ? 46 : 0;
   ov.style.cssText = 'position:fixed;left:0;right:0;top:' + (hd ? hd.offsetHeight : 52) + 'px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(ov);
+  function toggleHdr() {
+    const hide = !hd.classList.contains('hidden');
+    hd.classList.toggle('hidden');
+    ov.style.top = hide ? '0px' : hd.offsetHeight + 'px';
+  }
+  function toggleBtm() {
+    const hide = bb && !bb.classList.contains('hidden');
+    if (bb) bb.classList.toggle('hidden');
+    if (vi) vi.style.marginBottom = hide ? '0' : bh + 'px';
+    ov.style.bottom = hide ? '0px' : bh + 'px';
+  }
   let tx = 0, ty = 0, moved = false;
   ov.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; }, {passive:true});
   ov.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tx)+Math.abs(e.touches[0].clientY-ty) > 8) moved = true; }, {passive:true});
   ov.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
     const adx = Math.abs(dx), ady = Math.abs(dy);
+    const cy = e.changedTouches[0].clientY;
     if (adx > 40 && adx > ady) { if (dx < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
     else if (ady > 40 && ady > adx) { if (dy < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
-    else if (!moved) { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
+    else if (!moved) {
+      if (cy < 50) toggleHdr();
+      else if (cy > window.innerHeight - 50) toggleBtm();
+      else { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
+    }
   }, {passive:true});
 }
 init();
@@ -2752,6 +2770,8 @@ READER_MOBI_HTML = """<!doctype html>
   #btm-bar { display:none; position:fixed; bottom:0; left:0; right:0;
              background:#1c1c1c; border-top:1px solid #333; padding:.4rem .8rem;
              align-items:center; z-index:4; }
+  header.hidden { display:none !important; }
+  #btm-bar.hidden { display:none !important; }
   @media(max-width:540px){
     header { gap:.4rem; padding:.4rem .6rem; }
     button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
@@ -2851,22 +2871,20 @@ async function init() {
   }
   rendition.display(startCfi || undefined);
   rendition.on('relocated', loc => {
-    const pct = loc.start.percentage || 0;
     const cfi = loc.start.cfi || '';
     const locEl = document.getElementById('loc');
+    let bookPct = 0;
     if (totalLocs > 0 && loc.start.location) {
+      bookPct = loc.start.location / totalLocs;
       locEl.textContent = loc.start.location + ' / ' + totalLocs + ' 页';
       seekBar.value = loc.start.location;
-    } else if (loc.start.displayed) {
-      const d = loc.start.displayed;
-      locEl.textContent = d.page + ' / ' + d.total + ' 页';
-      seekBar.value = Math.round(pct * 100);
     } else {
-      locEl.textContent = loc.start.location ? '位置 ' + loc.start.location : '';
-      seekBar.value = Math.round(pct * 100);
+      bookPct = loc.start.percentage || 0;
+      locEl.textContent = bookPct > 0 ? Math.round(bookPct * 100) + '%' : '';
+      seekBar.value = Math.round(bookPct * 100);
     }
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => saveProgress(cfi, pct), 5000);
+    saveTimer = setTimeout(() => saveProgress(cfi, bookPct), 5000);
   });
 
   book.loaded.navigation.then(nav => {
@@ -3003,19 +3021,37 @@ if (window.innerWidth <= 540) {
 }
 if ('ontouchstart' in window) {
   const hd = document.querySelector('header');
+  const bb = document.getElementById('btm-bar');
+  const vi = document.getElementById('viewer');
   const ov = document.createElement('div');
   const bh = window.innerWidth <= 540 ? 46 : 0;
   ov.style.cssText = 'position:fixed;left:0;right:0;top:' + (hd ? hd.offsetHeight : 52) + 'px;bottom:' + bh + 'px;z-index:2;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(ov);
+  function toggleHdr() {
+    const hide = !hd.classList.contains('hidden');
+    hd.classList.toggle('hidden');
+    ov.style.top = hide ? '0px' : hd.offsetHeight + 'px';
+  }
+  function toggleBtm() {
+    const hide = bb && !bb.classList.contains('hidden');
+    if (bb) bb.classList.toggle('hidden');
+    if (vi) vi.style.marginBottom = hide ? '0' : bh + 'px';
+    ov.style.bottom = hide ? '0px' : bh + 'px';
+  }
   let tx = 0, ty = 0, moved = false;
   ov.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false; }, {passive:true});
   ov.addEventListener('touchmove', e => { if (Math.abs(e.touches[0].clientX-tx)+Math.abs(e.touches[0].clientY-ty) > 8) moved = true; }, {passive:true});
   ov.addEventListener('touchend', e => {
     const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
     const adx = Math.abs(dx), ady = Math.abs(dy);
+    const cy = e.changedTouches[0].clientY;
     if (adx > 40 && adx > ady) { if (dx < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
     else if (ady > 40 && ady > adx) { if (dy < 0) rendition && rendition.next(); else rendition && rendition.prev(); }
-    else if (!moved) { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
+    else if (!moved) {
+      if (cy < 50) toggleHdr();
+      else if (cy > window.innerHeight - 50) toggleBtm();
+      else { if (e.changedTouches[0].clientX > window.innerWidth/2) rendition && rendition.next(); else rendition && rendition.prev(); }
+    }
   }, {passive:true});
 }
 init();
