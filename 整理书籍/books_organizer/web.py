@@ -1865,6 +1865,8 @@ READER_EPUB_HTML = """<!doctype html>
   <button onclick="toggleToc()">目录</button>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
+  <button onclick="adjFont(-1)" title="缩小字体">A-</button>
+  <button onclick="adjFont(1)" title="放大字体">A+</button>
   <div id="seek-inline">
     <input type="range" id="seek-bar" min="0" max="100" value="0">
     <span id="loc"></span>
@@ -1923,13 +1925,21 @@ let notesOpen = false;
 let tocItems = [], tocOpen = false;
 let totalLocs = 0;
 const seekBar = document.getElementById('seek-bar');
+const fontSizes = ['70%','80%','85%','90%','95%','100%','110%','120%'];
+let fontSizeIdx = parseInt(localStorage.getItem('epub_font_idx') || '5');
+function adjFont(d) {
+  fontSizeIdx = Math.max(0, Math.min(fontSizes.length-1, fontSizeIdx+d));
+  localStorage.setItem('epub_font_idx', fontSizeIdx);
+  if (rendition) rendition.themes.fontSize(fontSizes[fontSizeIdx]);
+}
 
 async function init() {
   const resp = await fetch('/file/{{ id }}');
   if (!resp.ok) { document.getElementById('viewer').textContent = '文件加载失败'; return; }
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
-  rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated' });
+  rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated', minSpreadWidth: 9999 });
+  rendition.themes.fontSize(fontSizes[fontSizeIdx]);
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
@@ -2792,6 +2802,8 @@ READER_MOBI_HTML = """<!doctype html>
   <button onclick="toggleToc()">目录</button>
   <button id="prev">上一页</button>
   <button id="next">下一页</button>
+  <button onclick="adjFont(-1)" title="缩小字体">A-</button>
+  <button onclick="adjFont(1)" title="放大字体">A+</button>
   <span id="converting">正在通过 calibre 转换…</span>
   <div id="seek-inline">
     <input type="range" id="seek-bar" min="0" max="100" value="0">
@@ -2848,6 +2860,13 @@ let notesOpen = false;
 let tocItems = [], tocOpen = false;
 let totalLocs = 0;
 const seekBar = document.getElementById('seek-bar');
+const fontSizes = ['70%','80%','85%','90%','95%','100%','110%','120%'];
+let fontSizeIdx = parseInt(localStorage.getItem('epub_font_idx') || '5');
+function adjFont(d) {
+  fontSizeIdx = Math.max(0, Math.min(fontSizes.length-1, fontSizeIdx+d));
+  localStorage.setItem('epub_font_idx', fontSizeIdx);
+  if (rendition) rendition.themes.fontSize(fontSizes[fontSizeIdx]);
+}
 
 async function init() {
   const resp = await fetch('/api/epub-proxy/{{ id }}');
@@ -2858,7 +2877,8 @@ async function init() {
   }
   const buffer = await resp.arrayBuffer();
   book = ePub(buffer);
-  rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated'});
+  rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated', minSpreadWidth: 9999});
+  rendition.themes.fontSize(fontSizes[fontSizeIdx]);
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
