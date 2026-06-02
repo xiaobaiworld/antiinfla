@@ -1940,6 +1940,11 @@ async function init() {
   book = ePub(buffer);
   rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated', minSpreadWidth: 9999 });
   rendition.themes.fontSize(fontSizes[fontSizeIdx]);
+  rendition.hooks.content.register(c => {
+    const s = c.document.createElement('style');
+    s.textContent = 'body{padding-top:1rem!important;padding-bottom:1rem!important;}';
+    c.document.head.appendChild(s);
+  });
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
@@ -2879,6 +2884,11 @@ async function init() {
   book = ePub(buffer);
   rendition = book.renderTo('viewer', {width:'100%', height:'100%', flow:'paginated', minSpreadWidth: 9999});
   rendition.themes.fontSize(fontSizes[fontSizeIdx]);
+  rendition.hooks.content.register(c => {
+    const s = c.document.createElement('style');
+    s.textContent = 'body{padding-top:1rem!important;padding-bottom:1rem!important;}';
+    c.document.head.appendChild(s);
+  });
   book.ready.then(() => book.locations.generate(1024).then(() => {
     totalLocs = book.locations.total();
     seekBar.max = totalLocs;
