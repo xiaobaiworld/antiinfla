@@ -2209,16 +2209,212 @@ READER_PDF_HTML = """<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>阅读 PDF</title>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <style>
-  body, html { margin: 0; height: 100%; }
-  iframe { border: 0; width: 100%; height: 100%; }
-  header { padding: .5rem 1rem; background: #1f1f1f; color: #ddd;
-           font-family: -apple-system, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #2a2a2a; color: #ddd; height: 100vh;
+         display: flex; flex-direction: column; font-family: -apple-system, sans-serif; }
+  header { padding: .5rem 1rem; background: #1f1f1f; display: flex; gap: .8rem;
+           align-items: center; border-bottom: 1px solid #333; flex-shrink: 0; }
   header a { color: #aaa; text-decoration: none; }
+  .hdr-btn { padding: .4rem .8rem; background: #444; color: #ddd !important;
+             border-radius: 4px; text-decoration: none !important; }
+  button { padding: .4rem .8rem; background: #444; color: #ddd; border: 0;
+           border-radius: 4px; cursor: pointer; }
+  button:disabled { opacity: .4; cursor: default; }
+  #viewer { flex: 1; overflow: auto; display: flex; justify-content: center;
+            align-items: flex-start; padding: 1rem; -webkit-overflow-scrolling: touch; }
+  #pdf-canvas { background: #fff; box-shadow: 0 2px 16px rgba(0,0,0,.5); max-width: 100%; height: auto; }
+  #status { font-size: .82rem; color: #888; margin: auto; }
+  #seek-inline { flex:1; display:flex; align-items:center; gap:.5rem; min-width:80px; }
+  #seek-bar { flex:1; height:6px; -webkit-appearance:none; appearance:none; background:#555;
+              border-radius:3px; outline:none; cursor:pointer; accent-color:#2d6cdf; }
+  #seek-bar::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px;
+    border-radius:50%; background:#2d6cdf; cursor:grab; }
+  #loc { font-size:.78rem; color:#888; white-space:nowrap; flex-shrink:0; }
+  #save-indicator { font-size:.72rem; color:#666; }
+  #btm-bar { display:none; position:fixed; bottom:0; left:0; right:0;
+             background:#1c1c1c; border-top:1px solid #333; padding:.4rem .8rem;
+             gap:.6rem; align-items:center; z-index:4; }
+  @media(max-width:540px){
+    header { gap:.4rem; padding:.4rem .6rem; }
+    button, .hdr-btn { padding:.3rem .5rem; font-size:.78rem; }
+    header #seek-inline { display:none; }
+    header #prev, header #next { display:none; }
+    #btm-bar { display:flex; }
+    #viewer { padding-bottom: 52px; }
+    #seek-bar { touch-action:none; }
+    #seek-bar::-webkit-slider-thumb { width:22px; height:22px; }
+  }
 </style></head>
-<body style="display:flex;flex-direction:column;height:100vh;">
-<header><a href="/">🏠</a> <a href="/book/{{ id }}">← 详情</a></header>
-<iframe src="/file/{{ id }}#view=FitH"></iframe>
+<body>
+<header>
+  <a href="/">🏠</a>
+  <a href="/book/{{ id }}" class="hdr-btn">详情</a>
+  <button id="prev">上一页</button>
+  <button id="next">下一页</button>
+  <button onclick="adjZoom(-1)" title="缩小">A-</button>
+  <button onclick="adjZoom(1)" title="放大">A+</button>
+  <div id="seek-inline">
+    <input type="range" id="seek-bar" min="1" max="1" value="1">
+    <span id="loc"></span>
+  </div>
+  <span id="save-indicator"></span>
+</header>
+<div id="viewer"><div id="status">正在加载 PDF…</div><canvas id="pdf-canvas" style="display:none;"></canvas></div>
+<div id="btm-bar">
+  <button id="prev-m" style="flex-shrink:0;">‹ 上一页</button>
+  <input type="range" id="seek-bar-m" min="1" max="1" value="1"
+         style="flex:1;accent-color:#2d6cdf;touch-action:none;">
+  <span id="loc-m" style="font-size:.74rem;color:#888;white-space:nowrap;"></span>
+  <button id="next-m" style="flex-shrink:0;">下一页 ›</button>
+</div>
+<script>
+const BOOK_ID = {{ id }};
+const UID = localStorage.getItem('books_uid');
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+let pdfDoc = null, pageNum = 1, totalPages = 1, rendering = false, pendingPage = null;
+let zoomIdx = parseInt(localStorage.getItem('pdf_zoom_idx') || '2');
+const zoomFactors = [0.6, 0.8, 1.0, 1.25, 1.5, 2.0];
+let saveTimer = null;
+const canvas = document.getElementById('pdf-canvas');
+const ctx = canvas.getContext('2d');
+const seekBar = document.getElementById('seek-bar');
+const seekBarM = document.getElementById('seek-bar-m');
+
+async function init() {
+  let startPage = 1;
+  if (UID) {
+    try {
+      const r = await fetch('/api/user/' + UID + '/history/' + BOOK_ID);
+      const h = await r.json();
+      if (h && h.last_position) {
+        const p = parseInt(h.last_position);
+        if (p > 0) startPage = p;
+      }
+    } catch(e) {}
+  }
+  try {
+    const task = pdfjsLib.getDocument({ url: '/file/' + BOOK_ID });
+    pdfDoc = await task.promise;
+  } catch(e) {
+    document.getElementById('status').textContent = 'PDF 加载失败：' + (e.message || e);
+    return;
+  }
+  totalPages = pdfDoc.numPages;
+  pageNum = Math.min(Math.max(1, startPage), totalPages);
+  seekBar.min = seekBarM.min = 1;
+  seekBar.max = seekBarM.max = totalPages;
+  document.getElementById('status').style.display = 'none';
+  canvas.style.display = 'block';
+  renderPage(pageNum);
+}
+
+function renderPage(n) {
+  if (!pdfDoc) return;
+  rendering = true;
+  pdfDoc.getPage(n).then(page => {
+    const viewer = document.getElementById('viewer');
+    const avail = viewer.clientWidth - 32;
+    const base = page.getViewport({ scale: 1 });
+    const fitScale = avail / base.width;
+    const scale = fitScale * zoomFactors[zoomIdx];
+    const dpr = window.devicePixelRatio || 1;
+    const viewport = page.getViewport({ scale });
+    canvas.width = Math.floor(viewport.width * dpr);
+    canvas.height = Math.floor(viewport.height * dpr);
+    canvas.style.width = Math.floor(viewport.width) + 'px';
+    canvas.style.height = Math.floor(viewport.height) + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const renderCtx = { canvasContext: ctx, viewport };
+    page.render(renderCtx).promise.then(() => {
+      rendering = false;
+      if (pendingPage !== null) { const p = pendingPage; pendingPage = null; queueRender(p); }
+    });
+  });
+  updateUI();
+  document.getElementById('viewer').scrollTop = 0;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveProgress(), 4000);
+}
+function queueRender(n) {
+  if (rendering) { pendingPage = n; } else { renderPage(n); }
+}
+function updateUI() {
+  seekBar.value = seekBarM.value = pageNum;
+  const label = pageNum + ' / ' + totalPages + ' 页';
+  document.getElementById('loc').textContent = label;
+  document.getElementById('loc-m').textContent = label;
+  const atStart = pageNum <= 1, atEnd = pageNum >= totalPages;
+  document.getElementById('prev').disabled = atStart;
+  document.getElementById('prev-m').disabled = atStart;
+  document.getElementById('next').disabled = atEnd;
+  document.getElementById('next-m').disabled = atEnd;
+}
+function goTo(n) {
+  n = Math.min(Math.max(1, n), totalPages);
+  if (n === pageNum && !rendering) return;
+  pageNum = n;
+  queueRender(pageNum);
+}
+function prevPage() { goTo(pageNum - 1); }
+function nextPage() { goTo(pageNum + 1); }
+function adjZoom(d) {
+  zoomIdx = Math.max(0, Math.min(zoomFactors.length - 1, zoomIdx + d));
+  localStorage.setItem('pdf_zoom_idx', zoomIdx);
+  queueRender(pageNum);
+}
+async function saveProgress() {
+  if (!UID) return;
+  try {
+    await fetch('/api/user/' + UID + '/history', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ book_id: BOOK_ID, progress_pct: totalPages ? pageNum/totalPages : 0,
+                             last_position: String(pageNum) })
+    });
+    const ind = document.getElementById('save-indicator');
+    ind.textContent = '已保存'; setTimeout(() => ind.textContent = '', 2000);
+  } catch(e) {}
+}
+
+document.getElementById('prev').onclick = prevPage;
+document.getElementById('next').onclick = nextPage;
+document.getElementById('prev-m').onclick = prevPage;
+document.getElementById('next-m').onclick = nextPage;
+seekBar.oninput = e => goTo(parseInt(e.target.value));
+seekBarM.oninput = e => goTo(parseInt(e.target.value));
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevPage();
+  if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') nextPage();
+});
+
+// Mobile swipe
+let touchX = null, touchY = null;
+const viewerEl = document.getElementById('viewer');
+viewerEl.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }
+}, {passive:true});
+viewerEl.addEventListener('touchend', e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  const dy = e.changedTouches[0].clientY - touchY;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+    if (dx > 0) prevPage(); else nextPage();
+  }
+  touchX = touchY = null;
+}, {passive:true});
+
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => queueRender(pageNum), 200);
+});
+window.addEventListener('beforeunload', () => { if (navigator.sendBeacon && UID) saveProgress(); });
+
+init();
+</script>
 </body></html>
 """
 
