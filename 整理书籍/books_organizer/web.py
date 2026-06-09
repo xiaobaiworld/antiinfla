@@ -2224,8 +2224,9 @@ READER_PDF_HTML = """<!doctype html>
   button:disabled { opacity: .4; cursor: default; }
   #viewer { flex: 1; overflow: auto; display: flex; justify-content: center;
             align-items: flex-start; padding: 1rem; -webkit-overflow-scrolling: touch; }
-  #pdf-canvas { background: #fff; box-shadow: 0 2px 16px rgba(0,0,0,.5); max-width: 100%; height: auto; }
+  #pdf-canvas { background: #fff; box-shadow: 0 2px 16px rgba(0,0,0,.5); display: block; }
   #status { font-size: .82rem; color: #888; margin: auto; }
+  header.hidden { display: none !important; }
   #seek-inline { flex:1; display:flex; align-items:center; gap:.5rem; min-width:80px; }
   #seek-bar { flex:1; height:6px; -webkit-appearance:none; appearance:none; background:#555;
               border-radius:3px; outline:none; cursor:pointer; accent-color:#2d6cdf; }
@@ -2276,8 +2277,8 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
 let pdfDoc = null, pageNum = 1, totalPages = 1, rendering = false, pendingPage = null;
-let zoomIdx = parseInt(localStorage.getItem('pdf_zoom_idx') || '2');
-const zoomFactors = [0.6, 0.8, 1.0, 1.25, 1.5, 2.0];
+let zoomIdx = parseInt(localStorage.getItem('pdf_zoom_idx2') || '0');
+const zoomFactors = [1.0, 1.25, 1.5, 2.0, 2.5, 3.0];
 let saveTimer = null;
 const canvas = document.getElementById('pdf-canvas');
 const ctx = canvas.getContext('2d');
@@ -2317,9 +2318,11 @@ function renderPage(n) {
   rendering = true;
   pdfDoc.getPage(n).then(page => {
     const viewer = document.getElementById('viewer');
-    const avail = viewer.clientWidth - 32;
+    const availW = viewer.clientWidth - 24;
+    const availH = viewer.clientHeight - 24;
     const base = page.getViewport({ scale: 1 });
-    const fitScale = avail / base.width;
+    // 默认让整页完整显示在屏幕内（取宽高较小的缩放），A+ 再放大
+    const fitScale = Math.min(availW / base.width, availH / base.height);
     const scale = fitScale * zoomFactors[zoomIdx];
     const dpr = window.devicePixelRatio || 1;
     const viewport = page.getViewport({ scale });
@@ -2331,6 +2334,7 @@ function renderPage(n) {
     const renderCtx = { canvasContext: ctx, viewport };
     page.render(renderCtx).promise.then(() => {
       rendering = false;
+      syncOverlay();
       if (pendingPage !== null) { const p = pendingPage; pendingPage = null; queueRender(p); }
     });
   });
@@ -2363,7 +2367,7 @@ function prevPage() { goTo(pageNum - 1); }
 function nextPage() { goTo(pageNum + 1); }
 function adjZoom(d) {
   zoomIdx = Math.max(0, Math.min(zoomFactors.length - 1, zoomIdx + d));
-  localStorage.setItem('pdf_zoom_idx', zoomIdx);
+  localStorage.setItem('pdf_zoom_idx2', zoomIdx);
   queueRender(pageNum);
 }
 async function saveProgress() {
@@ -2390,28 +2394,66 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') nextPage();
 });
 
-// Mobile swipe
-let touchX = null, touchY = null;
+// ── 点击/滑动翻页覆盖层（与 EPUB 阅读器一致）─────────────────────────
 const viewerEl = document.getElementById('viewer');
-viewerEl.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) { touchX = e.touches[0].clientX; touchY = e.touches[0].clientY; }
+const hd = document.querySelector('header');
+const btmBar = document.getElementById('btm-bar');
+const isTouch = 'ontouchstart' in window;
+const ov = document.createElement('div');
+ov.id = 'tap-overlay';
+document.body.appendChild(ov);
+let hdrTimer = null;
+
+function btmH() { return (window.innerWidth <= 540 && btmBar) ? btmBar.offsetHeight : 0; }
+function overlayBox() {
+  const top = (hd && !hd.classList.contains('hidden')) ? hd.offsetHeight : 0;
+  ov.style.cssText = 'position:fixed;left:0;right:0;top:' + top + 'px;bottom:' + btmH() +
+    'px;z-index:2;-webkit-tap-highlight-color:transparent;';
+  syncOverlay();
+}
+// 整页放得下时覆盖层接管点击/滑动；放大到需要滚动时让位给原生滚动
+function syncOverlay() {
+  const fits = canvas.offsetHeight <= viewerEl.clientHeight + 2 &&
+               canvas.offsetWidth <= viewerEl.clientWidth + 2;
+  ov.style.pointerEvents = fits ? 'auto' : 'none';
+}
+function showHdr() {
+  if (!hd) return;
+  hd.classList.remove('hidden'); overlayBox();
+  clearTimeout(hdrTimer); hdrTimer = setTimeout(hideHdr, 3000);
+}
+function hideHdr() { if (hd) { hd.classList.add('hidden'); overlayBox(); } }
+function tapTurn(x) {
+  if (isTouch && hd && hd.classList.contains('hidden')) { showHdr(); return; }
+  if (x > window.innerWidth / 2) nextPage(); else prevPage();
+}
+
+let tx = 0, ty = 0, moved = false;
+ov.addEventListener('touchstart', e => {
+  tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false;
 }, {passive:true});
-viewerEl.addEventListener('touchend', e => {
-  if (touchX === null) return;
-  const dx = e.changedTouches[0].clientX - touchX;
-  const dy = e.changedTouches[0].clientY - touchY;
-  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-    if (dx > 0) prevPage(); else nextPage();
-  }
-  touchX = touchY = null;
+ov.addEventListener('touchmove', e => {
+  if (Math.abs(e.touches[0].clientX - tx) + Math.abs(e.touches[0].clientY - ty) > 8) moved = true;
 }, {passive:true});
+ov.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - tx, dy = e.changedTouches[0].clientY - ty;
+  const adx = Math.abs(dx), ady = Math.abs(dy);
+  if (adx > 40 && adx > ady) { dx < 0 ? nextPage() : prevPage(); }
+  else if (ady > 40 && ady > adx) { dy < 0 ? nextPage() : prevPage(); }
+  else if (!moved) tapTurn(e.changedTouches[0].clientX);
+}, {passive:true});
+// 桌面端鼠标点击左右半屏翻页
+ov.addEventListener('click', e => { if (!isTouch) tapTurn(e.clientX); });
+
+if (isTouch) hdrTimer = setTimeout(hideHdr, 2500);
+overlayBox();
 
 let resizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => queueRender(pageNum), 200);
+  resizeTimer = setTimeout(() => { overlayBox(); queueRender(pageNum); }, 200);
 });
-window.addEventListener('beforeunload', () => { if (navigator.sendBeacon && UID) saveProgress(); });
+window.addEventListener('beforeunload', () => { if (UID) saveProgress(); });
 
 init();
 </script>
