@@ -669,7 +669,7 @@ img {
   padding: 12px;
 }
 
-.detail-header-img[src*="-real.jpg"] {
+.detail-header-img[src*="-real"] {
   object-fit: cover;
   object-position: center;
   background: #f7f7f4;
@@ -1297,7 +1297,7 @@ img {
     height: 140px;
   }
 
-  .detail-header-img[src*="-real.jpg"] {
+  .detail-header-img[src*="-real"] {
     width: 160px;
     height: 160px;
   }
